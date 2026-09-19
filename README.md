@@ -7,12 +7,12 @@ empresa de sorteo/inspección para la cadena de suministro automotriz
 ## Stack
 
 - Next.js 14 (App Router) + TypeScript
-- PostgreSQL (Neon) + Prisma
+- PostgreSQL + Prisma
 - NextAuth (Credentials provider, JWT, contraseñas con bcrypt)
 - Tailwind CSS (paleta EQS: navy `#142B6B` + amarillo `#F4D935`, tipografías Manrope/Inter)
 - Recharts (Pareto de defectos, tendencia de % de rechazo)
 - @react-pdf/renderer (reporte de cierre en PDF)
-- Despliegue en Railway (servicio web) + Neon (Postgres)
+- Despliegue en Railway (Postgres + servicio web)
 
 ## Roles y permisos
 
@@ -32,9 +32,7 @@ Todas las reglas se validan en el servidor (API routes), no solo en la UI:
    npm install
    ```
 
-2. Copia `.env.example` a `.env` y ajusta `DATABASE_URL` (y `DIRECT_DATABASE_URL`)
-   a tu Postgres local, o a tu proyecto de Neon si prefieres desarrollar contra
-   Neon directamente.
+2. Copia `.env.example` a `.env` y ajusta `DATABASE_URL` a tu Postgres local.
 
 3. Aplica las migraciones:
 
@@ -62,29 +60,13 @@ guarda la URL en Postgres — nunca la imagen en base64.
 En Railway, monta un **Volume** exactamente en la ruta `public/uploads` del
 servicio para que las fotos persistan entre deploys.
 
-## Base de datos: Neon
-
-Este proyecto usa [Neon](https://neon.tech) como proveedor de Postgres en vez
-del plugin nativo de Railway, para tener branching de base de datos por
-ambiente (útil si más adelante se agregan previews) y un free tier generoso.
-
-1. Crea un proyecto en Neon y copia dos connection strings desde su dashboard:
-   - **Pooled connection** (host con sufijo `-pooler`) → va en `DATABASE_URL`,
-     es la que usa la app en cada request.
-   - **Direct connection** (mismo host sin `-pooler`) → va en
-     `DIRECT_DATABASE_URL`, la usa Prisma solo para `migrate deploy`
-     (el pooler de Neon, PgBouncer en modo transacción, no soporta el tipo
-     de sesión que necesitan las migraciones).
-2. Agrega `?sslmode=require` al final de ambas si Neon no lo incluye ya.
-
 ## Checklist de salida a producción
 
 - [ ] Repo en GitHub (privado)
-- [ ] Proyecto en Neon creado, con las dos connection strings (pooled y directa) a mano
-- [ ] Servicio web en Railway conectado al repo (rama `main`)
+- [ ] Proyecto en Railway con servicio de Postgres + servicio web conectados
 - [ ] Volume de Railway montado en `public/uploads` para las fotos de evidencia
-- [ ] Variables de entorno en Railway: `DATABASE_URL`, `DIRECT_DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`
-- [ ] Backups automáticos de Postgres activados en Neon (point-in-time restore)
+- [ ] Variables de entorno en Railway: `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`
+- [ ] Backups automáticos de Postgres activados en Railway (retención 7-30 días)
 - [ ] Dominio propio tipo `inspecciones.eqservices.mx` con CNAME a Railway
 - [ ] Certificado SSL (Railway lo da automático al conectar el dominio)
 - [ ] Probar con 2-3 usuarios reales (un supervisor y un inspector) antes del rollout completo
@@ -94,8 +76,7 @@ ambiente (útil si más adelante se agregan previews) y un free tier generoso.
 
 | Variable | Descripción |
 | --- | --- |
-| `DATABASE_URL` | Connection string **pooled** de Neon (host con `-pooler`) |
-| `DIRECT_DATABASE_URL` | Connection string **directa** de Neon (mismo host sin `-pooler`), solo para migraciones |
+| `DATABASE_URL` | Cadena de conexión de Postgres (la da Railway al conectar el plugin) |
 | `NEXTAUTH_SECRET` | Valor aleatorio largo, distinto al de desarrollo (`openssl rand -base64 32`) |
 | `NEXTAUTH_URL` | URL pública del servicio (ej. `https://inspecciones.eqservices.mx`) |
 
