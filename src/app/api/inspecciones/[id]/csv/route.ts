@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { requerirSesion, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { whereInspeccionesVisibles } from "@/lib/inspecciones";
 
+export const dynamic = "force-dynamic";
+
 function csvEscapar(valor: string) {
   if (/[",\n]/.test(valor)) {
     return `"${valor.replace(/"/g, '""')}"`;

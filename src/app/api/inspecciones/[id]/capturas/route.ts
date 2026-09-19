@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { requerirSesion, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { whereInspeccionesVisibles } from "@/lib/inspecciones";
 
+export const dynamic = "force-dynamic";
+
 const capturaSchema = z
   .object({
     tipo: z.enum(["buena", "mala"]),

@@ -7,6 +7,8 @@ import { requerirSesion, manejarErrorApi, ErrorPermiso } from "@/lib/permissions
 const TIPOS_PERMITIDOS = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 const TAMANO_MAXIMO = 8 * 1024 * 1024; // 8MB
 
+export const dynamic = "force-dynamic";
+
 // Guarda evidencias fotográficas en disco (Railway Volume montado en UPLOADS_DIR,
 // servido desde /public/uploads) y devuelve solo la URL para guardar en Postgres.
 export async function POST(req: NextRequest) {

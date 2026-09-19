@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { requerirRol, requerirSesion, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { obtenerInspeccionVisible } from "@/lib/inspecciones";
 
+export const dynamic = "force-dynamic";
+
 const actualizarInspeccionSchema = z.object({
   nombre: z.string().trim().min(2).optional(),
   numeroParte: z.string().trim().optional().nullable(),

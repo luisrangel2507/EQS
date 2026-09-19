@@ -5,6 +5,8 @@ import { requerirSesion, manejarErrorApi, ErrorPermiso } from "@/lib/permissions
 import { whereInspeccionesVisibles } from "@/lib/inspecciones";
 import ReporteCierre from "@/lib/pdf/ReporteCierre";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const user = await requerirSesion();

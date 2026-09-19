@@ -3,6 +3,8 @@ import { requerirSesion, manejarErrorApi } from "@/lib/permissions";
 import { whereInspeccionesVisibles } from "@/lib/inspecciones";
 import { TOLERANCIA_MINUTOS, UMBRAL_RECHAZO_CRITICO } from "@/lib/constants";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const user = await requerirSesion();

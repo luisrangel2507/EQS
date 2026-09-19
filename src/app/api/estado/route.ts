@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { requerirSesion, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { ESTADOS_INSPECTOR } from "@/lib/constants";
 
+export const dynamic = "force-dynamic";
+
 const VALORES = ESTADOS_INSPECTOR.map((e) => e.valor);
 
 const estadoSchema = z.object({

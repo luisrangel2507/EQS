@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { requerirRol, manejarErrorApi } from "@/lib/permissions";
 
+export const dynamic = "force-dynamic";
+
 // Lista ligera de inspectores activos, para asignarlos a una inspección.
 // Accesible por Admin y Supervisor (quienes crean/editan inspecciones).
 export async function GET() {

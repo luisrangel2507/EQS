@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { requerirRol, requerirSesion, manejarErrorApi } from "@/lib/permissions";
 import { whereInspeccionesVisibles } from "@/lib/inspecciones";
 
+export const dynamic = "force-dynamic";
+
 const crearInspeccionSchema = z.object({
   nombre: z.string().trim().min(2, "El nombre es requerido"),
   numeroParte: z.string().trim().optional().nullable(),

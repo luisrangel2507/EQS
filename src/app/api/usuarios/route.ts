@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { requerirRol, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { ROLES } from "@/lib/constants";
 
+export const dynamic = "force-dynamic";
+
 const crearUsuarioSchema = z.object({
   nombre: z.string().trim().min(2, "El nombre es requerido"),
   usuario: z

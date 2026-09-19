@@ -3,6 +3,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requerirRol, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 
+export const dynamic = "force-dynamic";
+
 const cerrarSchema = z.object({
   cerradoPor: z.string().trim().min(2, "Indica quién cierra la inspección"),
 });
