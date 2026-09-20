@@ -4,7 +4,13 @@ import Image from "next/image";
 import type { Rol } from "@prisma/client";
 import { usePolling } from "@/lib/usePolling";
 import { FRASES_DEL_DIA, FRASES_DEL_DIA_CLIENTE } from "@/lib/constants";
-import { Kpi, SorteosAbiertosCard, type DashboardData, type Residente } from "./shared";
+import {
+  Kpi,
+  SorteosAbiertosCard,
+  ResidentesResumenCard,
+  type DashboardData,
+  type Residente,
+} from "./shared";
 
 function fraseDelDia(rol: Rol) {
   const frases = rol === "CLIENTE" ? FRASES_DEL_DIA_CLIENTE : FRASES_DEL_DIA;
@@ -57,6 +63,8 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
           </div>
 
           <SorteosAbiertosCard rol={rol} sorteosAbiertos={datos.sorteosAbiertos} />
+
+          <ResidentesResumenCard residentes={residentes ?? []} />
         </>
       ) : (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

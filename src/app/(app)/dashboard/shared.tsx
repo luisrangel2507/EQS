@@ -55,6 +55,7 @@ export type Residente = {
   nombre: string;
   rol: string;
   plantaResidente: string | null;
+  _count: { notasResidente: number };
 };
 
 export function estadoInfo(valor: string) {
@@ -195,6 +196,45 @@ export function SorteosAbiertosCard({
                         </button>
                       )}
                     </span>
+                  )}
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function ResidentesResumenCard({ residentes }: { residentes: Residente[] }) {
+  return (
+    <div className="card">
+      <h2 className="mb-3 font-display font-semibold text-navy-900">Residentes</h2>
+      {residentes.length === 0 ? (
+        <p className="text-sm text-navy-400">No hay residentes activos por el momento.</p>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {residentes.map((r) => {
+            const hallazgos = r._count.notasResidente;
+            return (
+              <Link
+                key={r.id}
+                href="/residentes"
+                className="block rounded-2xl border border-navy-100 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <p className="truncate font-display font-semibold text-navy-900">{r.nombre}</p>
+                <p className="truncate text-xs text-navy-400">
+                  {r.plantaResidente ? `🏭 ${r.plantaResidente}` : "Sin planta asignada"}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  <Pill tono="verde">🟢 Activo</Pill>
+                  {hallazgos > 0 ? (
+                    <Pill tono="rojo">
+                      ⚠️ {hallazgos} {hallazgos === 1 ? "hallazgo" : "hallazgos"}
+                    </Pill>
+                  ) : (
+                    <Pill tono="verde">✅ Todo en orden</Pill>
                   )}
                 </div>
               </Link>
