@@ -264,12 +264,15 @@ function VistaInspectorJuego({
 
   return (
     <div className="mx-auto max-w-lg space-y-4">
-      <button
-        onClick={() => router.push("/estacion")}
-        className="text-xs font-semibold text-navy-400 hover:text-navy-700"
-      >
-        ← Mis inspecciones
-      </button>
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => router.push("/estacion")}
+          className="text-xs font-semibold text-navy-400 hover:text-navy-700"
+        >
+          ← Mis inspecciones
+        </button>
+        {asignado && !inspeccion.cerrado && <EstadoInspectorChip />}
+      </div>
 
       <div className="card overflow-hidden border-none bg-gradient-to-br from-navy-800 to-navy-900 text-white shadow-lg">
         <div className="flex items-start justify-between gap-2">
@@ -332,8 +335,6 @@ function VistaInspectorJuego({
           onResultado={manejarResultado}
         />
       )}
-
-      {asignado && !inspeccion.cerrado && <EstadoInspectorPanel />}
 
       {(inspeccion.instrucciones || inspeccion.instruccionesPdfUrl) && (
         <details className="card">
@@ -676,9 +677,10 @@ function CapturaPanel({
   );
 }
 
-function EstadoInspectorPanel() {
+function EstadoInspectorChip() {
   const [estado, setEstado] = useState<string | null>(null);
   const [cargando, setCargando] = useState(true);
+  const [abierto, setAbierto] = useState(false);
 
   useEffect(() => {
     fetch("/api/estado")
@@ -689,6 +691,7 @@ function EstadoInspectorPanel() {
 
   async function cambiar(valor: string) {
     setEstado(valor);
+    setAbierto(false);
     await fetch("/api/estado", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -696,25 +699,42 @@ function EstadoInspectorPanel() {
     });
   }
 
+  if (cargando || !estado) return null;
+
+  const actual = ESTADOS_INSPECTOR.find((e) => e.valor === estado) ?? ESTADOS_INSPECTOR[0];
+
   return (
-    <div className="card">
-      <h2 className="mb-3 font-display font-semibold text-navy-900">Mi estado</h2>
-      {cargando ? (
-        <p className="text-sm text-navy-400">Cargando…</p>
-      ) : (
-        <div className="flex flex-wrap gap-2">
-          {ESTADOS_INSPECTOR.map((e) => (
-            <button
-              key={e.valor}
-              onClick={() => cambiar(e.valor)}
-              className={`badge border transition ${
-                estado === e.valor ? `${e.color} border-transparent` : "border-navy-200 text-navy-500"
-              }`}
-            >
-              {e.etiqueta}
-            </button>
-          ))}
-        </div>
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setAbierto((v) => !v)}
+        className={`badge border-transparent transition ${actual.color}`}
+      >
+        {actual.etiqueta} {abierto ? "▲" : "▾"}
+      </button>
+      {abierto && (
+        <>
+          <button
+            type="button"
+            aria-label="Cerrar"
+            onClick={() => setAbierto(false)}
+            className="fixed inset-0 z-10 cursor-default"
+          />
+          <div className="absolute right-0 top-full z-20 mt-1 flex w-max flex-wrap gap-1.5 rounded-xl border border-navy-100 bg-white p-2 shadow-lg">
+            {ESTADOS_INSPECTOR.map((e) => (
+              <button
+                key={e.valor}
+                type="button"
+                onClick={() => cambiar(e.valor)}
+                className={`badge border transition ${
+                  estado === e.valor ? `${e.color} border-transparent` : "border-navy-200 text-navy-500"
+                }`}
+              >
+                {e.etiqueta}
+              </button>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

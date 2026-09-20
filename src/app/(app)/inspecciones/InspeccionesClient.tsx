@@ -22,10 +22,13 @@ type Inspeccion = {
 };
 
 export default function InspeccionesClient({ rol }: { rol: Rol }) {
+  const esInspector = rol === "INSPECTOR";
   const [inspecciones, setInspecciones] = useState<Inspeccion[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarForm, setMostrarForm] = useState(false);
-  const [filtro, setFiltro] = useState<"todas" | "activas" | "cerradas">("activas");
+  const [filtro, setFiltro] = useState<"todas" | "activas" | "cerradas">(
+    esInspector ? "cerradas" : "activas"
+  );
 
   const puedeCrear = rol === "ADMIN" || rol === "SUPERVISOR";
 
@@ -48,7 +51,9 @@ export default function InspeccionesClient({ rol }: { rol: Rol }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-2xl font-bold text-navy-900">Inspecciones</h1>
+        <h1 className="font-display text-2xl font-bold text-navy-900">
+          {esInspector ? "Historial de inspecciones" : "Inspecciones"}
+        </h1>
         {puedeCrear && (
           <button className="btn-primary" onClick={() => setMostrarForm(true)}>
             + Nueva inspección
