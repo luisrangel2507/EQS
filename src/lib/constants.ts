@@ -10,6 +10,16 @@ export const PLANTAS = [
   "Tuscaloosa",
 ] as const;
 
+// puestos físicos de trabajo; se elige uno al iniciar turno
+export const ESTACIONES = [
+  "Estación 1",
+  "Estación 2",
+  "Estación 3",
+  "Estación 4",
+  "Estación 5",
+  "Estación 6",
+] as const;
+
 export const ESTADOS_INSPECTOR = [
   { valor: "activo", etiqueta: "Inspeccionando", color: "bg-green-100 text-green-800" },
   { valor: "material", etiqueta: "Sin material", color: "bg-orange-100 text-orange-800" },

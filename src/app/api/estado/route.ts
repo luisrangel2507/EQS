@@ -2,14 +2,15 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requerirSesion, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
-import { ESTADOS_INSPECTOR } from "@/lib/constants";
+import { ESTADOS_INSPECTOR, ESTACIONES } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
 const VALORES = ESTADOS_INSPECTOR.map((e) => e.valor);
 
 const estadoSchema = z.object({
-  estado: z.enum(VALORES as [string, ...string[]]),
+  estado: z.enum(VALORES as [string, ...string[]]).optional(),
+  estacion: z.enum(ESTACIONES).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -20,12 +21,18 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { estado } = estadoSchema.parse(body);
+    const { estado, estacion } = estadoSchema.parse(body);
+    if (!estado && !estacion) {
+      throw new ErrorPermiso("Nada que actualizar", 400);
+    }
 
     const registro = await prisma.estadoInspector.upsert({
       where: { usuarioId: user.id },
-      create: { usuarioId: user.id, estado },
-      update: { estado, desde: new Date() },
+      create: { usuarioId: user.id, estado: estado ?? "activo", estacion },
+      update: {
+        ...(estado ? { estado, desde: new Date() } : {}),
+        ...(estacion ? { estacion } : {}),
+      },
     });
 
     return Response.json(registro);

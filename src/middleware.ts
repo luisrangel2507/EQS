@@ -6,5 +6,7 @@ export const config = {
     "/inspecciones/:path*",
     "/usuarios/:path*",
     "/reportes/:path*",
+    "/estacion/:path*",
+    "/chat/:path*",
   ],
 };

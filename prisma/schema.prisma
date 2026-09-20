@@ -100,6 +100,7 @@ model EstadoInspector {
   usuario   Usuario  @relation(fields: [usuarioId], references: [id])
   usuarioId String   @unique
   estado    String // activo | material | comida | bano | descanso
+  estacion  String? // puesto físico de trabajo (Estación 1, 2, ...), elegido al iniciar turno
   desde     DateTime @default(now())
 }
 

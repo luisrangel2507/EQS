@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -50,7 +50,8 @@ export default function LoginPage() {
         throw new Error("Usuario o contraseña incorrectos");
       }
 
-      router.push("/dashboard");
+      const sesion = await getSession();
+      router.push(sesion?.user.rol === "INSPECTOR" ? "/estacion" : "/dashboard");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ocurrió un error");

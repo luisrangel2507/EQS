@@ -13,6 +13,7 @@ type Props = {
 };
 
 const ENLACES: { href: string; label: string; roles: Rol[] }[] = [
+  { href: "/estacion", label: "Mi estación", roles: ["INSPECTOR"] },
   { href: "/dashboard", label: "Dashboard", roles: ["ADMIN", "SUPERVISOR", "LIDER", "INSPECTOR", "CLIENTE"] },
   { href: "/inspecciones", label: "Inspecciones", roles: ["ADMIN", "SUPERVISOR", "LIDER", "INSPECTOR", "CLIENTE"] },
   { href: "/reportes", label: "Reportes", roles: ["ADMIN", "SUPERVISOR", "LIDER", "CLIENTE"] },
