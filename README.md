@@ -69,7 +69,7 @@ servicio para que las fotos y PDFs persistan entre deploys.
 - [ ] Repo en GitHub (privado)
 - [ ] Proyecto en Railway con servicio de Postgres + servicio web conectados
 - [ ] Volume de Railway montado en `storage/uploads` para fotos de evidencia y PDFs de instrucción
-- [ ] Variables de entorno en Railway: `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`
+- [ ] Variables de entorno en Railway: `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY`
 - [ ] Backups automáticos de Postgres activados en Railway (retención 7-30 días)
 - [ ] Dominio propio tipo `inspecciones.eqservices.mx` con CNAME a Railway
 - [ ] Certificado SSL (Railway lo da automático al conectar el dominio)
@@ -83,6 +83,20 @@ servicio para que las fotos y PDFs persistan entre deploys.
 | `DATABASE_URL` | Cadena de conexión de Postgres (la da Railway al conectar el plugin) |
 | `NEXTAUTH_SECRET` | Valor aleatorio largo, distinto al de desarrollo (`openssl rand -base64 32`) |
 | `NEXTAUTH_URL` | URL pública del servicio (ej. `https://inspecciones.eqservices.mx`) |
+| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | Par de llaves para notificaciones push (Web Push). Genéralas UNA sola vez con `node -e "console.log(require('web-push').generateVAPIDKeys())"` y no las cambies después (invalidarías todas las suscripciones ya guardadas) |
+| `VAPID_SUBJECT` | `mailto:` de contacto que exige el estándar Web Push, ej. `mailto:soporte@eqservices.mx` |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Mismo valor que `VAPID_PUBLIC_KEY`; debe estar disponible en **build time** (Railway la necesita antes de correr `npm run build`, no solo en runtime) |
 
 `npm run start` corre `prisma migrate deploy` antes de arrancar el servidor,
 así que las migraciones se aplican automáticamente en cada deploy.
+
+### Notificaciones push
+
+El botón "Activar notificaciones push" vive en el menú de perfil (esquina
+superior derecha). Hoy se dispara cuando un inspector reporta una pieza NG,
+avisando a los usuarios Cliente de esa empresa y a los usuarios Líder.
+
+En iPhone, Safari solo permite notificaciones push si la app está agregada
+a la pantalla de inicio (Compartir → Agregar a pantalla de inicio) y se abre
+desde ahí, no desde una pestaña normal — es una limitación de iOS, no de la
+app. En Android/desktop funciona directo desde el navegador.

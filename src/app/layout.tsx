@@ -17,6 +17,11 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   title: "InspeccionApp",
   description: "Control de inspecciones de calidad — Ethical Quality Services",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "InspeccionAPP",
+  },
 };
 
 export default function RootLayout({

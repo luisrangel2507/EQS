@@ -4,6 +4,7 @@ import type { Inspeccion } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requerirSesion, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { whereInspeccionesVisibles } from "@/lib/inspecciones";
+import { enviarPush } from "@/lib/push";
 
 export const dynamic = "force-dynamic";
 
@@ -104,15 +105,27 @@ async function notificarPiezaNg(inspeccion: Inspeccion, defecto: string) {
 
   if (destinatarios.length === 0) return;
 
+  const mensajePara = (rolDestino: string) =>
+    rolDestino === "CLIENTE"
+      ? `Se detectó una pieza NG en ${identificacion}: ${defecto}`
+      : `⚠️ Pieza NG en ${identificacion}${inspeccion.cliente ? ` (${inspeccion.cliente})` : ""}: ${defecto}`;
+
   await prisma.notificacion.createMany({
     data: destinatarios.map((d) => ({
       usuarioId: d.id,
       inspeccionId: inspeccion.id,
       tipo: "pieza_ng",
-      mensaje:
-        d.rol === "CLIENTE"
-          ? `Se detectó una pieza NG en ${identificacion}: ${defecto}`
-          : `⚠️ Pieza NG en ${identificacion}${inspeccion.cliente ? ` (${inspeccion.cliente})` : ""}: ${defecto}`,
+      mensaje: mensajePara(d.rol),
     })),
   });
+
+  await Promise.all(
+    destinatarios.map((d) =>
+      enviarPush(d.id, {
+        titulo: "🔴 Pieza NG detectada",
+        cuerpo: mensajePara(d.rol),
+        url: `/inspecciones/${inspeccion.id}`,
+      }).catch((error) => console.error("No se pudo mandar push", error))
+    )
+  );
 }

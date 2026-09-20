@@ -46,6 +46,7 @@ model Usuario {
   notasResidente       NotaResidente[]       @relation("NotaResidenteResidente")
   notasComoAutor       NotaResidente[]       @relation("NotaResidenteAutor")
   notificaciones       Notificacion[]
+  suscripcionesPush    SuscripcionPush[]
 }
 
 // bitácora de seguimiento del personal Residente (asignado de forma fija a
@@ -190,4 +191,18 @@ model Notificacion {
   creadoEn     DateTime    @default(now())
 
   @@index([usuarioId, leida])
+}
+
+// suscripción de un navegador/dispositivo a notificaciones push (Web Push).
+// Un usuario puede tener varias (distintos dispositivos).
+model SuscripcionPush {
+  id        String   @id @default(cuid())
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  creadoEn  DateTime @default(now())
+
+  @@index([usuarioId])
 }

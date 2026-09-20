@@ -8,6 +8,7 @@ import { signOut } from "next-auth/react";
 import type { Rol } from "@prisma/client";
 import { ROL_ETIQUETAS } from "@/lib/constants";
 import ChatPanel from "./ChatPanel";
+import PushToggle from "./PushToggle";
 
 const CLAVE_ULTIMA_LECTURA_CHAT = "eqs_chat_ultima_lectura";
 
@@ -240,15 +241,16 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
       {abierto && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setAbierto(false)} />
-          <div className="absolute right-0 top-full z-20 mt-2 w-56 overflow-hidden rounded-lg border border-navy-100 bg-white py-1 text-navy-900 shadow-lg">
+          <div className="absolute right-0 top-full z-20 mt-2 w-64 overflow-hidden rounded-lg border border-navy-100 bg-white py-1 text-navy-900 shadow-lg">
             <div className="border-b border-navy-100 px-4 py-2 sm:hidden">
               <p className="text-sm font-semibold text-navy-900">{nombre}</p>
               <p className="text-xs text-navy-500">{ROL_ETIQUETAS[rol]}</p>
             </div>
+            <PushToggle />
             <button
               type="button"
               onClick={salir}
-              className="block w-full px-4 py-2 text-left text-sm font-semibold text-red-600 hover:bg-red-50"
+              className="block w-full border-t border-navy-100 px-4 py-2 text-left text-sm font-semibold text-red-600 hover:bg-red-50"
             >
               Salir
             </button>
