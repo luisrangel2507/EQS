@@ -10,7 +10,7 @@ export default async function EstacionPage() {
     return (
       <div className="card">
         <p className="text-sm text-navy-700">
-          &ldquo;Mi estación&rdquo; es la pantalla de trabajo para inspectores. Tu rol usa el
+          &ldquo;Mis inspecciones&rdquo; es la pantalla de trabajo para inspectores. Tu rol usa el
           Dashboard e Inspecciones normales.
         </p>
       </div>

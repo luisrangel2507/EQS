@@ -268,7 +268,7 @@ function VistaInspectorJuego({
         onClick={() => router.push("/estacion")}
         className="text-xs font-semibold text-navy-400 hover:text-navy-700"
       >
-        ← Mi estación
+        ← Mis inspecciones
       </button>
 
       <div className="card overflow-hidden border-none bg-gradient-to-br from-navy-800 to-navy-900 text-white shadow-lg">
