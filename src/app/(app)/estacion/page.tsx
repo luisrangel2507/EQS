@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -19,17 +18,30 @@ export default async function EstacionPage() {
     );
   }
 
-  // Al entrar, si el inspector solo tiene una pieza abierta asignada, lo mandamos
-  // directo a su pantalla de captura (sin pasar por una lista intermedia).
   const abiertas = await prisma.inspeccion.findMany({
     where: { cerrado: false, inspectores: { some: { usuarioId: session!.user.id } } },
     orderBy: { creadoEn: "desc" },
     select: { id: true, nombre: true, numeroParte: true, cliente: true, planta: true },
   });
 
+  // Con una sola pieza abierta asignada, mandamos directo al briefing de esa
+  // pieza (qué va a inspeccionar y a qué prestarle atención) sin lista de por medio.
   if (abiertas.length === 1) {
-    redirect(`/inspecciones/${abiertas[0].id}`);
+    const detalle = await prisma.inspeccion.findUnique({
+      where: { id: abiertas[0].id },
+      select: {
+        id: true,
+        nombre: true,
+        numeroParte: true,
+        cliente: true,
+        planta: true,
+        instrucciones: true,
+        instruccionesPdfUrl: true,
+        defectos: { orderBy: { cantidad: "desc" }, take: 3, select: { tipo: true, cantidad: true } },
+      },
+    });
+    return <EstacionClient nombre={session!.user.nombre} inspecciones={[]} detalleInicial={detalle} />;
   }
 
-  return <EstacionClient nombre={session!.user.nombre} inspecciones={abiertas} />;
+  return <EstacionClient nombre={session!.user.nombre} inspecciones={abiertas} detalleInicial={null} />;
 }
