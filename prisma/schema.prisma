@@ -15,14 +15,14 @@ enum Rol {
 }
 
 model Usuario {
-  id           String   @id @default(cuid())
-  nombre       String
-  usuario      String   @unique // login, minúsculas normalizadas
-  passwordHash String
-  rol          Rol
+  id            String   @id @default(cuid())
+  nombre        String
+  usuario       String   @unique // login, minúsculas normalizadas
+  passwordHash  String
+  rol           Rol
   clienteNombre String? // para rol CLIENTE: debe coincidir con Inspeccion.cliente
-  activo       Boolean  @default(true)
-  creadoEn     DateTime @default(now())
+  activo        Boolean  @default(true)
+  creadoEn      DateTime @default(now())
 
   capturas         Captura[]
   estado           EstadoInspector?
@@ -30,20 +30,21 @@ model Usuario {
 }
 
 model Inspeccion {
-  id            String    @id @default(cuid())
-  nombre        String
-  numeroParte   String?
-  cliente       String?
-  planta        String?
-  meta          Int       @default(0)
-  fechaEntrega  DateTime?
-  instrucciones String?
-  piezasBuenas  Int       @default(0)
-  piezasMalas   Int       @default(0)
-  cerrado       Boolean   @default(false)
-  cerradoPor    String?
-  cerradoEn     DateTime?
-  creadoEn      DateTime  @default(now())
+  id                  String    @id @default(cuid())
+  nombre              String
+  numeroParte         String?
+  cliente             String?
+  planta              String?
+  meta                Int       @default(0)
+  fechaEntrega        DateTime?
+  instrucciones       String?
+  instruccionesPdfUrl String?
+  piezasBuenas        Int       @default(0)
+  piezasMalas         Int       @default(0)
+  cerrado             Boolean   @default(false)
+  cerradoPor          String?
+  cerradoEn           DateTime?
+  creadoEn            DateTime  @default(now())
 
   capturas    Captura[]
   defectos    DefectoResumen[]
@@ -96,6 +97,6 @@ model EstadoInspector {
   id        String   @id @default(cuid())
   usuario   Usuario  @relation(fields: [usuarioId], references: [id])
   usuarioId String   @unique
-  estado    String   // activo | material | comida | bano | descanso
+  estado    String // activo | material | comida | bano | descanso
   desde     DateTime @default(now())
 }

@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import type { Rol } from "@prisma/client";
 import { PLANTAS } from "@/lib/constants";
+import SubidaPdf from "@/components/SubidaPdf";
 
 type Inspeccion = {
   id: string;
@@ -138,6 +139,7 @@ function NuevaInspeccionForm({ onCerrar, onCreada }: { onCerrar: () => void; onC
   const [meta, setMeta] = useState("");
   const [fechaEntrega, setFechaEntrega] = useState("");
   const [instrucciones, setInstrucciones] = useState("");
+  const [instruccionesPdfUrl, setInstruccionesPdfUrl] = useState("");
   const [inspectorIds, setInspectorIds] = useState<string[]>([]);
   const [inspectores, setInspectores] = useState<{ id: string; nombre: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -168,6 +170,7 @@ function NuevaInspeccionForm({ onCerrar, onCreada }: { onCerrar: () => void; onC
         meta: meta ? Number(meta) : undefined,
         fechaEntrega: fechaEntrega ? new Date(fechaEntrega).toISOString() : undefined,
         instrucciones: instrucciones || undefined,
+        instruccionesPdfUrl: instruccionesPdfUrl || undefined,
         inspectorIds,
       }),
     });
@@ -228,6 +231,10 @@ function NuevaInspeccionForm({ onCerrar, onCreada }: { onCerrar: () => void; onC
             value={instrucciones}
             onChange={(e) => setInstrucciones(e.target.value)}
           />
+        </div>
+        <div className="sm:col-span-2">
+          <label className="label">PDF de instrucción de trabajo (opcional)</label>
+          <SubidaPdf url={instruccionesPdfUrl} onCambiar={setInstruccionesPdfUrl} />
         </div>
         <div className="sm:col-span-2">
           <label className="label">Inspectores asignados</label>

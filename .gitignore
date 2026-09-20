@@ -29,8 +29,8 @@ yarn-error.log*
 .env
 .env*.local
 
-# fotos de evidencia subidas localmente
-/public/uploads
+# fotos de evidencia e instrucciones en PDF subidas localmente
+/storage/uploads
 
 # vercel
 .vercel

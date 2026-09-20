@@ -12,7 +12,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { usePolling } from "@/lib/usePolling";
-import { DEFECTOS_COMUNES, ESTADOS_INSPECTOR } from "@/lib/constants";
+import { DEFECTOS_COMUNES, ESTADOS_INSPECTOR, PLANTAS } from "@/lib/constants";
+import SubidaPdf from "@/components/SubidaPdf";
 
 type SesionUsuario = {
   id: string;
@@ -29,6 +30,7 @@ type Inspeccion = {
   meta: number;
   fechaEntrega: string | null;
   instrucciones: string | null;
+  instruccionesPdfUrl: string | null;
   piezasBuenas: number;
   piezasMalas: number;
   cerrado: boolean;
@@ -51,6 +53,7 @@ export default function InspeccionDetalleClient({
     6000
   );
   const [mostrarCierre, setMostrarCierre] = useState(false);
+  const [mostrarEditar, setMostrarEditar] = useState(false);
 
   const asignado = inspeccion?.inspectores.some((a) => a.usuario.id === sesion.id) ?? false;
   const puedeCapturar =
@@ -102,6 +105,11 @@ export default function InspeccionDetalleClient({
             Exportar CSV
           </a>
           {puedeGestionar && !inspeccion.cerrado && (
+            <button className="btn-secondary" onClick={() => setMostrarEditar(true)}>
+              Editar
+            </button>
+          )}
+          {puedeGestionar && !inspeccion.cerrado && (
             <button className="btn-accent" onClick={() => setMostrarCierre(true)}>
               Cerrar inspección
             </button>
@@ -123,12 +131,24 @@ export default function InspeccionDetalleClient({
         <div className="h-2 rounded-full bg-yellow" style={{ width: `${progreso}%` }} />
       </div>
 
-      {inspeccion.instrucciones && (
+      {(inspeccion.instrucciones || inspeccion.instruccionesPdfUrl) && (
         <div className="card">
           <h2 className="mb-1 font-display font-semibold text-navy-900">
             Instrucción de trabajo / criterio de aceptación
           </h2>
-          <p className="whitespace-pre-wrap text-sm text-navy-600">{inspeccion.instrucciones}</p>
+          {inspeccion.instrucciones && (
+            <p className="whitespace-pre-wrap text-sm text-navy-600">{inspeccion.instrucciones}</p>
+          )}
+          {inspeccion.instruccionesPdfUrl && (
+            <a
+              href={inspeccion.instruccionesPdfUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-navy underline"
+            >
+              Ver PDF de instrucción de trabajo
+            </a>
+          )}
         </div>
       )}
 
@@ -186,6 +206,18 @@ export default function InspeccionDetalleClient({
           onCerrar={() => setMostrarCierre(false)}
           onCerrado={() => {
             setMostrarCierre(false);
+            recargar();
+          }}
+        />
+      )}
+
+      {mostrarEditar && (
+        <EditarModal
+          inspeccionId={id}
+          inspeccion={inspeccion}
+          onCerrar={() => setMostrarEditar(false)}
+          onGuardado={() => {
+            setMostrarEditar(false);
             recargar();
           }}
         />
@@ -432,6 +464,182 @@ function CierreModal({
         <div className="mt-4 flex gap-2">
           <button type="submit" className="btn-accent" disabled={enviando}>
             {enviando ? "Cerrando…" : "Confirmar cierre"}
+          </button>
+          <button type="button" className="btn-secondary" onClick={onCerrar}>
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function EditarModal({
+  inspeccionId,
+  inspeccion,
+  onCerrar,
+  onGuardado,
+}: {
+  inspeccionId: string;
+  inspeccion: Inspeccion;
+  onCerrar: () => void;
+  onGuardado: () => void;
+}) {
+  const [nombre, setNombre] = useState(inspeccion.nombre);
+  const [numeroParte, setNumeroParte] = useState(inspeccion.numeroParte ?? "");
+  const [cliente, setCliente] = useState(inspeccion.cliente ?? "");
+  const [planta, setPlanta] = useState(inspeccion.planta ?? "");
+  const [meta, setMeta] = useState(inspeccion.meta ? String(inspeccion.meta) : "");
+  const [fechaEntrega, setFechaEntrega] = useState(
+    inspeccion.fechaEntrega ? inspeccion.fechaEntrega.slice(0, 10) : ""
+  );
+  const [instrucciones, setInstrucciones] = useState(inspeccion.instrucciones ?? "");
+  const [instruccionesPdfUrl, setInstruccionesPdfUrl] = useState(
+    inspeccion.instruccionesPdfUrl ?? ""
+  );
+  const [inspectorIds, setInspectorIds] = useState<string[]>(
+    inspeccion.inspectores.map((a) => a.usuario.id)
+  );
+  const [inspectores, setInspectores] = useState<{ id: string; nombre: string }[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [enviando, setEnviando] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/usuarios/inspectores")
+      .then((r) => r.json())
+      .then(setInspectores);
+  }, []);
+
+  function alternarInspector(idInspector: string) {
+    setInspectorIds((prev) =>
+      prev.includes(idInspector) ? prev.filter((x) => x !== idInspector) : [...prev, idInspector]
+    );
+  }
+
+  async function manejarEnvio(e: React.FormEvent) {
+    e.preventDefault();
+    setEnviando(true);
+    setError(null);
+    const res = await fetch(`/api/inspecciones/${inspeccionId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nombre,
+        numeroParte: numeroParte || null,
+        cliente: cliente || null,
+        planta: planta || null,
+        meta: meta ? Number(meta) : 0,
+        fechaEntrega: fechaEntrega ? new Date(fechaEntrega).toISOString() : null,
+        instrucciones: instrucciones || null,
+        instruccionesPdfUrl: instruccionesPdfUrl || null,
+        inspectorIds,
+      }),
+    });
+    setEnviando(false);
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      setError(d.error ?? "No se pudo guardar la inspección");
+      return;
+    }
+    onGuardado();
+  }
+
+  return (
+    <div className="fixed inset-0 z-30 flex items-center justify-center overflow-y-auto bg-navy-900/60 px-4 py-8">
+      <form
+        onSubmit={manejarEnvio}
+        className="w-full max-w-lg space-y-3 rounded-xl bg-white p-5 shadow-lg"
+      >
+        <h2 className="font-display text-lg font-bold text-navy-900">Editar inspección</h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <label className="label">Nombre</label>
+            <input
+              className="input"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              required
+              minLength={2}
+            />
+          </div>
+          <div>
+            <label className="label">Número de parte</label>
+            <input className="input" value={numeroParte} onChange={(e) => setNumeroParte(e.target.value)} />
+          </div>
+          <div>
+            <label className="label">Cliente</label>
+            <input className="input" value={cliente} onChange={(e) => setCliente(e.target.value)} />
+          </div>
+          <div>
+            <label className="label">Planta</label>
+            <select className="input" value={planta} onChange={(e) => setPlanta(e.target.value)}>
+              <option value="">Selecciona una planta</option>
+              {PLANTAS.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label">Meta de piezas</label>
+            <input
+              className="input"
+              type="number"
+              min={0}
+              value={meta}
+              onChange={(e) => setMeta(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="label">Fecha de entrega</label>
+            <input
+              className="input"
+              type="date"
+              value={fechaEntrega}
+              onChange={(e) => setFechaEntrega(e.target.value)}
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="label">Instrucción de trabajo / criterio de aceptación</label>
+            <textarea
+              className="input"
+              rows={3}
+              value={instrucciones}
+              onChange={(e) => setInstrucciones(e.target.value)}
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="label">PDF de instrucción de trabajo (opcional)</label>
+            <SubidaPdf url={instruccionesPdfUrl} onCambiar={setInstruccionesPdfUrl} />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="label">Inspectores asignados</label>
+            <div className="flex flex-wrap gap-2">
+              {inspectores.length === 0 && (
+                <p className="text-xs text-navy-400">No hay inspectores dados de alta todavía.</p>
+              )}
+              {inspectores.map((insp) => (
+                <button
+                  type="button"
+                  key={insp.id}
+                  onClick={() => alternarInspector(insp.id)}
+                  className={`rounded-full border px-3 py-1 text-xs font-semibold ${
+                    inspectorIds.includes(insp.id)
+                      ? "border-navy bg-navy text-white"
+                      : "border-navy-200 text-navy-600"
+                  }`}
+                >
+                  {insp.nombre}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        {error && <p className="text-sm text-red-600">{error}</p>}
+        <div className="flex gap-2">
+          <button type="submit" className="btn-primary" disabled={enviando}>
+            {enviando ? "Guardando…" : "Guardar cambios"}
           </button>
           <button type="button" className="btn-secondary" onClick={onCerrar}>
             Cancelar

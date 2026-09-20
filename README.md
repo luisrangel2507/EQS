@@ -51,20 +51,24 @@ Todas las reglas se validan en el servidor (API routes), no solo en la UI:
    **Administrador** (bootstrap). Los demás usuarios los da de alta ese Admin
    desde la sección "Usuarios".
 
-## Fotos de evidencia
+## Fotos de evidencia y PDFs de instrucción de trabajo
 
-Las capturas de piezas malas pueden incluir una foto opcional. Se sube a
-`public/uploads` (servida como archivo estático en `/uploads/*`) y solo se
-guarda la URL en Postgres — nunca la imagen en base64.
+Las capturas de piezas malas pueden incluir una foto opcional, y cada
+inspección puede tener un PDF de instrucción de trabajo. Se guardan en
+`storage/uploads` y se sirven mediante `/api/archivos/[archivo]` (requiere
+sesión iniciada) en vez del directorio `public/`, porque Next.js cachea la
+lista de archivos de `public/` al arrancar el servidor y no detecta los que
+se escriben después en producción. Solo la URL se guarda en Postgres —
+nunca el archivo en base64.
 
-En Railway, monta un **Volume** exactamente en la ruta `public/uploads` del
-servicio para que las fotos persistan entre deploys.
+En Railway, monta un **Volume** exactamente en la ruta `storage/uploads` del
+servicio para que las fotos y PDFs persistan entre deploys.
 
 ## Checklist de salida a producción
 
 - [ ] Repo en GitHub (privado)
 - [ ] Proyecto en Railway con servicio de Postgres + servicio web conectados
-- [ ] Volume de Railway montado en `public/uploads` para las fotos de evidencia
+- [ ] Volume de Railway montado en `storage/uploads` para fotos de evidencia y PDFs de instrucción
 - [ ] Variables de entorno en Railway: `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`
 - [ ] Backups automáticos de Postgres activados en Railway (retención 7-30 días)
 - [ ] Dominio propio tipo `inspecciones.eqservices.mx` con CNAME a Railway

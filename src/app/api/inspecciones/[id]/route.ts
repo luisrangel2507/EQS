@@ -14,6 +14,7 @@ const actualizarInspeccionSchema = z.object({
   meta: z.coerce.number().int().min(0).optional(),
   fechaEntrega: z.string().datetime().optional().nullable().or(z.literal("").transform(() => null)),
   instrucciones: z.string().trim().optional().nullable(),
+  instruccionesPdfUrl: z.string().trim().optional().nullable(),
   inspectorIds: z.array(z.string()).optional(),
 });
 
@@ -48,6 +49,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       data.fechaEntrega = datos.fechaEntrega ? new Date(datos.fechaEntrega) : null;
     }
     if (datos.instrucciones !== undefined) data.instrucciones = datos.instrucciones || null;
+    if (datos.instruccionesPdfUrl !== undefined) {
+      data.instruccionesPdfUrl = datos.instruccionesPdfUrl || null;
+    }
 
     if (datos.inspectorIds !== undefined) {
       await prisma.inspeccionInspector.deleteMany({ where: { inspeccionId: params.id } });

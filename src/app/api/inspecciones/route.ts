@@ -14,6 +14,7 @@ const crearInspeccionSchema = z.object({
   meta: z.coerce.number().int().min(0).optional(),
   fechaEntrega: z.string().datetime().optional().nullable().or(z.literal("").transform(() => null)),
   instrucciones: z.string().trim().optional().nullable(),
+  instruccionesPdfUrl: z.string().trim().optional().nullable(),
   inspectorIds: z.array(z.string()).optional(),
 });
 
@@ -48,6 +49,7 @@ export async function POST(req: NextRequest) {
         meta: datos.meta ?? 0,
         fechaEntrega: datos.fechaEntrega ? new Date(datos.fechaEntrega) : null,
         instrucciones: datos.instrucciones || null,
+        instruccionesPdfUrl: datos.instruccionesPdfUrl || null,
         inspectores: datos.inspectorIds?.length
           ? { create: datos.inspectorIds.map((usuarioId) => ({ usuarioId })) }
           : undefined,
