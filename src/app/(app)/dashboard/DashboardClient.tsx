@@ -72,10 +72,18 @@ function fraseDelDia(rol: Rol) {
 export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: string }) {
   const { datos, cargando } = usePolling<DashboardData>("/api/dashboard", 7000);
   const esOperativo = rol === "ADMIN" || rol === "SUPERVISOR" || rol === "LIDER";
-  const { datos: solicitudes, recargar: recargarApoyo } = usePolling<SolicitudApoyo[]>(
+  const { datos: solicitudesTodas, recargar: recargarApoyo } = usePolling<SolicitudApoyo[]>(
     esOperativo ? "/api/apoyo" : null,
     5000
   );
+  // A Supervisor solo le salen solicitudes con más de 15 min de antigüedad;
+  // Admin y Líder las ven desde que se crean.
+  const solicitudes =
+    rol === "SUPERVISOR"
+      ? solicitudesTodas?.filter(
+          (s) => (Date.now() - new Date(s.creadoEn).getTime()) / 60000 >= 15
+        )
+      : solicitudesTodas;
 
   async function atender(id: string) {
     await fetch(`/api/apoyo/${id}`, { method: "PATCH" });
