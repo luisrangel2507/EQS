@@ -27,6 +27,14 @@ type DashboardData = {
   estadoInspectores: { usuarioId: string; nombre: string; estado: string; desde: string }[];
 };
 
+type SolicitudApoyo = {
+  id: string;
+  estacion: string | null;
+  creadoEn: string;
+  usuario: { id: string; nombre: string };
+  inspeccion: { id: string; nombre: string; numeroParte: string | null } | null;
+};
+
 function estadoInfo(valor: string) {
   return ESTADOS_INSPECTOR.find((e) => e.valor === valor) ?? ESTADOS_INSPECTOR[0];
 }
@@ -34,6 +42,19 @@ function estadoInfo(valor: string) {
 export default function DashboardClient({ rol }: { rol: Rol }) {
   const { datos, cargando } = usePolling<DashboardData>("/api/dashboard", 7000);
   const esOperativo = rol === "ADMIN" || rol === "SUPERVISOR" || rol === "LIDER";
+  const { datos: solicitudes, recargar: recargarApoyo } = usePolling<SolicitudApoyo[]>(
+    esOperativo ? "/api/apoyo" : null,
+    5000
+  );
+
+  async function atender(id: string) {
+    await fetch(`/api/apoyo/${id}`, { method: "PATCH" });
+    recargarApoyo();
+  }
+
+  function minutosDesde(fecha: string) {
+    return Math.max(0, Math.floor((Date.now() - new Date(fecha).getTime()) / 60000));
+  }
 
   if (cargando || !datos) {
     return <p className="text-sm text-navy-500">Cargando dashboard…</p>;
@@ -42,6 +63,34 @@ export default function DashboardClient({ rol }: { rol: Rol }) {
   return (
     <div className="space-y-6">
       <h1 className="font-display text-2xl font-bold text-navy-900">Dashboard</h1>
+
+      {esOperativo && solicitudes && solicitudes.length > 0 && (
+        <div className="card border-orange-300 bg-orange-50">
+          <h2 className="mb-3 font-display font-semibold text-orange-900">
+            🔔 Solicitudes de apoyo en piso
+          </h2>
+          <ul className="space-y-2">
+            {solicitudes.map((s) => (
+              <li
+                key={s.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 text-sm shadow-sm"
+              >
+                <span>
+                  <span className="font-semibold text-navy-900">{s.usuario.nombre}</span>
+                  {s.estacion ? ` · 📍 ${s.estacion}` : ""}
+                  {s.inspeccion
+                    ? ` · ${s.inspeccion.numeroParte ?? s.inspeccion.nombre}`
+                    : ""}
+                  <span className="text-navy-400"> · hace {minutosDesde(s.creadoEn)} min</span>
+                </span>
+                <button className="btn-accent px-3 py-1 text-xs" onClick={() => atender(s.id)}>
+                  Atender
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Kpi etiqueta="Inspecciones activas" valor={datos.kpis.inspeccionesActivas} />

@@ -25,10 +25,12 @@ model Usuario {
   activo        Boolean  @default(true)
   creadoEn      DateTime @default(now())
 
-  capturas         Captura[]
-  estado           EstadoInspector?
-  inspeccionesAsig InspeccionInspector[]
-  mensajesChat     MensajeChat[]
+  capturas             Captura[]
+  estado               EstadoInspector?
+  inspeccionesAsig     InspeccionInspector[]
+  mensajesChat         MensajeChat[]
+  solicitudesApoyo     SolicitudApoyo[]      @relation("SolicitudApoyoUsuario")
+  solicitudesAtendidas SolicitudApoyo[]      @relation("SolicitudApoyoAtendidaPor")
 }
 
 model Inspeccion {
@@ -48,9 +50,10 @@ model Inspeccion {
   cerradoEn           DateTime?
   creadoEn            DateTime  @default(now())
 
-  capturas    Captura[]
-  defectos    DefectoResumen[]
-  inspectores InspeccionInspector[]
+  capturas         Captura[]
+  defectos         DefectoResumen[]
+  inspectores      InspeccionInspector[]
+  solicitudesApoyo SolicitudApoyo[]
 
   @@index([cliente])
   @@index([cerrado])
@@ -113,4 +116,21 @@ model MensajeChat {
   creadoEn  DateTime @default(now())
 
   @@index([creadoEn])
+}
+
+// llamado de un inspector pidiendo apoyo de un Líder/Supervisor en su estación
+model SolicitudApoyo {
+  id            String      @id @default(cuid())
+  usuario       Usuario     @relation("SolicitudApoyoUsuario", fields: [usuarioId], references: [id])
+  usuarioId     String
+  estacion      String?
+  inspeccion    Inspeccion? @relation(fields: [inspeccionId], references: [id])
+  inspeccionId  String?
+  atendida      Boolean     @default(false)
+  atendidaPor   Usuario?    @relation("SolicitudApoyoAtendidaPor", fields: [atendidaPorId], references: [id])
+  atendidaPorId String?
+  atendidaEn    DateTime?
+  creadoEn      DateTime    @default(now())
+
+  @@index([atendida])
 }

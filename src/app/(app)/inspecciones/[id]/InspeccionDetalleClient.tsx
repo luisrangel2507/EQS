@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   BarChart,
@@ -156,7 +156,11 @@ export default function InspeccionDetalleClient({
       )}
 
       {puedeCapturar && (
-        <CapturaPanel inspeccionId={id} onCapturado={recargar} />
+        <CapturaPanel
+          inspeccionId={id}
+          onCapturado={recargar}
+          mostrarExtras={sesion.rol === "INSPECTOR"}
+        />
       )}
 
       {sesion.rol === "INSPECTOR" && asignado && !inspeccion.cerrado && (
@@ -251,9 +255,11 @@ function Metrica({
 function CapturaPanel({
   inspeccionId,
   onCapturado,
+  mostrarExtras,
 }: {
   inspeccionId: string;
   onCapturado: () => void;
+  mostrarExtras: boolean;
 }) {
   const [mostrarMala, setMostrarMala] = useState(false);
   const [defecto, setDefecto] = useState<string>(DEFECTOS_COMUNES[0]);
@@ -261,6 +267,38 @@ function CapturaPanel({
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const [estacion, setEstacion] = useState<string | null>(null);
+  const [hoy, setHoy] = useState<{ buenas: number; malas: number } | null>(null);
+  const [llamandoApoyo, setLlamandoApoyo] = useState(false);
+  const [apoyoAvisado, setApoyoAvisado] = useState(false);
+
+  const cargarHoy = useCallback(() => {
+    if (!mostrarExtras) return;
+    fetch(`/api/inspecciones/${inspeccionId}/hoy`)
+      .then((r) => r.json())
+      .then(setHoy);
+  }, [inspeccionId, mostrarExtras]);
+
+  useEffect(() => {
+    if (!mostrarExtras) return;
+    fetch("/api/estado")
+      .then((r) => r.json())
+      .then((d) => setEstacion(d?.estacion ?? null));
+    cargarHoy();
+  }, [mostrarExtras, cargarHoy]);
+
+  async function llamarApoyo() {
+    setLlamandoApoyo(true);
+    await fetch("/api/apoyo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ inspeccionId }),
+    });
+    setLlamandoApoyo(false);
+    setApoyoAvisado(true);
+    setTimeout(() => setApoyoAvisado(false), 15000);
+  }
 
   async function capturarBuena() {
     setEnviando(true);
@@ -277,6 +315,7 @@ function CapturaPanel({
       return;
     }
     onCapturado();
+    cargarHoy();
   }
 
   async function capturarMala(e: React.FormEvent) {
@@ -309,11 +348,26 @@ function CapturaPanel({
     setFoto(null);
     if (inputRef.current) inputRef.current.value = "";
     onCapturado();
+    cargarHoy();
   }
 
   return (
     <div className="card">
-      <h2 className="mb-3 font-display font-semibold text-navy-900">Captura</h2>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h2 className="font-display font-semibold text-navy-900">Captura</h2>
+        {mostrarExtras && (
+          <div className="flex flex-wrap items-center gap-2">
+            {estacion && <span className="badge bg-navy-50 text-navy-700">📍 {estacion}</span>}
+            {hoy && (
+              <span
+                className={`badge ${hoy.malas > 0 ? "bg-red-50 text-red-700" : "bg-navy-50 text-navy-700"}`}
+              >
+                {hoy.malas} defecto{hoy.malas === 1 ? "" : "s"} hoy
+              </span>
+            )}
+          </div>
+        )}
+      </div>
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={capturarBuena}
@@ -366,6 +420,21 @@ function CapturaPanel({
             </button>
           </div>
         </form>
+      )}
+
+      {mostrarExtras && (
+        <button
+          type="button"
+          onClick={llamarApoyo}
+          disabled={llamandoApoyo || apoyoAvisado}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-orange-600 disabled:opacity-60"
+        >
+          {apoyoAvisado
+            ? "✓ Se avisó a liderazgo"
+            : llamandoApoyo
+              ? "Avisando…"
+              : "🔔 Llamar líder / supervisor"}
+        </button>
       )}
     </div>
   );
