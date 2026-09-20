@@ -56,16 +56,18 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
       </div>
 
       {esOperativo ? (
-        <>
-          <div className="grid grid-cols-2 gap-4">
-            <Kpi etiqueta="Sorteos activos" valor={datos.kpis.inspeccionesActivas} />
-            <Kpi etiqueta="Residentes activos" valor={residentes ? residentes.length : "…"} />
+        <div className="relative left-1/2 w-screen -translate-x-1/2">
+          <div className="mx-auto max-w-[1800px] space-y-6 px-4 sm:px-8">
+            <div className="grid grid-cols-2 gap-4">
+              <Kpi etiqueta="Sorteos activos" valor={datos.kpis.inspeccionesActivas} />
+              <Kpi etiqueta="Residentes activos" valor={residentes ? residentes.length : "…"} />
+            </div>
+
+            <SorteosAbiertosCard rol={rol} sorteosAbiertos={datos.sorteosAbiertos} />
+
+            <ResidentesResumenCard residentes={residentes ?? []} />
           </div>
-
-          <SorteosAbiertosCard rol={rol} sorteosAbiertos={datos.sorteosAbiertos} />
-
-          <ResidentesResumenCard residentes={residentes ?? []} />
-        </>
+        </div>
       ) : (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <Kpi etiqueta="Inspecciones activas" valor={datos.kpis.inspeccionesActivas} />

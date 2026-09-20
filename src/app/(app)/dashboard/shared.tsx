@@ -87,6 +87,24 @@ export function Pill({ tono, children }: { tono: keyof typeof TONOS_PILL; childr
   );
 }
 
+function TituloSeccion({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="-mx-5 -mt-5 mb-4">
+      <div className="h-1.5 rounded-t-xl bg-gradient-to-r from-yellow via-amber-400 to-orange-500" />
+      <div className="flex items-center justify-between px-5 pt-4">
+        <h2 className="font-display font-semibold text-navy-900">{children}</h2>
+        <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-600">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+          </span>
+          En vivo
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function SorteosAbiertosCard({
   rol,
   sorteosAbiertos,
@@ -134,7 +152,7 @@ export function SorteosAbiertosCard({
 
   return (
     <div className="card">
-      <h2 className="mb-3 font-display font-semibold text-navy-900">Sorteos abiertos</h2>
+      <TituloSeccion>Sorteos abiertos</TituloSeccion>
       {sorteosAbiertos.length === 0 ? (
         <p className="text-sm text-navy-400">No hay sorteos activos por el momento.</p>
       ) : (
@@ -210,7 +228,7 @@ export function SorteosAbiertosCard({
 export function ResidentesResumenCard({ residentes }: { residentes: Residente[] }) {
   return (
     <div className="card">
-      <h2 className="mb-3 font-display font-semibold text-navy-900">Residentes</h2>
+      <TituloSeccion>Residentes</TituloSeccion>
       {residentes.length === 0 ? (
         <p className="text-sm text-navy-400">No hay residentes activos por el momento.</p>
       ) : (
@@ -256,9 +274,26 @@ export function Kpi({
   alerta?: boolean;
 }) {
   return (
-    <div className={`card ${alerta ? "border-red-300 bg-red-50" : ""}`}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-navy-500">{etiqueta}</p>
-      <p className={`mt-1 font-display text-3xl font-bold ${alerta ? "text-red-700" : "text-navy-900"}`}>
+    <div
+      className={`group relative overflow-hidden rounded-2xl border p-4 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl ${
+        alerta
+          ? "border-red-500/30 bg-gradient-to-br from-red-950 via-navy-900 to-navy-950"
+          : "border-yellow/20 bg-gradient-to-br from-navy-900 via-navy-800 to-navy-950"
+      }`}
+    >
+      <div
+        className={`pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl transition group-hover:scale-125 ${
+          alerta ? "bg-red-500/30" : "bg-yellow/25"
+        }`}
+      />
+      <p className="relative text-[11px] font-semibold uppercase tracking-widest text-white/50">
+        {etiqueta}
+      </p>
+      <p
+        className={`relative mt-1 font-display text-3xl font-bold tabular-nums drop-shadow ${
+          alerta ? "text-red-400" : "text-yellow"
+        }`}
+      >
         {valor}
       </p>
     </div>
