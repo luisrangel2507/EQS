@@ -19,7 +19,7 @@ type Props = {
 
 const ENLACES: { href: string; label: string; roles: Rol[] }[] = [
   { href: "/estacion", label: "Mis inspecciones", roles: ["INSPECTOR"] },
-  { href: "/dashboard", label: "Dashboard", roles: ["ADMIN", "SUPERVISOR", "LIDER", "INSPECTOR", "CLIENTE"] },
+  { href: "/dashboard", label: "Dashboard", roles: ["ADMIN", "SUPERVISOR", "LIDER", "CLIENTE"] },
   { href: "/inspecciones", label: "Inspecciones", roles: ["ADMIN", "SUPERVISOR", "LIDER", "CLIENTE"] },
   { href: "/inspecciones", label: "Historial", roles: ["INSPECTOR"] },
   { href: "/reportes", label: "Reportes", roles: ["ADMIN", "SUPERVISOR", "LIDER", "CLIENTE"] },
@@ -30,13 +30,14 @@ const ENLACES: { href: string; label: string; roles: Rol[] }[] = [
 export default function AppShell({ id, nombre, rol, children }: Props) {
   const pathname = usePathname();
   const enlaces = ENLACES.filter((e) => e.roles.includes(rol));
+  const inicio = rol === "INSPECTOR" ? "/estacion" : "/dashboard";
 
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-20 border-b border-navy-100 bg-navy-900 text-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-6">
-            <Link href="/dashboard" className="flex items-center gap-2">
+            <Link href={inicio} className="flex items-center gap-2">
               <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-yellow font-display text-lg font-extrabold text-navy-900">
                 EQS
               </span>
