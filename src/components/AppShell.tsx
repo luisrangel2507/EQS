@@ -112,7 +112,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
           })}
         </nav>
       </header>
-      <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
+      <main className="mx-auto max-w-7xl px-4 pb-24 pt-6">{children}</main>
       <BurbujaChat rol={rol} miId={id} />
     </div>
   );
