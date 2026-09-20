@@ -246,6 +246,15 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
               <p className="text-sm font-semibold text-navy-900">{nombre}</p>
               <p className="text-xs text-navy-500">{ROL_ETIQUETAS[rol]}</p>
             </div>
+            {rol === "ADMIN" && (
+              <Link
+                href="/usuarios"
+                onClick={() => setAbierto(false)}
+                className="block w-full px-4 py-2 text-left text-sm font-semibold text-navy-700 hover:bg-navy-50"
+              >
+                👤 Editar usuarios
+              </Link>
+            )}
             <PushToggle />
             <button
               type="button"
