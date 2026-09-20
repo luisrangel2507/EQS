@@ -57,12 +57,8 @@ export default function InspeccionDetalleClient({
   const [mostrarEditar, setMostrarEditar] = useState(false);
 
   const asignado = inspeccion?.inspectores.some((a) => a.usuario.id === sesion.id) ?? false;
-  const puedeCapturar =
-    !inspeccion?.cerrado &&
-    (sesion.rol === "ADMIN" ||
-      sesion.rol === "SUPERVISOR" ||
-      sesion.rol === "LIDER" ||
-      (sesion.rol === "INSPECTOR" && asignado));
+  // Solo el rol Inspector captura piezas; los demás roles ven la inspección en modo lectura.
+  const puedeCapturar = !inspeccion?.cerrado && sesion.rol === "INSPECTOR" && asignado;
   const puedeGestionar = sesion.rol === "ADMIN" || sesion.rol === "SUPERVISOR";
 
   if (cargando || !inspeccion) {
@@ -167,10 +163,6 @@ export default function InspeccionDetalleClient({
             </a>
           )}
         </div>
-      )}
-
-      {puedeCapturar && (
-        <CapturaPanel inspeccionId={id} onCapturado={recargar} mostrarExtras={false} />
       )}
 
       <div className="card">

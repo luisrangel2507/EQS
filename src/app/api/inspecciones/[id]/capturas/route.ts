@@ -22,8 +22,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   try {
     const user = await requerirSesion();
 
-    if (user.rol === "CLIENTE" || user.rol === "RESIDENTE") {
-      throw new ErrorPermiso("Tu posición no puede capturar inspecciones");
+    if (user.rol !== "INSPECTOR") {
+      throw new ErrorPermiso("Solo el rol Inspector puede capturar inspecciones");
     }
 
     const inspeccion = await prisma.inspeccion.findFirst({
