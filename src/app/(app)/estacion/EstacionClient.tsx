@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type InspeccionResumen = {
@@ -9,30 +8,16 @@ type InspeccionResumen = {
   numeroParte: string | null;
   cliente: string | null;
   planta: string | null;
-  cerrado: boolean;
 };
 
-export default function EstacionClient({ nombre }: { nombre: string }) {
+export default function EstacionClient({
+  nombre,
+  inspecciones,
+}: {
+  nombre: string;
+  inspecciones: InspeccionResumen[];
+}) {
   const router = useRouter();
-  const [cargando, setCargando] = useState(true);
-  const [inspecciones, setInspecciones] = useState<InspeccionResumen[]>([]);
-
-  useEffect(() => {
-    fetch("/api/inspecciones")
-      .then((r) => r.json())
-      .then((insp: InspeccionResumen[]) => {
-        const abiertas = insp.filter((i) => !i.cerrado);
-        setInspecciones(abiertas);
-        if (abiertas.length === 1) {
-          router.replace(`/inspecciones/${abiertas[0].id}`);
-        }
-      })
-      .finally(() => setCargando(false));
-  }, [router]);
-
-  if (cargando || inspecciones.length === 1) {
-    return <p className="text-sm text-navy-500">Cargando tu inspección…</p>;
-  }
 
   if (inspecciones.length === 0) {
     return (

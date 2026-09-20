@@ -1,5 +1,7 @@
+import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import EstacionClient from "./EstacionClient";
 
 export default async function EstacionPage() {
@@ -17,5 +19,17 @@ export default async function EstacionPage() {
     );
   }
 
-  return <EstacionClient nombre={session!.user.nombre} />;
+  // Al entrar, si el inspector solo tiene una pieza abierta asignada, lo mandamos
+  // directo a su pantalla de captura (sin pasar por una lista intermedia).
+  const abiertas = await prisma.inspeccion.findMany({
+    where: { cerrado: false, inspectores: { some: { usuarioId: session!.user.id } } },
+    orderBy: { creadoEn: "desc" },
+    select: { id: true, nombre: true, numeroParte: true, cliente: true, planta: true },
+  });
+
+  if (abiertas.length === 1) {
+    redirect(`/inspecciones/${abiertas[0].id}`);
+  }
+
+  return <EstacionClient nombre={session!.user.nombre} inspecciones={abiertas} />;
 }
