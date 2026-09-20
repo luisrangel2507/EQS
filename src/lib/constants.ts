@@ -54,6 +54,7 @@ export const DEFECTOS_COMUNES = [
 ] as const;
 
 // una por día, elegida por fecha para que sea la misma para todos durante el día
+// (para Admin, Supervisor, Líder e Inspector)
 export const FRASES_DEL_DIA = [
   "El mejor momento para empezar con todo fue ayer. El segundo mejor es ahora.",
   "La calidad no es un acto, es un hábito.",
@@ -65,6 +66,21 @@ export const FRASES_DEL_DIA = [
   "Tu atención al detalle es la última línea de defensa antes del cliente.",
   "La constancia vence al talento cuando el talento no es constante.",
   "Un buen turno empieza con una buena actitud.",
+] as const;
+
+// misma lógica que FRASES_DEL_DIA, pero para el rol CLIENTE: tono de
+// confianza y transparencia en vez de motivación de piso
+export const FRASES_DEL_DIA_CLIENTE = [
+  "Gracias por la confianza. Tu línea está protegida.",
+  "Cada pieza que sale de aquí lleva nuestro compromiso contigo.",
+  "Tu calidad es nuestra prioridad, turno tras turno.",
+  "Cuidamos cada pieza como si fuera la primera.",
+  "Transparencia total: así cuidamos tu producción.",
+  "Tu confianza se gana pieza por pieza.",
+  "Estamos para proteger la calidad que tu marca merece.",
+  "Cada inspección es un compromiso cumplido contigo.",
+  "Tu línea, nuestra responsabilidad.",
+  "Calidad constante, confianza garantizada.",
 ] as const;
 
 export const ROLES = ["ADMIN", "SUPERVISOR", "LIDER", "INSPECTOR", "CLIENTE"] as const;

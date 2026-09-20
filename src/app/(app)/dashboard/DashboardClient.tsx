@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Rol } from "@prisma/client";
 import { usePolling } from "@/lib/usePolling";
-import { ESTADOS_INSPECTOR, FRASES_DEL_DIA } from "@/lib/constants";
+import { ESTADOS_INSPECTOR, FRASES_DEL_DIA, FRASES_DEL_DIA_CLIENTE } from "@/lib/constants";
 
 type Inspeccion = {
   id: string;
@@ -62,10 +62,11 @@ function formatoMoneda(valor: number) {
   }).format(valor);
 }
 
-function fraseDelDia() {
+function fraseDelDia(rol: Rol) {
+  const frases = rol === "CLIENTE" ? FRASES_DEL_DIA_CLIENTE : FRASES_DEL_DIA;
   const inicioAno = new Date(new Date().getFullYear(), 0, 0);
   const dia = Math.floor((Date.now() - inicioAno.getTime()) / 86400000);
-  return FRASES_DEL_DIA[dia % FRASES_DEL_DIA.length];
+  return frases[dia % frases.length];
 }
 
 export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: string }) {
@@ -115,7 +116,7 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
             Bienvenido, {nombre.split(" ")[0]}
           </h1>
           <p className="mt-2 max-w-xl text-sm text-white/80 sm:text-base">
-            <span className="font-semibold text-white">Frase del día:</span> {fraseDelDia()}
+            <span className="font-semibold text-white">Frase del día:</span> {fraseDelDia(rol)}
           </p>
         </div>
       </div>
