@@ -22,6 +22,7 @@ const ENLACES: { href: string; label: string; roles: Rol[] }[] = [
   { href: "/dashboard", label: "Dashboard", roles: ["ADMIN", "SUPERVISOR", "LIDER", "INSPECTOR", "CLIENTE"] },
   { href: "/inspecciones", label: "Inspecciones", roles: ["ADMIN", "SUPERVISOR", "LIDER", "INSPECTOR", "CLIENTE"] },
   { href: "/reportes", label: "Reportes", roles: ["ADMIN", "SUPERVISOR", "LIDER", "CLIENTE"] },
+  { href: "/residentes", label: "Residentes", roles: ["ADMIN", "SUPERVISOR", "LIDER"] },
   { href: "/usuarios", label: "Usuarios", roles: ["ADMIN"] },
 ];
 

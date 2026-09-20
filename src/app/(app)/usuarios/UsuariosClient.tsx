@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { ROLES, ROL_ETIQUETAS } from "@/lib/constants";
+import { ROLES, ROL_ETIQUETAS, PLANTAS } from "@/lib/constants";
 
 type Usuario = {
   id: string;
@@ -9,6 +9,8 @@ type Usuario = {
   usuario: string;
   rol: (typeof ROLES)[number];
   clienteNombre: string | null;
+  esResidente: boolean;
+  plantaResidente: string | null;
   activo: boolean;
   creadoEn: string;
 };
@@ -29,7 +31,10 @@ export default function UsuariosClient({ usuarioActualId }: { usuarioActualId: s
     cargar();
   }, [cargar]);
 
-  async function actualizar(id: string, cambios: Partial<{ rol: string; activo: boolean }>) {
+  async function actualizar(
+    id: string,
+    cambios: Partial<{ rol: string; activo: boolean; esResidente: boolean; plantaResidente: string | null }>
+  ) {
     setError(null);
     const res = await fetch(`/api/usuarios/${id}`, {
       method: "PATCH",
@@ -78,6 +83,7 @@ export default function UsuariosClient({ usuarioActualId }: { usuarioActualId: s
                 <th className="px-4 py-3">Usuario</th>
                 <th className="px-4 py-3">Rol</th>
                 <th className="px-4 py-3">Cliente</th>
+                <th className="px-4 py-3">Residente</th>
                 <th className="px-4 py-3">Estado</th>
                 <th className="px-4 py-3"></th>
               </tr>
@@ -102,6 +108,9 @@ export default function UsuariosClient({ usuarioActualId }: { usuarioActualId: s
                     </select>
                   </td>
                   <td className="px-4 py-3 text-navy-600">{u.clienteNombre ?? "—"}</td>
+                  <td className="px-4 py-3">
+                    <ResidenteCelda usuario={u} onCambiar={(cambios) => actualizar(u.id, cambios)} />
+                  </td>
                   <td className="px-4 py-3">
                     <span
                       className={`badge ${u.activo ? "bg-green-100 text-green-800" : "bg-navy-100 text-navy-500"}`}
@@ -129,12 +138,61 @@ export default function UsuariosClient({ usuarioActualId }: { usuarioActualId: s
   );
 }
 
+function ResidenteCelda({
+  usuario,
+  onCambiar,
+}: {
+  usuario: Usuario;
+  onCambiar: (cambios: { esResidente: boolean; plantaResidente: string | null }) => void;
+}) {
+  const [planta, setPlanta] = useState<string>(usuario.plantaResidente ?? PLANTAS[0]);
+
+  if (!usuario.esResidente) {
+    return (
+      <button
+        className="text-xs font-semibold text-navy-400 hover:text-navy-700"
+        onClick={() => onCambiar({ esResidente: true, plantaResidente: planta })}
+      >
+        + Marcar residente
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="badge bg-purple-100 text-purple-800">🏭 {usuario.plantaResidente ?? planta}</span>
+      <select
+        className="input py-0.5 text-xs"
+        value={planta}
+        onChange={(e) => {
+          setPlanta(e.target.value);
+          onCambiar({ esResidente: true, plantaResidente: e.target.value });
+        }}
+      >
+        {PLANTAS.map((p) => (
+          <option key={p} value={p}>
+            {p}
+          </option>
+        ))}
+      </select>
+      <button
+        className="text-xs font-semibold text-navy-400 hover:text-red-600"
+        onClick={() => onCambiar({ esResidente: false, plantaResidente: null })}
+      >
+        Quitar
+      </button>
+    </div>
+  );
+}
+
 function NuevoUsuarioForm({ onCerrar, onCreado }: { onCerrar: () => void; onCreado: () => void }) {
   const [nombre, setNombre] = useState("");
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
   const [rol, setRol] = useState<(typeof ROLES)[number]>("INSPECTOR");
   const [clienteNombre, setClienteNombre] = useState("");
+  const [esResidente, setEsResidente] = useState(false);
+  const [plantaResidente, setPlantaResidente] = useState<string>(PLANTAS[0]);
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
@@ -151,6 +209,8 @@ function NuevoUsuarioForm({ onCerrar, onCreado }: { onCerrar: () => void; onCrea
         password,
         rol,
         clienteNombre: rol === "CLIENTE" ? clienteNombre : undefined,
+        esResidente: rol !== "CLIENTE" ? esResidente : undefined,
+        plantaResidente: rol !== "CLIENTE" && esResidente ? plantaResidente : undefined,
       }),
     });
     setEnviando(false);
@@ -192,6 +252,31 @@ function NuevoUsuarioForm({ onCerrar, onCreado }: { onCerrar: () => void; onCrea
           <div className="sm:col-span-2">
             <label className="label">Nombre de cliente (debe coincidir con el campo &quot;cliente&quot; de las inspecciones)</label>
             <input className="input" value={clienteNombre} onChange={(e) => setClienteNombre(e.target.value)} required />
+          </div>
+        )}
+        {rol !== "CLIENTE" && (
+          <div className="flex items-center gap-2 sm:col-span-2">
+            <input
+              id="es-residente"
+              type="checkbox"
+              checked={esResidente}
+              onChange={(e) => setEsResidente(e.target.checked)}
+            />
+            <label htmlFor="es-residente" className="text-sm text-navy-700">
+              Es Residente (asignado de forma fija a la planta de un cliente)
+            </label>
+          </div>
+        )}
+        {rol !== "CLIENTE" && esResidente && (
+          <div>
+            <label className="label">Planta asignada</label>
+            <select className="input" value={plantaResidente} onChange={(e) => setPlantaResidente(e.target.value)}>
+              {PLANTAS.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
           </div>
         )}
       </div>

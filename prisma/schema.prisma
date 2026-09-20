@@ -16,14 +16,16 @@ enum Rol {
 }
 
 model Usuario {
-  id            String   @id @default(cuid())
-  nombre        String
-  usuario       String   @unique // login, minúsculas normalizadas
-  passwordHash  String
-  rol           Rol
-  clienteNombre String? // para rol CLIENTE: debe coincidir con Inspeccion.cliente
-  activo        Boolean  @default(true)
-  creadoEn      DateTime @default(now())
+  id              String   @id @default(cuid())
+  nombre          String
+  usuario         String   @unique // login, minúsculas normalizadas
+  passwordHash    String
+  rol             Rol
+  clienteNombre   String? // para rol CLIENTE: debe coincidir con Inspeccion.cliente
+  esResidente     Boolean  @default(false) // personal de EQS asignado de forma fija a la planta de un cliente
+  plantaResidente String? // planta donde está asignado como residente
+  activo          Boolean  @default(true)
+  creadoEn        DateTime @default(now())
 
   capturas             Captura[]
   estado               EstadoInspector?
@@ -31,6 +33,22 @@ model Usuario {
   mensajesChat         MensajeChat[]
   solicitudesApoyo     SolicitudApoyo[]      @relation("SolicitudApoyoUsuario")
   solicitudesAtendidas SolicitudApoyo[]      @relation("SolicitudApoyoAtendidaPor")
+  notasResidente       NotaResidente[]       @relation("NotaResidenteResidente")
+  notasComoAutor       NotaResidente[]       @relation("NotaResidenteAutor")
+}
+
+// bitácora de seguimiento del personal Residente (asignado de forma fija a
+// la planta de un cliente): notas que deja liderazgo al dar seguimiento
+model NotaResidente {
+  id          String   @id @default(cuid())
+  residente   Usuario  @relation("NotaResidenteResidente", fields: [residenteId], references: [id], onDelete: Cascade)
+  residenteId String
+  autor       Usuario  @relation("NotaResidenteAutor", fields: [autorId], references: [id])
+  autorId     String
+  contenido   String
+  creadoEn    DateTime @default(now())
+
+  @@index([residenteId, creadoEn])
 }
 
 model Inspeccion {
