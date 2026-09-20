@@ -12,6 +12,7 @@ declare module "next-auth" {
       usuario: string;
       rol: Rol;
       clienteNombre: string | null;
+      plantaResidente: string | null;
     };
   }
   interface User {
@@ -20,6 +21,7 @@ declare module "next-auth" {
     usuario: string;
     rol: Rol;
     clienteNombre: string | null;
+    plantaResidente: string | null;
   }
 }
 
@@ -30,6 +32,7 @@ declare module "next-auth/jwt" {
     usuario: string;
     rol: Rol;
     clienteNombre: string | null;
+    plantaResidente: string | null;
   }
 }
 
@@ -62,6 +65,7 @@ export const authOptions: NextAuthOptions = {
           usuario: usuario.usuario,
           rol: usuario.rol,
           clienteNombre: usuario.clienteNombre,
+          plantaResidente: usuario.plantaResidente,
         };
       },
     }),
@@ -74,6 +78,7 @@ export const authOptions: NextAuthOptions = {
         token.usuario = user.usuario;
         token.rol = user.rol;
         token.clienteNombre = user.clienteNombre;
+        token.plantaResidente = user.plantaResidente;
       }
       return token;
     },
@@ -83,6 +88,7 @@ export const authOptions: NextAuthOptions = {
       session.user.usuario = token.usuario;
       session.user.rol = token.rol;
       session.user.clienteNombre = token.clienteNombre;
+      session.user.plantaResidente = token.plantaResidente;
       return session;
     },
   },

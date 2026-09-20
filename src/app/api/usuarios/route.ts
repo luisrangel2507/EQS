@@ -17,7 +17,6 @@ const crearUsuarioSchema = z.object({
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
   rol: z.enum(ROLES).optional(),
   clienteNombre: z.string().trim().optional().nullable(),
-  esResidente: z.boolean().optional(),
   plantaResidente: z.string().trim().optional().nullable(),
 });
 
@@ -32,7 +31,6 @@ export async function GET() {
         usuario: true,
         rol: true,
         clienteNombre: true,
-        esResidente: true,
         plantaResidente: true,
         activo: true,
         creadoEn: true,
@@ -78,8 +76,7 @@ export async function POST(req: NextRequest) {
         passwordHash,
         rol: rolFinal,
         clienteNombre: rolFinal === "CLIENTE" ? datos.clienteNombre ?? null : null,
-        esResidente: datos.esResidente ?? false,
-        plantaResidente: datos.esResidente ? datos.plantaResidente ?? null : null,
+        plantaResidente: rolFinal === "RESIDENTE" ? datos.plantaResidente ?? null : null,
       },
       select: {
         id: true,
@@ -87,7 +84,6 @@ export async function POST(req: NextRequest) {
         usuario: true,
         rol: true,
         clienteNombre: true,
-        esResidente: true,
         plantaResidente: true,
         activo: true,
         creadoEn: true,

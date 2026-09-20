@@ -37,7 +37,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
 
     const residente = await prisma.usuario.findFirst({
-      where: { id: params.id, esResidente: true },
+      where: { id: params.id, rol: "RESIDENTE" },
     });
     if (!residente) throw new ErrorPermiso("Residente no encontrado", 404);
 

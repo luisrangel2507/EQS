@@ -12,7 +12,6 @@ const actualizarUsuarioSchema = z.object({
   rol: z.enum(ROLES).optional(),
   activo: z.boolean().optional(),
   clienteNombre: z.string().trim().optional().nullable(),
-  esResidente: z.boolean().optional(),
   plantaResidente: z.string().trim().optional().nullable(),
   password: z.string().min(6).optional(),
 });
@@ -32,14 +31,17 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     const data: Record<string, unknown> = {};
     if (datos.nombre !== undefined) data.nombre = datos.nombre;
-    if (datos.rol !== undefined) data.rol = datos.rol;
     if (datos.activo !== undefined) data.activo = datos.activo;
     if (datos.clienteNombre !== undefined) data.clienteNombre = datos.clienteNombre;
-    if (datos.esResidente !== undefined) {
-      data.esResidente = datos.esResidente;
-      if (!datos.esResidente) data.plantaResidente = null;
-    }
     if (datos.plantaResidente !== undefined) data.plantaResidente = datos.plantaResidente;
+
+    if (datos.rol !== undefined) {
+      data.rol = datos.rol;
+      // Al cambiar de posición, limpiar los campos que ya no aplican
+      if (datos.rol !== "CLIENTE") data.clienteNombre = null;
+      if (datos.rol !== "RESIDENTE") data.plantaResidente = null;
+    }
+
     if (datos.password) data.passwordHash = await bcrypt.hash(datos.password, 10);
 
     const usuario = await prisma.usuario.update({
@@ -51,7 +53,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         usuario: true,
         rol: true,
         clienteNombre: true,
-        esResidente: true,
         plantaResidente: true,
         activo: true,
         creadoEn: true,

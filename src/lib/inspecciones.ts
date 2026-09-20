@@ -10,6 +10,10 @@ export function whereInspeccionesVisibles(user: SesionUsuario): Prisma.Inspeccio
   if (user.rol === "INSPECTOR") {
     return { inspectores: { some: { usuarioId: user.id } } };
   }
+  if (user.rol === "RESIDENTE") {
+    // Residente: solo lectura de inspecciones en la planta donde está asignado
+    return { planta: user.plantaResidente ?? "__nunca__" };
+  }
   // CLIENTE: solo lectura de inspecciones donde "cliente" coincide con su registro
   return { cliente: user.clienteNombre ?? "__nunca__" };
 }

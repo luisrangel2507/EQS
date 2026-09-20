@@ -20,10 +20,10 @@ type Props = {
 
 const ENLACES: { href: string; label: string; roles: Rol[] }[] = [
   { href: "/estacion", label: "Mis inspecciones", roles: ["INSPECTOR"] },
-  { href: "/dashboard", label: "Dashboard", roles: ["ADMIN", "SUPERVISOR", "LIDER", "CLIENTE"] },
-  { href: "/inspecciones", label: "Inspecciones", roles: ["ADMIN", "SUPERVISOR", "LIDER", "CLIENTE"] },
+  { href: "/dashboard", label: "Dashboard", roles: ["ADMIN", "SUPERVISOR", "LIDER", "RESIDENTE", "CLIENTE"] },
+  { href: "/inspecciones", label: "Inspecciones", roles: ["ADMIN", "SUPERVISOR", "LIDER", "RESIDENTE", "CLIENTE"] },
   { href: "/inspecciones", label: "Historial", roles: ["INSPECTOR"] },
-  { href: "/reportes", label: "Reportes", roles: ["ADMIN", "SUPERVISOR", "LIDER", "CLIENTE"] },
+  { href: "/reportes", label: "Reportes", roles: ["ADMIN", "SUPERVISOR", "LIDER", "RESIDENTE", "CLIENTE"] },
   { href: "/residentes", label: "Residentes", roles: ["ADMIN", "SUPERVISOR", "LIDER"] },
   { href: "/usuarios", label: "Usuarios", roles: ["ADMIN"] },
 ];
@@ -104,7 +104,8 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
 }
 
 function BurbujaChat({ rol, miId }: { rol: Rol; miId: string }) {
-  const puedeChatear = rol === "ADMIN" || rol === "SUPERVISOR" || rol === "LIDER" || rol === "INSPECTOR";
+  const puedeChatear =
+    rol === "ADMIN" || rol === "SUPERVISOR" || rol === "LIDER" || rol === "INSPECTOR" || rol === "RESIDENTE";
   const [noLeidos, setNoLeidos] = useState(0);
   const [abierto, setAbierto] = useState(false);
 

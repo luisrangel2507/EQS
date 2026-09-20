@@ -12,6 +12,7 @@ enum Rol {
   SUPERVISOR
   LIDER
   INSPECTOR
+  RESIDENTE
   CLIENTE
 }
 
@@ -22,8 +23,7 @@ model Usuario {
   passwordHash    String
   rol             Rol
   clienteNombre   String? // para rol CLIENTE: debe coincidir con Inspeccion.cliente
-  esResidente     Boolean  @default(false) // personal de EQS asignado de forma fija a la planta de un cliente
-  plantaResidente String? // planta donde está asignado como residente
+  plantaResidente String? // para rol RESIDENTE: planta donde está asignado
   activo          Boolean  @default(true)
   creadoEn        DateTime @default(now())
 

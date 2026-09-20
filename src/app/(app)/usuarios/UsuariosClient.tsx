@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { ROLES, ROL_ETIQUETAS, PLANTAS } from "@/lib/constants";
+import { ROLES, ROL_ETIQUETAS, ROL_SELLO, PLANTAS } from "@/lib/constants";
 
 type Usuario = {
   id: string;
@@ -9,7 +9,6 @@ type Usuario = {
   usuario: string;
   rol: (typeof ROLES)[number];
   clienteNombre: string | null;
-  esResidente: boolean;
   plantaResidente: string | null;
   activo: boolean;
   creadoEn: string;
@@ -33,7 +32,7 @@ export default function UsuariosClient({ usuarioActualId }: { usuarioActualId: s
 
   async function actualizar(
     id: string,
-    cambios: Partial<{ rol: string; activo: boolean; esResidente: boolean; plantaResidente: string | null }>
+    cambios: Partial<{ rol: string; activo: boolean; plantaResidente: string | null }>
   ) {
     setError(null);
     const res = await fetch(`/api/usuarios/${id}`, {
@@ -81,9 +80,8 @@ export default function UsuariosClient({ usuarioActualId }: { usuarioActualId: s
               <tr>
                 <th className="px-4 py-3">Nombre</th>
                 <th className="px-4 py-3">Usuario</th>
-                <th className="px-4 py-3">Rol</th>
-                <th className="px-4 py-3">Cliente</th>
-                <th className="px-4 py-3">Residente</th>
+                <th className="px-4 py-3">Posición</th>
+                <th className="px-4 py-3">Cliente / Planta</th>
                 <th className="px-4 py-3">Estado</th>
                 <th className="px-4 py-3"></th>
               </tr>
@@ -94,22 +92,23 @@ export default function UsuariosClient({ usuarioActualId }: { usuarioActualId: s
                   <td className="px-4 py-3 font-medium text-navy-900">{u.nombre}</td>
                   <td className="px-4 py-3 text-navy-600">{u.usuario}</td>
                   <td className="px-4 py-3">
-                    <select
-                      className="input py-1"
-                      value={u.rol}
+                    <SelloRol
+                      rol={u.rol}
                       disabled={u.id === usuarioActualId}
-                      onChange={(e) => actualizar(u.id, { rol: e.target.value })}
-                    >
-                      {ROLES.map((r) => (
-                        <option key={r} value={r}>
-                          {ROL_ETIQUETAS[r]}
-                        </option>
-                      ))}
-                    </select>
+                      onCambiar={(rol) => actualizar(u.id, { rol })}
+                    />
                   </td>
-                  <td className="px-4 py-3 text-navy-600">{u.clienteNombre ?? "—"}</td>
-                  <td className="px-4 py-3">
-                    <ResidenteCelda usuario={u} onCambiar={(cambios) => actualizar(u.id, cambios)} />
+                  <td className="px-4 py-3 text-navy-600">
+                    {u.rol === "CLIENTE" ? (
+                      u.clienteNombre ?? "—"
+                    ) : u.rol === "RESIDENTE" ? (
+                      <PlantaCelda
+                        planta={u.plantaResidente}
+                        onCambiar={(plantaResidente) => actualizar(u.id, { plantaResidente })}
+                      />
+                    ) : (
+                      "—"
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <span
@@ -138,50 +137,58 @@ export default function UsuariosClient({ usuarioActualId }: { usuarioActualId: s
   );
 }
 
-function ResidenteCelda({
-  usuario,
+function SelloRol({
+  rol,
+  disabled,
   onCambiar,
 }: {
-  usuario: Usuario;
-  onCambiar: (cambios: { esResidente: boolean; plantaResidente: string | null }) => void;
+  rol: (typeof ROLES)[number];
+  disabled?: boolean;
+  onCambiar: (rol: string) => void;
 }) {
-  const [planta, setPlanta] = useState<string>(usuario.plantaResidente ?? PLANTAS[0]);
-
-  if (!usuario.esResidente) {
-    return (
-      <button
-        className="text-xs font-semibold text-navy-400 hover:text-navy-700"
-        onClick={() => onCambiar({ esResidente: true, plantaResidente: planta })}
-      >
-        + Marcar residente
-      </button>
-    );
-  }
-
+  const sello = ROL_SELLO[rol];
   return (
-    <div className="flex items-center gap-1.5">
-      <span className="badge bg-purple-100 text-purple-800">🏭 {usuario.plantaResidente ?? planta}</span>
+    <div
+      className={`inline-flex items-center gap-1.5 rounded-full py-1 pl-1 pr-2.5 shadow-sm ring-1 ring-black/10 ${sello?.clase ?? "bg-navy-100"} ${disabled ? "opacity-70" : ""}`}
+    >
+      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/25 text-sm">
+        {sello?.icono}
+      </span>
       <select
-        className="input py-0.5 text-xs"
-        value={planta}
-        onChange={(e) => {
-          setPlanta(e.target.value);
-          onCambiar({ esResidente: true, plantaResidente: e.target.value });
-        }}
+        className="cursor-pointer border-none bg-transparent text-xs font-bold text-white outline-none disabled:cursor-not-allowed"
+        value={rol}
+        disabled={disabled}
+        onChange={(e) => onCambiar(e.target.value)}
       >
-        {PLANTAS.map((p) => (
-          <option key={p} value={p}>
-            {p}
+        {ROLES.map((r) => (
+          <option key={r} value={r} className="bg-white text-navy-900">
+            {ROL_ETIQUETAS[r]}
           </option>
         ))}
       </select>
-      <button
-        className="text-xs font-semibold text-navy-400 hover:text-red-600"
-        onClick={() => onCambiar({ esResidente: false, plantaResidente: null })}
-      >
-        Quitar
-      </button>
     </div>
+  );
+}
+
+function PlantaCelda({
+  planta,
+  onCambiar,
+}: {
+  planta: string | null;
+  onCambiar: (planta: string) => void;
+}) {
+  return (
+    <select
+      className="input py-1 text-xs"
+      value={planta ?? PLANTAS[0]}
+      onChange={(e) => onCambiar(e.target.value)}
+    >
+      {PLANTAS.map((p) => (
+        <option key={p} value={p}>
+          {p}
+        </option>
+      ))}
+    </select>
   );
 }
 
@@ -191,7 +198,6 @@ function NuevoUsuarioForm({ onCerrar, onCreado }: { onCerrar: () => void; onCrea
   const [password, setPassword] = useState("");
   const [rol, setRol] = useState<(typeof ROLES)[number]>("INSPECTOR");
   const [clienteNombre, setClienteNombre] = useState("");
-  const [esResidente, setEsResidente] = useState(false);
   const [plantaResidente, setPlantaResidente] = useState<string>(PLANTAS[0]);
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
@@ -209,8 +215,7 @@ function NuevoUsuarioForm({ onCerrar, onCreado }: { onCerrar: () => void; onCrea
         password,
         rol,
         clienteNombre: rol === "CLIENTE" ? clienteNombre : undefined,
-        esResidente: rol !== "CLIENTE" ? esResidente : undefined,
-        plantaResidente: rol !== "CLIENTE" && esResidente ? plantaResidente : undefined,
+        plantaResidente: rol === "RESIDENTE" ? plantaResidente : undefined,
       }),
     });
     setEnviando(false);
@@ -239,7 +244,7 @@ function NuevoUsuarioForm({ onCerrar, onCreado }: { onCerrar: () => void; onCrea
           <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
         </div>
         <div>
-          <label className="label">Rol</label>
+          <label className="label">Posición</label>
           <select className="input" value={rol} onChange={(e) => setRol(e.target.value as (typeof ROLES)[number])}>
             {ROLES.map((r) => (
               <option key={r} value={r}>
@@ -254,20 +259,7 @@ function NuevoUsuarioForm({ onCerrar, onCreado }: { onCerrar: () => void; onCrea
             <input className="input" value={clienteNombre} onChange={(e) => setClienteNombre(e.target.value)} required />
           </div>
         )}
-        {rol !== "CLIENTE" && (
-          <div className="flex items-center gap-2 sm:col-span-2">
-            <input
-              id="es-residente"
-              type="checkbox"
-              checked={esResidente}
-              onChange={(e) => setEsResidente(e.target.checked)}
-            />
-            <label htmlFor="es-residente" className="text-sm text-navy-700">
-              Es Residente (asignado de forma fija a la planta de un cliente)
-            </label>
-          </div>
-        )}
-        {rol !== "CLIENTE" && esResidente && (
+        {rol === "RESIDENTE" && (
           <div>
             <label className="label">Planta asignada</label>
             <select className="input" value={plantaResidente} onChange={(e) => setPlantaResidente(e.target.value)}>
