@@ -33,7 +33,7 @@ function estadoInfo(valor: string) {
 
 export default function DashboardClient({ rol }: { rol: Rol }) {
   const { datos, cargando } = usePolling<DashboardData>("/api/dashboard", 7000);
-  const esOperativo = rol === "ADMIN" || rol === "SUPERVISOR";
+  const esOperativo = rol === "ADMIN" || rol === "SUPERVISOR" || rol === "LIDER";
 
   if (cargando || !datos) {
     return <p className="text-sm text-navy-500">Cargando dashboard…</p>;

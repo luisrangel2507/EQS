@@ -18,7 +18,7 @@ import SubidaPdf from "@/components/SubidaPdf";
 type SesionUsuario = {
   id: string;
   nombre: string;
-  rol: "ADMIN" | "SUPERVISOR" | "INSPECTOR" | "CLIENTE";
+  rol: "ADMIN" | "SUPERVISOR" | "LIDER" | "INSPECTOR" | "CLIENTE";
 };
 
 type Inspeccion = {
@@ -58,7 +58,10 @@ export default function InspeccionDetalleClient({
   const asignado = inspeccion?.inspectores.some((a) => a.usuario.id === sesion.id) ?? false;
   const puedeCapturar =
     !inspeccion?.cerrado &&
-    (sesion.rol === "ADMIN" || sesion.rol === "SUPERVISOR" || (sesion.rol === "INSPECTOR" && asignado));
+    (sesion.rol === "ADMIN" ||
+      sesion.rol === "SUPERVISOR" ||
+      sesion.rol === "LIDER" ||
+      (sesion.rol === "INSPECTOR" && asignado));
   const puedeGestionar = sesion.rol === "ADMIN" || sesion.rol === "SUPERVISOR";
 
   if (cargando || !inspeccion) {

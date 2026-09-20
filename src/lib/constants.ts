@@ -43,11 +43,12 @@ export const DEFECTOS_COMUNES = [
   "Otro",
 ] as const;
 
-export const ROLES = ["ADMIN", "SUPERVISOR", "INSPECTOR", "CLIENTE"] as const;
+export const ROLES = ["ADMIN", "SUPERVISOR", "LIDER", "INSPECTOR", "CLIENTE"] as const;
 
 export const ROL_ETIQUETAS: Record<string, string> = {
   ADMIN: "Administrador",
   SUPERVISOR: "Supervisor",
+  LIDER: "Líder",
   INSPECTOR: "Inspector",
   CLIENTE: "Cliente",
 };

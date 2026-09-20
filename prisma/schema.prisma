@@ -10,6 +10,7 @@ datasource db {
 enum Rol {
   ADMIN
   SUPERVISOR
+  LIDER
   INSPECTOR
   CLIENTE
 }
@@ -27,6 +28,7 @@ model Usuario {
   capturas         Captura[]
   estado           EstadoInspector?
   inspeccionesAsig InspeccionInspector[]
+  mensajesChat     MensajeChat[]
 }
 
 model Inspeccion {
@@ -99,4 +101,15 @@ model EstadoInspector {
   usuarioId String   @unique
   estado    String // activo | material | comida | bano | descanso
   desde     DateTime @default(now())
+}
+
+// chat grupal de liderazgo: Admin, Supervisor y Líder
+model MensajeChat {
+  id        String   @id @default(cuid())
+  autor     Usuario  @relation(fields: [autorId], references: [id])
+  autorId   String
+  contenido String
+  creadoEn  DateTime @default(now())
+
+  @@index([creadoEn])
 }

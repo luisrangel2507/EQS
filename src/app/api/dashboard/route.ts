@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { requerirSesion, manejarErrorApi } from "@/lib/permissions";
+import { requerirSesion, manejarErrorApi, esLiderazgo } from "@/lib/permissions";
 import { whereInspeccionesVisibles } from "@/lib/inspecciones";
 import { TOLERANCIA_MINUTOS, UMBRAL_RECHAZO_CRITICO } from "@/lib/constants";
 
@@ -61,7 +61,7 @@ export async function GET() {
       desde: string;
     }> = [];
 
-    if (user.rol === "ADMIN" || user.rol === "SUPERVISOR") {
+    if (esLiderazgo(user.rol)) {
       alertasRechazo = enCritico;
 
       const estados = await prisma.estadoInspector.findMany({
