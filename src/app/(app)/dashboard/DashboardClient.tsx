@@ -172,6 +172,7 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
               {datos.sorteosAbiertos.map((s) => {
                 const total = s.piezasBuenas + s.piezasMalas;
                 const rechazo = total > 0 ? (s.piezasMalas / total) * 100 : 0;
+                const apoyoAqui = solicitudes?.filter((sol) => sol.inspeccion?.id === s.id) ?? [];
                 return (
                   <Link
                     key={s.id}
@@ -191,6 +192,13 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
                       {s.topDefecto && <Pill tono="rojo">⚠️ {s.topDefecto}</Pill>}
                       {rechazo >= 8 && (
                         <Pill tono="rojo">🔥 {rechazo.toFixed(0)}% rechazo</Pill>
+                      )}
+                      {apoyoAqui.length > 0 && (
+                        <Pill tono="naranja">
+                          🔔 {apoyoAqui.length > 1
+                            ? `${apoyoAqui.length} piden apoyo`
+                            : `${apoyoAqui[0].usuario.nombre} pide apoyo`}
+                        </Pill>
                       )}
                     </div>
                   </Link>
@@ -281,6 +289,7 @@ const TONOS_PILL: Record<string, string> = {
   azul: "from-blue-500 to-indigo-600 text-white",
   verde: "from-emerald-500 to-teal-600 text-white",
   rojo: "from-red-500 to-orange-500 text-white",
+  naranja: "from-orange-500 to-amber-500 text-white",
 };
 
 function Pill({ tono, children }: { tono: keyof typeof TONOS_PILL; children: React.ReactNode }) {
