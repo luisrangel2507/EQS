@@ -22,7 +22,7 @@ export const ESTACIONES = [
 
 export const ESTADOS_INSPECTOR = [
   { valor: "activo", emoji: "🔍", etiqueta: "🔍 Inspeccionando", color: "bg-green-100 text-green-800" },
-  { valor: "material", emoji: "📦", etiqueta: "📦 Sin material", color: "bg-orange-100 text-orange-800" },
+  { valor: "material", emoji: "🚩", etiqueta: "🚩 Sin material", color: "bg-orange-100 text-orange-800" },
   { valor: "comida", emoji: "🍽️", etiqueta: "🍽️ Comiendo", color: "bg-amber-100 text-amber-800" },
   { valor: "bano", emoji: "🚻", etiqueta: "🚻 Baño", color: "bg-blue-100 text-blue-800" },
   { valor: "descanso", emoji: "☕", etiqueta: "☕ Descanso", color: "bg-purple-100 text-purple-800" },
