@@ -67,6 +67,16 @@ export async function POST(req: NextRequest) {
       throw new ErrorPermiso("Ese nombre de usuario ya existe", 409);
     }
 
+    if (rolFinal === "CLIENTE") {
+      if (!datos.clienteNombre) {
+        throw new ErrorPermiso("Selecciona la empresa del cliente", 400);
+      }
+      const empresa = await prisma.empresa.findUnique({ where: { nombre: datos.clienteNombre } });
+      if (!empresa || !empresa.activa) {
+        throw new ErrorPermiso("La empresa seleccionada no está registrada. Dala de alta primero.", 400);
+      }
+    }
+
     const passwordHash = await bcrypt.hash(datos.password, 10);
 
     const usuario = await prisma.usuario.create({

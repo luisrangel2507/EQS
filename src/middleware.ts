@@ -8,5 +8,6 @@ export const config = {
     "/reportes/:path*",
     "/estacion/:path*",
     "/residentes/:path*",
+    "/empresas/:path*",
   ],
 };

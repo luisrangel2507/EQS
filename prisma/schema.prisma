@@ -17,6 +17,15 @@ enum Rol {
   CLIENTE
 }
 
+// empresas cliente dadas de alta por un Admin; los usuarios con rol CLIENTE
+// solo pueden asignarse a una empresa ya registrada aquí
+model Empresa {
+  id       String   @id @default(cuid())
+  nombre   String   @unique
+  activa   Boolean  @default(true)
+  creadoEn DateTime @default(now())
+}
+
 model Usuario {
   id              String   @id @default(cuid())
   nombre          String

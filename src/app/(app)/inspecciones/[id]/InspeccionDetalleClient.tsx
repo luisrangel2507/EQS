@@ -14,6 +14,7 @@ import {
 import { usePolling } from "@/lib/usePolling";
 import { DEFECTOS_COMUNES, ESTADOS_INSPECTOR, PLANTAS } from "@/lib/constants";
 import SubidaPdf from "@/components/SubidaPdf";
+import ClienteSelect from "@/components/ClienteSelect";
 
 type SesionUsuario = {
   id: string;
@@ -977,7 +978,7 @@ function EditarModal({
           </div>
           <div>
             <label className="label">Cliente</label>
-            <input className="input" value={cliente} onChange={(e) => setCliente(e.target.value)} />
+            <ClienteSelect value={cliente} onChange={setCliente} />
           </div>
           <div>
             <label className="label">Planta</label>

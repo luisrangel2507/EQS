@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import type { Rol } from "@prisma/client";
 import { PLANTAS } from "@/lib/constants";
+import ClienteSelect from "@/components/ClienteSelect";
 import SubidaPdf from "@/components/SubidaPdf";
 
 type Inspeccion = {
@@ -207,7 +208,7 @@ function NuevaInspeccionForm({ onCerrar, onCreada }: { onCerrar: () => void; onC
         </div>
         <div>
           <label className="label">Cliente</label>
-          <input className="input" value={cliente} onChange={(e) => setCliente(e.target.value)} />
+          <ClienteSelect value={cliente} onChange={setCliente} />
         </div>
         <div>
           <label className="label">Planta</label>

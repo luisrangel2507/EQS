@@ -26,6 +26,7 @@ const ENLACES: { href: string; label: string; roles: Rol[] }[] = [
   { href: "/residentes", label: "Residentes", roles: ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER"] },
   { href: "/reportes", label: "Reportes", roles: ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER", "RESIDENTE", "CLIENTE"] },
   { href: "/usuarios", label: "Usuarios", roles: ["ADMIN"] },
+  { href: "/empresas", label: "Empresas", roles: ["ADMIN"] },
 ];
 
 export default function AppShell({ id, nombre, rol, children }: Props) {

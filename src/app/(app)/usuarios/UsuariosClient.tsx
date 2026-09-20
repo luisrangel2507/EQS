@@ -14,8 +14,11 @@ type Usuario = {
   creadoEn: string;
 };
 
+type Empresa = { id: string; nombre: string; activa: boolean };
+
 export default function UsuariosClient({ usuarioActualId }: { usuarioActualId: string }) {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,11 +31,16 @@ export default function UsuariosClient({ usuarioActualId }: { usuarioActualId: s
 
   useEffect(() => {
     cargar();
+    fetch("/api/empresas")
+      .then((r) => r.json())
+      .then(setEmpresas);
   }, [cargar]);
+
+  const empresasActivas = empresas.filter((e) => e.activa);
 
   async function actualizar(
     id: string,
-    cambios: Partial<{ rol: string; activo: boolean; plantaResidente: string | null }>
+    cambios: Partial<{ rol: string; activo: boolean; plantaResidente: string | null; clienteNombre: string | null }>
   ) {
     setError(null);
     const res = await fetch(`/api/usuarios/${id}`, {
@@ -63,6 +71,7 @@ export default function UsuariosClient({ usuarioActualId }: { usuarioActualId: s
 
       {mostrarForm && (
         <NuevoUsuarioForm
+          empresas={empresasActivas}
           onCerrar={() => setMostrarForm(false)}
           onCreado={() => {
             setMostrarForm(false);
@@ -100,7 +109,11 @@ export default function UsuariosClient({ usuarioActualId }: { usuarioActualId: s
                   </td>
                   <td className="px-4 py-3 text-navy-600">
                     {u.rol === "CLIENTE" ? (
-                      u.clienteNombre ?? "—"
+                      <ClienteCelda
+                        clienteNombre={u.clienteNombre}
+                        empresas={empresasActivas}
+                        onCambiar={(clienteNombre) => actualizar(u.id, { clienteNombre })}
+                      />
                     ) : u.rol === "RESIDENTE" ? (
                       <PlantaCelda
                         planta={u.plantaResidente}
@@ -192,7 +205,53 @@ function PlantaCelda({
   );
 }
 
-function NuevoUsuarioForm({ onCerrar, onCreado }: { onCerrar: () => void; onCreado: () => void }) {
+function ClienteCelda({
+  clienteNombre,
+  empresas,
+  onCambiar,
+}: {
+  clienteNombre: string | null;
+  empresas: Empresa[];
+  onCambiar: (clienteNombre: string) => void;
+}) {
+  if (empresas.length === 0) {
+    return <span className="text-xs text-navy-400">Da de alta una empresa primero</span>;
+  }
+  const coincide = clienteNombre !== null && empresas.some((e) => e.nombre === clienteNombre);
+  return (
+    <div className="space-y-1">
+      {clienteNombre && !coincide && (
+        <p className="text-[11px] text-amber-600">
+          &quot;{clienteNombre}&quot; ya no está activa
+        </p>
+      )}
+      <select
+        className="input py-1 text-xs"
+        value={coincide ? clienteNombre! : ""}
+        onChange={(e) => onCambiar(e.target.value)}
+      >
+        <option value="" disabled>
+          Selecciona una empresa
+        </option>
+        {empresas.map((e) => (
+          <option key={e.id} value={e.nombre}>
+            {e.nombre}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function NuevoUsuarioForm({
+  empresas,
+  onCerrar,
+  onCreado,
+}: {
+  empresas: Empresa[];
+  onCerrar: () => void;
+  onCreado: () => void;
+}) {
   const [nombre, setNombre] = useState("");
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
@@ -255,8 +314,28 @@ function NuevoUsuarioForm({ onCerrar, onCreado }: { onCerrar: () => void; onCrea
         </div>
         {rol === "CLIENTE" && (
           <div className="sm:col-span-2">
-            <label className="label">Nombre de cliente (debe coincidir con el campo &quot;cliente&quot; de las inspecciones)</label>
-            <input className="input" value={clienteNombre} onChange={(e) => setClienteNombre(e.target.value)} required />
+            <label className="label">Empresa</label>
+            {empresas.length === 0 ? (
+              <p className="text-sm text-navy-500">
+                Todavía no hay empresas dadas de alta. Ve a Empresas para dar de alta una primero.
+              </p>
+            ) : (
+              <select
+                className="input"
+                value={clienteNombre}
+                onChange={(e) => setClienteNombre(e.target.value)}
+                required
+              >
+                <option value="" disabled>
+                  Selecciona una empresa
+                </option>
+                {empresas.map((e) => (
+                  <option key={e.id} value={e.nombre}>
+                    {e.nombre}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         )}
         {rol === "RESIDENTE" && (
