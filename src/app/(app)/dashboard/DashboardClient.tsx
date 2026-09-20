@@ -83,7 +83,7 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
   return (
     <div className="space-y-6">
       <div className="relative overflow-hidden rounded-xl">
-        <div className="relative h-48 w-full sm:h-56">
+        <div className="relative h-72 w-full sm:h-96">
           <Image
             src="/dashboard-hero.png"
             alt=""
@@ -92,14 +92,16 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
             sizes="100vw"
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-navy-900/90 via-navy-900/50 to-navy-900/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-navy-900/90 via-navy-900/40 to-navy-900/5" />
         </div>
-        <div className="absolute inset-0 flex flex-col justify-end p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-yellow">Dashboard</p>
-          <h1 className="font-display text-2xl font-bold text-white drop-shadow sm:text-3xl">
+        <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-8">
+          <p className="text-xs font-semibold uppercase tracking-wide text-yellow sm:text-sm">
+            Dashboard
+          </p>
+          <h1 className="font-display text-3xl font-bold text-white drop-shadow sm:text-5xl">
             Bienvenido, {nombre.split(" ")[0]}
           </h1>
-          <p className="mt-1 max-w-xl text-sm text-white/80">
+          <p className="mt-2 max-w-xl text-sm text-white/80 sm:text-base">
             <span className="font-semibold text-white">Frase del día:</span> {fraseDelDia()}
           </p>
         </div>
