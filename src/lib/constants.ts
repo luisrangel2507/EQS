@@ -53,6 +53,20 @@ export const DEFECTOS_COMUNES = [
   "Otro",
 ] as const;
 
+// una por día, elegida por fecha para que sea la misma para todos durante el día
+export const FRASES_DEL_DIA = [
+  "El mejor momento para empezar con todo fue ayer. El segundo mejor es ahora.",
+  "La calidad no es un acto, es un hábito.",
+  "Cada pieza que revisas protege la confianza del cliente en nosotros.",
+  "Un defecto detectado a tiempo es un cliente conservado.",
+  "La precisión de hoy es la reputación de mañana.",
+  "Ningún detalle es demasiado pequeño cuando se trata de calidad.",
+  "Hacer las cosas bien la primera vez siempre sale más barato.",
+  "Tu atención al detalle es la última línea de defensa antes del cliente.",
+  "La constancia vence al talento cuando el talento no es constante.",
+  "Un buen turno empieza con una buena actitud.",
+] as const;
+
 export const ROLES = ["ADMIN", "SUPERVISOR", "LIDER", "INSPECTOR", "CLIENTE"] as const;
 
 export const ROL_ETIQUETAS: Record<string, string> = {

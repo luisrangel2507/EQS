@@ -4,5 +4,5 @@ import DashboardClient from "./DashboardClient";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
-  return <DashboardClient rol={session!.user.rol} />;
+  return <DashboardClient rol={session!.user.rol} nombre={session!.user.nombre} />;
 }

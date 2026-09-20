@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import type { Rol } from "@prisma/client";
 import { usePolling } from "@/lib/usePolling";
-import { ESTADOS_INSPECTOR } from "@/lib/constants";
+import { ESTADOS_INSPECTOR, FRASES_DEL_DIA } from "@/lib/constants";
 
 type Inspeccion = {
   id: string;
@@ -39,7 +40,13 @@ function estadoInfo(valor: string) {
   return ESTADOS_INSPECTOR.find((e) => e.valor === valor) ?? ESTADOS_INSPECTOR[0];
 }
 
-export default function DashboardClient({ rol }: { rol: Rol }) {
+function fraseDelDia() {
+  const inicioAno = new Date(new Date().getFullYear(), 0, 0);
+  const dia = Math.floor((Date.now() - inicioAno.getTime()) / 86400000);
+  return FRASES_DEL_DIA[dia % FRASES_DEL_DIA.length];
+}
+
+export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: string }) {
   const { datos, cargando } = usePolling<DashboardData>("/api/dashboard", 7000);
   const esOperativo = rol === "ADMIN" || rol === "SUPERVISOR" || rol === "LIDER";
   const { datos: solicitudes, recargar: recargarApoyo } = usePolling<SolicitudApoyo[]>(
@@ -62,7 +69,28 @@ export default function DashboardClient({ rol }: { rol: Rol }) {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-2xl font-bold text-navy-900">Dashboard</h1>
+      <div className="relative overflow-hidden rounded-xl">
+        <div className="relative h-48 w-full sm:h-56">
+          <Image
+            src="/dashboard-hero.png"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-navy-900/90 via-navy-900/50 to-navy-900/10" />
+        </div>
+        <div className="absolute inset-0 flex flex-col justify-end p-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-yellow">Dashboard</p>
+          <h1 className="font-display text-2xl font-bold text-white drop-shadow sm:text-3xl">
+            Bienvenido, {nombre.split(" ")[0]}
+          </h1>
+          <p className="mt-1 max-w-xl text-sm text-white/80">
+            <span className="font-semibold text-white">Frase del día:</span> {fraseDelDia()}
+          </p>
+        </div>
+      </div>
 
       {esOperativo && solicitudes && solicitudes.length > 0 && (
         <div className="card border-orange-300 bg-orange-50">
