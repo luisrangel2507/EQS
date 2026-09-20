@@ -73,7 +73,12 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
               <p className="text-xs leading-tight text-white/60">{ROL_ETIQUETAS[rol]}</p>
             </div>
             <button
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onClick={() =>
+                signOut({
+                  callbackUrl:
+                    typeof window !== "undefined" ? `${window.location.origin}/login` : "/login",
+                })
+              }
               className="rounded-md border border-white/20 px-3 py-1.5 text-xs font-semibold text-white/90 hover:bg-white/10"
             >
               Salir

@@ -91,5 +91,19 @@ export const authOptions: NextAuthOptions = {
       session.user.plantaResidente = token.plantaResidente;
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // Si NEXTAUTH_URL está mal configurada en el hosting (ej. apuntando a
+      // localhost), no forzamos baseUrl: si nos pasan una URL absoluta cuyo
+      // path es uno de los nuestros, la respetamos tal cual (el cliente la
+      // calcula con window.location.origin, que sí es el dominio real).
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      try {
+        const destino = new URL(url);
+        if (destino.pathname === "/login" || destino.pathname === "/") return url;
+      } catch {
+        // URL inválida: cae al valor por defecto
+      }
+      return baseUrl;
+    },
   },
 };
