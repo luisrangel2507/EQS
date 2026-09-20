@@ -77,6 +77,7 @@ export default function InspeccionDetalleClient({
         puedeCapturar={puedeCapturar}
         asignado={asignado}
         recargar={recargar}
+        nombre={sesion.nombre}
       />
     );
   }
@@ -244,12 +245,14 @@ function VistaInspectorJuego({
   puedeCapturar,
   asignado,
   recargar,
+  nombre,
 }: {
   id: string;
   inspeccion: Inspeccion;
   puedeCapturar: boolean;
   asignado: boolean;
   recargar: () => void;
+  nombre: string;
 }) {
   const router = useRouter();
   const [racha, setRacha] = useState(0);
@@ -366,26 +369,57 @@ function VistaInspectorJuego({
 
       {inspeccion.cerrado && (
         <div className="space-y-4">
-          <div className="card bg-navy-50 text-center">
-            <p className="text-sm text-navy-700">
-              🏁 Esta inspección ya está cerrada. ¡Buen trabajo!
-            </p>
-          </div>
-
-          <div className="card">
-            <h2 className="mb-3 font-display font-semibold text-navy-900">
-              📋 Reporte de resultados
+          <div className="card overflow-hidden border-none bg-gradient-to-br from-yellow via-amber-400 to-yellow-600 text-navy-900 shadow-lg">
+            <p className="text-center text-4xl">🎉🏁🎉</p>
+            <h2 className="mt-2 text-center font-display text-2xl font-extrabold">
+              ¡Gracias por tu trabajo, {nombre.split(" ")[0]}!
             </h2>
-            <div className="grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
-              <Metrica etiqueta="Piezas buenas" valor={inspeccion.piezasBuenas} />
-              <Metrica etiqueta="Piezas malas" valor={inspeccion.piezasMalas} />
-              <Metrica
-                etiqueta="% Rechazo"
-                valor={`${(rechazo * 100).toFixed(1)}%`}
-                alerta={rechazo >= 0.08}
-              />
-              <Metrica etiqueta="Meta" valor={`${total} / ${inspeccion.meta || "—"}`} />
+            <p className="mt-1 text-center text-sm font-semibold text-navy-800/80">
+              Este sorteo quedó cerrado. Así quedaron tus números:
+            </p>
+
+            <div className="mt-5 grid grid-cols-2 gap-3 text-center">
+              <div className="rounded-xl bg-white/50 py-4">
+                <p className="font-display text-4xl font-extrabold text-green-800">
+                  {inspeccion.piezasBuenas}
+                </p>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-navy-800/70">
+                  ✅ Buenas
+                </p>
+              </div>
+              <div className="rounded-xl bg-white/50 py-4">
+                <p className="font-display text-4xl font-extrabold text-red-700">
+                  {inspeccion.piezasMalas}
+                </p>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-navy-800/70">
+                  ❌ Malas
+                </p>
+              </div>
+              <div className="rounded-xl bg-white/50 py-4">
+                <p className="font-display text-3xl font-extrabold text-navy-900">
+                  {(100 - rechazo * 100).toFixed(1)}%
+                </p>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-navy-800/70">
+                  🎯 Calidad
+                </p>
+              </div>
+              <div className="rounded-xl bg-white/50 py-4">
+                <p className="font-display text-3xl font-extrabold text-navy-900">
+                  {inspeccion.meta > 0 ? `${progreso.toFixed(0)}%` : "—"}
+                </p>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-navy-800/70">
+                  📈 Meta
+                </p>
+              </div>
             </div>
+
+            <p className="mt-5 text-center font-display text-lg font-bold text-navy-900">
+              {rechazo < 0.02
+                ? "🏆 ¡Desempeño excelente!"
+                : rechazo < 0.08
+                  ? "🥈 ¡Buen trabajo!"
+                  : "💪 ¡Sigue mejorando, tú puedes!"}
+            </p>
           </div>
 
           <div className="card">
@@ -757,9 +791,10 @@ function EstadoInspectorChip() {
       <button
         type="button"
         onClick={() => setAbierto((v) => !v)}
-        className={`badge border-transparent transition ${actual.color}`}
+        aria-label={`Mi estado: ${actual.etiqueta.replace(/^\S+\s/, "")}`}
+        className={`flex h-9 w-9 items-center justify-center rounded-full border-transparent text-lg transition ${actual.color}`}
       >
-        {actual.etiqueta} {abierto ? "▲" : "▾"}
+        {actual.emoji}
       </button>
       {abierto && (
         <>
@@ -769,17 +804,18 @@ function EstadoInspectorChip() {
             onClick={() => setAbierto(false)}
             className="fixed inset-0 z-10 cursor-default"
           />
-          <div className="absolute right-0 top-full z-20 mt-1 flex w-max flex-wrap gap-1.5 rounded-xl border border-navy-100 bg-white p-2 shadow-lg">
+          <div className="absolute right-0 top-full z-20 mt-1 flex w-44 flex-col gap-1 rounded-xl border border-navy-100 bg-white p-2 shadow-lg">
             {ESTADOS_INSPECTOR.map((e) => (
               <button
                 key={e.valor}
                 type="button"
                 onClick={() => cambiar(e.valor)}
-                className={`badge border transition ${
-                  estado === e.valor ? `${e.color} border-transparent` : "border-navy-200 text-navy-500"
+                className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-left text-sm font-medium transition ${
+                  estado === e.valor ? `${e.color} border-transparent` : "border-transparent text-navy-600 hover:bg-navy-50"
                 }`}
               >
-                {e.etiqueta}
+                <span className="text-base">{e.emoji}</span>
+                {e.etiqueta.replace(/^\S+\s/, "")}
               </button>
             ))}
           </div>
