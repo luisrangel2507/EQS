@@ -93,7 +93,7 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
   return (
     <div className="space-y-6">
       <div className="relative overflow-hidden rounded-xl">
-        <div className={`relative w-full ${rol === "CLIENTE" ? "h-40 sm:h-56" : "h-72 sm:h-96"}`}>
+        <div className="relative h-72 w-full sm:h-96">
           <Image
             src="/dashboard-hero.png"
             alt=""
@@ -108,11 +108,7 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
           <p className="text-xs font-semibold uppercase tracking-wide text-yellow sm:text-sm">
             Dashboard
           </p>
-          <h1
-            className={`font-display font-bold text-white drop-shadow ${
-              rol === "CLIENTE" ? "text-2xl sm:text-3xl" : "text-3xl sm:text-5xl"
-            }`}
-          >
+          <h1 className="font-display text-3xl font-bold text-white drop-shadow sm:text-5xl">
             Bienvenido, {nombre.split(" ")[0]}
           </h1>
           <p className="mt-2 max-w-xl text-sm text-white/80 sm:text-base">
