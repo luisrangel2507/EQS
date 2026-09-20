@@ -82,10 +82,6 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
     recargarApoyo();
   }
 
-  function minutosDesde(fecha: string) {
-    return Math.max(0, Math.floor((Date.now() - new Date(fecha).getTime()) / 60000));
-  }
-
   if (cargando || !datos) {
     return <p className="text-sm text-navy-500">Cargando dashboard…</p>;
   }
@@ -116,34 +112,6 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
           </p>
         </div>
       </div>
-
-      {esOperativo && solicitudes && solicitudes.length > 0 && (
-        <div className="card border-orange-300 bg-orange-50">
-          <h2 className="mb-3 font-display font-semibold text-orange-900">
-            🔔 Solicitudes de apoyo en piso
-          </h2>
-          <ul className="space-y-2">
-            {solicitudes.map((s) => (
-              <li
-                key={s.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 text-sm shadow-sm"
-              >
-                <span>
-                  <span className="font-semibold text-navy-900">{s.usuario.nombre}</span>
-                  {s.estacion ? ` · 📍 ${s.estacion}` : ""}
-                  {s.inspeccion
-                    ? ` · ${s.inspeccion.numeroParte ?? s.inspeccion.nombre}`
-                    : ""}
-                  <span className="text-navy-400"> · hace {minutosDesde(s.creadoEn)} min</span>
-                </span>
-                <button className="btn-accent px-3 py-1 text-xs" onClick={() => atender(s.id)}>
-                  Atender
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
         <Kpi etiqueta="Inspecciones activas" valor={datos.kpis.inspeccionesActivas} />
@@ -195,11 +163,22 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
                         <Pill tono="rojo">🔥 {rechazo.toFixed(0)}% rechazo</Pill>
                       )}
                       {apoyoAqui.length > 0 && (
-                        <Pill tono="naranja">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 py-1 pl-2.5 pr-1 text-[11px] font-semibold text-white shadow-sm ring-1 ring-black/5">
                           🔔 {apoyoAqui.length > 1
                             ? `${apoyoAqui.length} piden apoyo`
                             : `${apoyoAqui[0].usuario.nombre} pide apoyo`}
-                        </Pill>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              apoyoAqui.forEach((sol) => atender(sol.id));
+                            }}
+                            className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-bold hover:bg-white/30"
+                          >
+                            Atender
+                          </button>
+                        </span>
                       )}
                     </div>
                   </Link>
@@ -290,7 +269,6 @@ const TONOS_PILL: Record<string, string> = {
   azul: "from-blue-500 to-indigo-600 text-white",
   verde: "from-emerald-500 to-teal-600 text-white",
   rojo: "from-red-500 to-orange-500 text-white",
-  naranja: "from-orange-500 to-amber-500 text-white",
 };
 
 function Pill({ tono, children }: { tono: keyof typeof TONOS_PILL; children: React.ReactNode }) {
