@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requerirSesion, manejarErrorApi, esLiderazgo, ErrorPermiso } from "@/lib/permissions";
+import { requerirSesion, manejarErrorApi, puedeChatear, ErrorPermiso } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -9,8 +9,8 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   try {
     const user = await requerirSesion();
-    if (!esLiderazgo(user.rol)) {
-      throw new ErrorPermiso("No tienes acceso al chat de liderazgo");
+    if (!puedeChatear(user.rol)) {
+      throw new ErrorPermiso("No tienes acceso al chat");
     }
 
     const desde = req.nextUrl.searchParams.get("desde");

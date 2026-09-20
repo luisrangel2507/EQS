@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requerirSesion, manejarErrorApi, ErrorPermiso, esLiderazgo } from "@/lib/permissions";
+import { requerirSesion, manejarErrorApi, ErrorPermiso, puedeChatear } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -11,12 +11,12 @@ const enviarMensajeSchema = z.object({
   contenido: z.string().trim().min(1, "Escribe un mensaje").max(2000, "Mensaje demasiado largo"),
 });
 
-// Chat grupal único para Admin, Supervisor y Líder.
+// Chat grupal para Admin, Supervisor, Líder e Inspector.
 export async function GET() {
   try {
     const user = await requerirSesion();
-    if (!esLiderazgo(user.rol)) {
-      throw new ErrorPermiso("No tienes acceso al chat de liderazgo");
+    if (!puedeChatear(user.rol)) {
+      throw new ErrorPermiso("No tienes acceso al chat");
     }
 
     const mensajes = await prisma.mensajeChat.findMany({
@@ -34,8 +34,8 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const user = await requerirSesion();
-    if (!esLiderazgo(user.rol)) {
-      throw new ErrorPermiso("No tienes acceso al chat de liderazgo");
+    if (!puedeChatear(user.rol)) {
+      throw new ErrorPermiso("No tienes acceso al chat");
     }
 
     const body = await req.json();

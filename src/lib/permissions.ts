@@ -40,8 +40,10 @@ export const esAdmin = (rol: Rol) => rol === "ADMIN";
 export const esSupervisorOAdmin = (rol: Rol) => rol === "ADMIN" || rol === "SUPERVISOR";
 export const esInspector = (rol: Rol) => rol === "INSPECTOR";
 export const esCliente = (rol: Rol) => rol === "CLIENTE";
-/** Admin, Supervisor o Líder: ven todo el piso y tienen acceso al chat de liderazgo. */
+/** Admin, Supervisor o Líder: ven todo el piso y el dashboard operativo. */
 export const esLiderazgo = (rol: Rol) => rol === "ADMIN" || rol === "SUPERVISOR" || rol === "LIDER";
+/** Quién tiene acceso al chat grupal: liderazgo + inspectores (no clientes). */
+export const puedeChatear = (rol: Rol) => esLiderazgo(rol) || rol === "INSPECTOR";
 
 /** Envuelve una respuesta de API con manejo estándar de ErrorPermiso. */
 export function manejarErrorApi(error: unknown) {

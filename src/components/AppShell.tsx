@@ -100,7 +100,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
 }
 
 function BurbujaChat({ rol, miId }: { rol: Rol; miId: string }) {
-  const puedeChatear = rol === "ADMIN" || rol === "SUPERVISOR" || rol === "LIDER";
+  const puedeChatear = rol === "ADMIN" || rol === "SUPERVISOR" || rol === "LIDER" || rol === "INSPECTOR";
   const [noLeidos, setNoLeidos] = useState(0);
   const [abierto, setAbierto] = useState(false);
 
@@ -156,7 +156,7 @@ function BurbujaChat({ rol, miId }: { rol: Rol; miId: string }) {
             marcarLeido();
           }}
           className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-navy text-2xl text-white shadow-lg ring-4 ring-white/40 transition hover:scale-105 hover:bg-navy-600"
-          aria-label="Abrir chat de liderazgo"
+          aria-label="Abrir chat del equipo"
         >
           💬
           {noLeidos > 0 && (
