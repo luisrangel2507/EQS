@@ -23,6 +23,42 @@ body {
   }
 }
 
+@keyframes pop-plus {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-14px) scale(1.3);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-56px) scale(1);
+  }
+}
+.animate-pop-plus {
+  animation: pop-plus 0.9s ease-out forwards;
+}
+
+@keyframes tap-bounce {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(0.92);
+  }
+  60% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.animate-tap-bounce {
+  animation: tap-bounce 0.35s ease-out;
+}
+
 @layer components {
   .btn-primary {
     @apply inline-flex items-center justify-center rounded-lg bg-navy px-4 py-2 font-semibold text-white transition hover:bg-navy-600 disabled:cursor-not-allowed disabled:opacity-50;

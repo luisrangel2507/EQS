@@ -68,6 +68,18 @@ export default function InspeccionDetalleClient({
     return <p className="text-sm text-navy-500">Cargando…</p>;
   }
 
+  if (sesion.rol === "INSPECTOR") {
+    return (
+      <VistaInspectorJuego
+        id={id}
+        inspeccion={inspeccion}
+        puedeCapturar={puedeCapturar}
+        asignado={asignado}
+        recargar={recargar}
+      />
+    );
+  }
+
   const total = inspeccion.piezasBuenas + inspeccion.piezasMalas;
   const rechazo = total > 0 ? inspeccion.piezasMalas / total : 0;
   const progreso = inspeccion.meta > 0 ? Math.min(100, (total / inspeccion.meta) * 100) : 0;
@@ -156,15 +168,7 @@ export default function InspeccionDetalleClient({
       )}
 
       {puedeCapturar && (
-        <CapturaPanel
-          inspeccionId={id}
-          onCapturado={recargar}
-          mostrarExtras={sesion.rol === "INSPECTOR"}
-        />
-      )}
-
-      {sesion.rol === "INSPECTOR" && asignado && !inspeccion.cerrado && (
-        <EstadoInspectorPanel />
+        <CapturaPanel inspeccionId={id} onCapturado={recargar} mostrarExtras={false} />
       )}
 
       <div className="card">
@@ -233,6 +237,137 @@ export default function InspeccionDetalleClient({
   );
 }
 
+function VistaInspectorJuego({
+  id,
+  inspeccion,
+  puedeCapturar,
+  asignado,
+  recargar,
+}: {
+  id: string;
+  inspeccion: Inspeccion;
+  puedeCapturar: boolean;
+  asignado: boolean;
+  recargar: () => void;
+}) {
+  const router = useRouter();
+  const [racha, setRacha] = useState(0);
+
+  const total = inspeccion.piezasBuenas + inspeccion.piezasMalas;
+  const progreso = inspeccion.meta > 0 ? Math.min(100, (total / inspeccion.meta) * 100) : 0;
+  const metaCumplida = inspeccion.meta > 0 && total >= inspeccion.meta;
+
+  function manejarResultado(esBuena: boolean) {
+    setRacha((r) => (esBuena ? r + 1 : 0));
+  }
+
+  return (
+    <div className="mx-auto max-w-lg space-y-4">
+      <button
+        onClick={() => router.push("/estacion")}
+        className="text-xs font-semibold text-navy-400 hover:text-navy-700"
+      >
+        ← Mi estación
+      </button>
+
+      <div className="card overflow-hidden border-none bg-gradient-to-br from-navy-800 to-navy-900 text-white shadow-lg">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-yellow">
+              {inspeccion.planta ?? "Pieza"}
+            </p>
+            <h1 className="font-display text-2xl font-bold">
+              {inspeccion.numeroParte ?? inspeccion.nombre}
+            </h1>
+          </div>
+          {racha >= 3 && (
+            <span className="badge animate-pulse bg-yellow text-navy-900">🔥 Racha x{racha}</span>
+          )}
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-3 text-center">
+          <div className="rounded-xl bg-white/10 py-4">
+            <p className="font-display text-5xl font-extrabold text-green-400">
+              {inspeccion.piezasBuenas}
+            </p>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-white/70">
+              ✅ Buenas
+            </p>
+          </div>
+          <div className="rounded-xl bg-white/10 py-4">
+            <p className="font-display text-5xl font-extrabold text-red-400">
+              {inspeccion.piezasMalas}
+            </p>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-white/70">
+              ❌ Malas
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5">
+          <div className="mb-1 flex justify-between text-xs font-semibold text-white/70">
+            <span>🎯 Meta</span>
+            <span>
+              {total} / {inspeccion.meta || "—"} ({progreso.toFixed(0)}%)
+            </span>
+          </div>
+          <div className="h-4 w-full overflow-hidden rounded-full bg-white/10">
+            <div
+              className="h-4 rounded-full bg-gradient-to-r from-yellow-600 to-yellow transition-all duration-500"
+              style={{ width: `${progreso}%` }}
+            />
+          </div>
+          {metaCumplida && (
+            <p className="mt-2 text-center text-sm font-bold text-yellow">🏆 ¡Meta cumplida!</p>
+          )}
+        </div>
+      </div>
+
+      {puedeCapturar && (
+        <CapturaPanel
+          inspeccionId={id}
+          onCapturado={recargar}
+          mostrarExtras
+          onResultado={manejarResultado}
+        />
+      )}
+
+      {asignado && !inspeccion.cerrado && <EstadoInspectorPanel />}
+
+      {(inspeccion.instrucciones || inspeccion.instruccionesPdfUrl) && (
+        <details className="card">
+          <summary className="cursor-pointer font-display font-semibold text-navy-900">
+            Ver criterio de aceptación
+          </summary>
+          {inspeccion.instrucciones && (
+            <p className="mt-2 whitespace-pre-wrap text-sm text-navy-600">
+              {inspeccion.instrucciones}
+            </p>
+          )}
+          {inspeccion.instruccionesPdfUrl && (
+            <a
+              href={inspeccion.instruccionesPdfUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-block text-sm font-semibold text-navy underline"
+            >
+              Ver PDF de instrucción de trabajo
+            </a>
+          )}
+        </details>
+      )}
+
+      {inspeccion.cerrado && (
+        <div className="card bg-navy-50 text-center">
+          <p className="text-sm text-navy-700">
+            🏁 Esta inspección ya está cerrada. ¡Buen trabajo!
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Metrica({
   etiqueta,
   valor,
@@ -256,10 +391,12 @@ function CapturaPanel({
   inspeccionId,
   onCapturado,
   mostrarExtras,
+  onResultado,
 }: {
   inspeccionId: string;
   onCapturado: () => void;
   mostrarExtras: boolean;
+  onResultado?: (esBuena: boolean) => void;
 }) {
   const [mostrarMala, setMostrarMala] = useState(false);
   const [defecto, setDefecto] = useState<string>(DEFECTOS_COMUNES[0]);
@@ -272,6 +409,8 @@ function CapturaPanel({
   const [hoy, setHoy] = useState<{ buenas: number; malas: number } | null>(null);
   const [llamandoApoyo, setLlamandoApoyo] = useState(false);
   const [apoyoAvisado, setApoyoAvisado] = useState(false);
+  const [popBuena, setPopBuena] = useState(false);
+  const [popMala, setPopMala] = useState(false);
 
   const cargarHoy = useCallback(() => {
     if (!mostrarExtras) return;
@@ -316,6 +455,9 @@ function CapturaPanel({
     }
     onCapturado();
     cargarHoy();
+    onResultado?.(true);
+    setPopBuena(true);
+    setTimeout(() => setPopBuena(false), 900);
   }
 
   async function capturarMala(e: React.FormEvent) {
@@ -349,6 +491,9 @@ function CapturaPanel({
     if (inputRef.current) inputRef.current.value = "";
     onCapturado();
     cargarHoy();
+    onResultado?.(false);
+    setPopMala(true);
+    setTimeout(() => setPopMala(false), 900);
   }
 
   return (
@@ -369,22 +514,36 @@ function CapturaPanel({
         )}
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <button
-          onClick={capturarBuena}
-          disabled={enviando}
-          className="flex h-28 flex-col items-center justify-center rounded-xl bg-green-600 text-white shadow-sm transition hover:bg-green-700 disabled:opacity-50"
-        >
-          <span className="text-3xl font-bold">+1</span>
-          <span className="text-sm font-medium">Pieza buena</span>
-        </button>
-        <button
-          onClick={() => setMostrarMala(true)}
-          disabled={enviando}
-          className="flex h-28 flex-col items-center justify-center rounded-xl bg-red-600 text-white shadow-sm transition hover:bg-red-700 disabled:opacity-50"
-        >
-          <span className="text-3xl font-bold">+1</span>
-          <span className="text-sm font-medium">Pieza mala</span>
-        </button>
+        <div className="relative">
+          {popBuena && (
+            <span className="animate-pop-plus pointer-events-none absolute inset-x-0 top-2 text-center text-2xl font-extrabold text-green-500">
+              +1
+            </span>
+          )}
+          <button
+            onClick={capturarBuena}
+            disabled={enviando}
+            className={`flex h-28 w-full flex-col items-center justify-center rounded-xl bg-green-600 text-white shadow-sm transition hover:bg-green-700 disabled:opacity-50 ${popBuena ? "animate-tap-bounce" : ""}`}
+          >
+            <span className="text-3xl font-bold">+1</span>
+            <span className="text-sm font-medium">Pieza buena</span>
+          </button>
+        </div>
+        <div className="relative">
+          {popMala && (
+            <span className="animate-pop-plus pointer-events-none absolute inset-x-0 top-2 text-center text-2xl font-extrabold text-red-500">
+              +1
+            </span>
+          )}
+          <button
+            onClick={() => setMostrarMala(true)}
+            disabled={enviando}
+            className="flex h-28 w-full flex-col items-center justify-center rounded-xl bg-red-600 text-white shadow-sm transition hover:bg-red-700 disabled:opacity-50"
+          >
+            <span className="text-3xl font-bold">+1</span>
+            <span className="text-sm font-medium">Pieza mala</span>
+          </button>
+        </div>
       </div>
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
 
