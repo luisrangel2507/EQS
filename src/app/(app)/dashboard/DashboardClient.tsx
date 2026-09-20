@@ -1,11 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import type { Rol } from "@prisma/client";
 import { usePolling } from "@/lib/usePolling";
 import { FRASES_DEL_DIA, FRASES_DEL_DIA_CLIENTE } from "@/lib/constants";
-import { Kpi, type DashboardData, type Residente } from "./shared";
+import { Kpi, SorteosAbiertosCard, type DashboardData, type Residente } from "./shared";
 
 function fraseDelDia(rol: Rol) {
   const frases = rol === "CLIENTE" ? FRASES_DEL_DIA_CLIENTE : FRASES_DEL_DIA;
@@ -52,17 +51,12 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
 
       {esOperativo ? (
         <>
-          <Link
-            href="/dashboard/ejecutivo"
-            className="btn-primary flex items-center justify-center gap-2 text-center"
-          >
-            📊 Ver Dashboard Ejecutivo
-          </Link>
-
           <div className="grid grid-cols-2 gap-4">
             <Kpi etiqueta="Sorteos activos" valor={datos.kpis.inspeccionesActivas} />
             <Kpi etiqueta="Residentes activos" valor={residentes ? residentes.length : "…"} />
           </div>
+
+          <SorteosAbiertosCard rol={rol} sorteosAbiertos={datos.sorteosAbiertos} />
         </>
       ) : (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

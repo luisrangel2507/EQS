@@ -32,6 +32,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
   const pathname = usePathname();
   const enlaces = ENLACES.filter((e) => e.roles.includes(rol));
   const inicio = rol === "INSPECTOR" ? "/estacion" : "/dashboard";
+  const esOperativo = rol === "ADMIN" || rol === "SUPERVISOR" || rol === "GERENTE" || rol === "LIDER";
 
   return (
     <div className="min-h-screen bg-background">
@@ -68,6 +69,14 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
             </nav>
           </div>
           <div className="flex items-center gap-3">
+            {esOperativo && (
+              <Link
+                href="/dashboard/ejecutivo"
+                className="flex items-center gap-1.5 rounded-md bg-yellow px-3 py-1.5 text-xs font-bold text-navy-900 transition hover:bg-yellow-400"
+              >
+                📊 <span className="hidden sm:inline">Dashboard Ejecutivo</span>
+              </Link>
+            )}
             <div className="hidden text-right sm:block">
               <p className="text-sm font-medium leading-tight">{nombre}</p>
               <p className="text-xs leading-tight text-white/60">{ROL_ETIQUETAS[rol]}</p>
