@@ -45,6 +45,7 @@ model Usuario {
   solicitudesAtendidas SolicitudApoyo[]      @relation("SolicitudApoyoAtendidaPor")
   notasResidente       NotaResidente[]       @relation("NotaResidenteResidente")
   notasComoAutor       NotaResidente[]       @relation("NotaResidenteAutor")
+  notificaciones       Notificacion[]
 }
 
 // bitácora de seguimiento del personal Residente (asignado de forma fija a
@@ -93,6 +94,7 @@ model Inspeccion {
   defectos         DefectoResumen[]
   inspectores      InspeccionInspector[]
   solicitudesApoyo SolicitudApoyo[]
+  notificaciones   Notificacion[]
 
   @@index([cliente])
   @@index([cerrado])
@@ -172,4 +174,20 @@ model SolicitudApoyo {
   creadoEn      DateTime    @default(now())
 
   @@index([atendida])
+}
+
+// notificación individual a un usuario (ej. Cliente o Líder) sobre un evento
+// de una inspección, como la salida de una pieza NG
+model Notificacion {
+  id           String      @id @default(cuid())
+  usuario      Usuario     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId    String
+  inspeccion   Inspeccion? @relation(fields: [inspeccionId], references: [id], onDelete: Cascade)
+  inspeccionId String?
+  tipo         String // "pieza_ng"
+  mensaje      String
+  leida        Boolean     @default(false)
+  creadoEn     DateTime    @default(now())
+
+  @@index([usuarioId, leida])
 }

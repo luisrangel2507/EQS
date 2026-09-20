@@ -78,21 +78,8 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
                 📊 <span className="hidden sm:inline">Dashboard Ejecutivo</span>
               </Link>
             )}
-            <div className="hidden text-right sm:block">
-              <p className="text-sm font-medium leading-tight">{nombre}</p>
-              <p className="text-xs leading-tight text-white/60">{ROL_ETIQUETAS[rol]}</p>
-            </div>
-            <button
-              onClick={() =>
-                signOut({
-                  callbackUrl:
-                    typeof window !== "undefined" ? `${window.location.origin}/login` : "/login",
-                })
-              }
-              className="rounded-md border border-white/20 px-3 py-1.5 text-xs font-semibold text-white/90 hover:bg-white/10"
-            >
-              Salir
-            </button>
+            <NotificacionesBell rol={rol} />
+            <PerfilMenu nombre={nombre} rol={rol} />
           </div>
         </div>
         <nav className="flex gap-1 overflow-x-auto border-t border-white/10 px-2 py-1 md:hidden">
@@ -114,6 +101,160 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
       </header>
       <main className="mx-auto max-w-7xl px-4 pb-24 pt-6">{children}</main>
       <BurbujaChat rol={rol} miId={id} />
+    </div>
+  );
+}
+
+type Notificacion = {
+  id: string;
+  mensaje: string;
+  leida: boolean;
+  creadoEn: string;
+  inspeccion: { id: string; nombre: string; numeroParte: string | null } | null;
+};
+
+function NotificacionesBell({ rol }: { rol: Rol }) {
+  const puedeVer = rol === "CLIENTE" || rol === "LIDER";
+  const [abierto, setAbierto] = useState(false);
+  const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
+  const [noLeidas, setNoLeidas] = useState(0);
+
+  useEffect(() => {
+    if (!puedeVer) return;
+
+    function consultar() {
+      fetch("/api/notificaciones")
+        .then((r) => r.json())
+        .then((d) => {
+          setNotificaciones(d.notificaciones ?? []);
+          setNoLeidas(d.noLeidas ?? 0);
+        })
+        .catch(() => {});
+    }
+
+    consultar();
+    const intervalo = setInterval(consultar, 15000);
+    return () => clearInterval(intervalo);
+  }, [puedeVer]);
+
+  async function alternar() {
+    const abrir = !abierto;
+    setAbierto(abrir);
+    if (abrir && noLeidas > 0) {
+      setNoLeidas(0);
+      setNotificaciones((prev) => prev.map((n) => ({ ...n, leida: true })));
+      await fetch("/api/notificaciones", { method: "PATCH" }).catch(() => {});
+    }
+  }
+
+  if (!puedeVer) return null;
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={alternar}
+        className="relative flex h-9 w-9 items-center justify-center rounded-full text-lg transition hover:bg-white/10"
+        aria-label="Notificaciones"
+      >
+        🔔
+        {noLeidas > 0 && (
+          <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow ring-2 ring-navy-900">
+            {noLeidas > 9 ? "9+" : noLeidas}
+          </span>
+        )}
+      </button>
+
+      {abierto && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setAbierto(false)} />
+          <div className="absolute right-0 top-full z-20 mt-2 max-h-96 w-80 overflow-y-auto rounded-lg border border-navy-100 bg-white py-1 text-navy-900 shadow-lg">
+            <p className="border-b border-navy-100 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-navy-500">
+              Notificaciones
+            </p>
+            {notificaciones.length === 0 ? (
+              <p className="px-4 py-6 text-center text-sm text-navy-400">
+                Sin notificaciones todavía.
+              </p>
+            ) : (
+              notificaciones.map((n) => (
+                <div
+                  key={n.id}
+                  className={`border-b border-navy-50 px-4 py-2.5 text-sm last:border-b-0 ${
+                    n.leida ? "" : "bg-yellow-50"
+                  }`}
+                >
+                  <p className="text-navy-800">{n.mensaje}</p>
+                  <p className="mt-0.5 text-xs text-navy-400">
+                    {new Date(n.creadoEn).toLocaleString("es-MX", {
+                      day: "2-digit",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
+  const [abierto, setAbierto] = useState(false);
+  const iniciales =
+    nombre
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase())
+      .join("") || "?";
+
+  function salir() {
+    signOut({
+      callbackUrl: typeof window !== "undefined" ? `${window.location.origin}/login` : "/login",
+    });
+  }
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setAbierto((a) => !a)}
+        className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition hover:bg-white/10"
+        aria-label="Perfil"
+      >
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow text-sm font-bold text-navy-900">
+          {iniciales}
+        </span>
+        <span className="hidden text-left sm:block">
+          <span className="block text-sm font-medium leading-tight">{nombre}</span>
+          <span className="block text-xs leading-tight text-white/60">{ROL_ETIQUETAS[rol]}</span>
+        </span>
+        <span className={`text-xs text-white/50 transition ${abierto ? "rotate-180" : ""}`}>▼</span>
+      </button>
+
+      {abierto && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setAbierto(false)} />
+          <div className="absolute right-0 top-full z-20 mt-2 w-56 overflow-hidden rounded-lg border border-navy-100 bg-white py-1 text-navy-900 shadow-lg">
+            <div className="border-b border-navy-100 px-4 py-2 sm:hidden">
+              <p className="text-sm font-semibold text-navy-900">{nombre}</p>
+              <p className="text-xs text-navy-500">{ROL_ETIQUETAS[rol]}</p>
+            </div>
+            <button
+              type="button"
+              onClick={salir}
+              className="block w-full px-4 py-2 text-left text-sm font-semibold text-red-600 hover:bg-red-50"
+            >
+              Salir
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

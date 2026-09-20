@@ -335,8 +335,6 @@ function VistaInspectorJuego({
         </div>
       </div>
 
-      {puedeCapturar && <PuntoLimpioPanel inspeccion={inspeccion} onActualizado={recargar} />}
-
       {puedeCapturar && (
         <CapturaPanel
           inspeccionId={id}
@@ -368,6 +366,8 @@ function VistaInspectorJuego({
           )}
         </details>
       )}
+
+      {puedeCapturar && <PuntoLimpioPanel inspeccion={inspeccion} onActualizado={recargar} />}
 
       {inspeccion.cerrado && (
         <div className="space-y-4">

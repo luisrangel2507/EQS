@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
+import type { Inspeccion } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requerirSesion, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { whereInspeccionesVisibles } from "@/lib/inspecciones";
@@ -65,6 +66,15 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         : []),
     ]);
 
+    if (!esBuena) {
+      try {
+        await notificarPiezaNg(inspeccion, datos.defecto ?? "defecto");
+      } catch (error) {
+        // No dejamos que un fallo al notificar tumbe la captura, que ya se guardó.
+        console.error("No se pudo notificar la pieza NG", error);
+      }
+    }
+
     return Response.json(captura, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -72,4 +82,37 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
     return manejarErrorApi(error);
   }
+}
+
+// Avisa a los usuarios Cliente de la empresa dueña de la pieza y a Líder
+// cuando sale una pieza NG (rechazada), para seguimiento inmediato.
+async function notificarPiezaNg(inspeccion: Inspeccion, defecto: string) {
+  const identificacion = inspeccion.numeroParte ?? inspeccion.nombre;
+
+  const destinatarios = await prisma.usuario.findMany({
+    where: {
+      activo: true,
+      OR: [
+        ...(inspeccion.cliente
+          ? [{ rol: "CLIENTE" as const, clienteNombre: inspeccion.cliente }]
+          : []),
+        { rol: "LIDER" as const },
+      ],
+    },
+    select: { id: true, rol: true },
+  });
+
+  if (destinatarios.length === 0) return;
+
+  await prisma.notificacion.createMany({
+    data: destinatarios.map((d) => ({
+      usuarioId: d.id,
+      inspeccionId: inspeccion.id,
+      tipo: "pieza_ng",
+      mensaje:
+        d.rol === "CLIENTE"
+          ? `Se detectó una pieza NG en ${identificacion}: ${defecto}`
+          : `⚠️ Pieza NG en ${identificacion}${inspeccion.cliente ? ` (${inspeccion.cliente})` : ""}: ${defecto}`,
+    })),
+  });
 }
