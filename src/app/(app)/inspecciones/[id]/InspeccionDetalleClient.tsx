@@ -18,7 +18,7 @@ import SubidaPdf from "@/components/SubidaPdf";
 type SesionUsuario = {
   id: string;
   nombre: string;
-  rol: "ADMIN" | "SUPERVISOR" | "LIDER" | "INSPECTOR" | "RESIDENTE" | "CLIENTE";
+  rol: "ADMIN" | "SUPERVISOR" | "GERENTE" | "LIDER" | "INSPECTOR" | "RESIDENTE" | "CLIENTE";
 };
 
 type Inspeccion = {

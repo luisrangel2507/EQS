@@ -20,11 +20,11 @@ type Props = {
 
 const ENLACES: { href: string; label: string; roles: Rol[] }[] = [
   { href: "/estacion", label: "Mis inspecciones", roles: ["INSPECTOR"] },
-  { href: "/dashboard", label: "Dashboard", roles: ["ADMIN", "SUPERVISOR", "LIDER", "RESIDENTE", "CLIENTE"] },
-  { href: "/inspecciones", label: "Inspecciones", roles: ["ADMIN", "SUPERVISOR", "LIDER", "RESIDENTE", "CLIENTE"] },
+  { href: "/dashboard", label: "Dashboard", roles: ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER", "RESIDENTE", "CLIENTE"] },
+  { href: "/inspecciones", label: "Inspecciones", roles: ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER", "RESIDENTE", "CLIENTE"] },
   { href: "/inspecciones", label: "Historial", roles: ["INSPECTOR"] },
-  { href: "/reportes", label: "Reportes", roles: ["ADMIN", "SUPERVISOR", "LIDER", "RESIDENTE", "CLIENTE"] },
-  { href: "/residentes", label: "Residentes", roles: ["ADMIN", "SUPERVISOR", "LIDER"] },
+  { href: "/reportes", label: "Reportes", roles: ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER", "RESIDENTE", "CLIENTE"] },
+  { href: "/residentes", label: "Residentes", roles: ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER"] },
   { href: "/usuarios", label: "Usuarios", roles: ["ADMIN"] },
 ];
 
@@ -36,7 +36,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-20 border-b border-navy-100 bg-navy-900 text-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
+        <div className="mx-auto flex w-full max-w-[1920px] items-center justify-between px-6 py-3">
           <div className="flex items-center gap-6">
             <Link href={inicio} className="flex items-center">
               <Image
@@ -45,7 +45,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
                 width={800}
                 height={266}
                 priority
-                className="h-8 w-auto sm:h-10"
+                className="h-[42px] w-auto sm:h-[52px]"
               />
             </Link>
             <nav className="hidden gap-1 md:flex">
@@ -105,7 +105,12 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
 
 function BurbujaChat({ rol, miId }: { rol: Rol; miId: string }) {
   const puedeChatear =
-    rol === "ADMIN" || rol === "SUPERVISOR" || rol === "LIDER" || rol === "INSPECTOR" || rol === "RESIDENTE";
+    rol === "ADMIN" ||
+    rol === "SUPERVISOR" ||
+    rol === "GERENTE" ||
+    rol === "LIDER" ||
+    rol === "INSPECTOR" ||
+    rol === "RESIDENTE";
   const [noLeidos, setNoLeidos] = useState(0);
   const [abierto, setAbierto] = useState(false);
 

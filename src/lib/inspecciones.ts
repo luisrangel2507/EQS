@@ -1,10 +1,10 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import type { SesionUsuario } from "@/lib/permissions";
+import { esLiderazgo, type SesionUsuario } from "@/lib/permissions";
 
 /** Restringe qué inspecciones puede ver cada rol. */
 export function whereInspeccionesVisibles(user: SesionUsuario): Prisma.InspeccionWhereInput {
-  if (user.rol === "ADMIN" || user.rol === "SUPERVISOR" || user.rol === "LIDER") {
+  if (esLiderazgo(user.rol)) {
     return {};
   }
   if (user.rol === "INSPECTOR") {

@@ -42,8 +42,9 @@ export const esSupervisorOAdmin = (rol: Rol) => rol === "ADMIN" || rol === "SUPE
 export const esInspector = (rol: Rol) => rol === "INSPECTOR";
 export const esCliente = (rol: Rol) => rol === "CLIENTE";
 export const esResidente = (rol: Rol) => rol === "RESIDENTE";
-/** Admin, Supervisor o Líder: ven todo el piso y el dashboard operativo. */
-export const esLiderazgo = (rol: Rol) => rol === "ADMIN" || rol === "SUPERVISOR" || rol === "LIDER";
+/** Admin, Supervisor, Gerente o Líder: ven todo el piso y el dashboard operativo. */
+export const esLiderazgo = (rol: Rol) =>
+  rol === "ADMIN" || rol === "SUPERVISOR" || rol === "GERENTE" || rol === "LIDER";
 /** Quién tiene acceso al chat grupal: liderazgo + inspectores + residentes (no clientes). */
 export const puedeChatear = (rol: Rol) =>
   esLiderazgo(rol) || rol === "INSPECTOR" || rol === "RESIDENTE";

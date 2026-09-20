@@ -83,11 +83,12 @@ export const FRASES_DEL_DIA_CLIENTE = [
   "Calidad constante, confianza garantizada.",
 ] as const;
 
-export const ROLES = ["ADMIN", "SUPERVISOR", "LIDER", "INSPECTOR", "RESIDENTE", "CLIENTE"] as const;
+export const ROLES = ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER", "INSPECTOR", "RESIDENTE", "CLIENTE"] as const;
 
 export const ROL_ETIQUETAS: Record<string, string> = {
   ADMIN: "Administrador",
   SUPERVISOR: "Supervisor",
+  GERENTE: "Gerente",
   LIDER: "Líder",
   INSPECTOR: "Inspector",
   RESIDENTE: "Residente",
@@ -99,6 +100,7 @@ export const ROL_ETIQUETAS: Record<string, string> = {
 export const ROL_SELLO: Record<string, { icono: string; clase: string }> = {
   ADMIN: { icono: "🛡️", clase: "bg-gradient-to-br from-navy-700 to-navy-900 text-white" },
   SUPERVISOR: { icono: "🧭", clase: "bg-gradient-to-br from-blue-500 to-indigo-600 text-white" },
+  GERENTE: { icono: "💼", clase: "bg-gradient-to-br from-rose-500 to-pink-600 text-white" },
   LIDER: { icono: "⭐", clase: "bg-gradient-to-br from-purple-500 to-fuchsia-600 text-white" },
   INSPECTOR: { icono: "🔎", clase: "bg-gradient-to-br from-emerald-500 to-teal-600 text-white" },
   RESIDENTE: { icono: "🏭", clase: "bg-gradient-to-br from-orange-500 to-amber-600 text-white" },
