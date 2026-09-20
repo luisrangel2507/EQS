@@ -63,12 +63,20 @@ export default function LoginPage() {
   return (
     <div className="relative flex min-h-[100dvh] items-end justify-center overflow-hidden px-4 pb-16 pt-8 sm:pb-24">
       <Image
+        src="/login-bg-mobile.png"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-center sm:hidden"
+      />
+      <Image
         src="/login-bg.png"
         alt=""
         fill
         priority
         sizes="100vw"
-        className="object-cover object-center"
+        className="hidden object-cover object-center sm:block"
       />
 
       <div className="relative z-10 w-full max-w-sm">
