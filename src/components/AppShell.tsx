@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -37,13 +38,15 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
       <header className="sticky top-0 z-20 border-b border-navy-100 bg-navy-900 text-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-6">
-            <Link href={inicio} className="flex items-center gap-0.5">
-              <span className="font-display text-xl font-extrabold tracking-tight text-white">
-                Inspeccion
-              </span>
-              <span className="font-display text-xl font-extrabold tracking-tight text-yellow">
-                APP
-              </span>
+            <Link href={inicio} className="flex items-center rounded-lg bg-white px-2.5 py-1">
+              <Image
+                src="/logo-header.png"
+                alt="EQS InspeccionAPP"
+                width={800}
+                height={266}
+                priority
+                className="h-7 w-auto sm:h-9"
+              />
             </Link>
             <nav className="hidden gap-1 md:flex">
               {enlaces.map((enlace) => {
