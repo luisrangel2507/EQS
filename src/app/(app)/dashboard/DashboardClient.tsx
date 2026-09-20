@@ -152,6 +152,10 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
                       {s.numeroParte ?? s.nombre}
                     </p>
                     <p className="truncate text-xs text-navy-400">{s.nombre}</p>
+                    <div className="mt-2 flex items-center gap-3 text-sm">
+                      <span className="font-semibold text-green-700">✅ {s.piezasBuenas} buenas</span>
+                      <span className="font-semibold text-red-700">❌ {s.piezasMalas} malas</span>
+                    </div>
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       {s.cliente && <Pill tono="navy">🏢 {s.cliente}</Pill>}
                       <Pill tono="azul">
