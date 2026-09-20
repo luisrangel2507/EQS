@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Rol } from "@prisma/client";
@@ -72,6 +73,7 @@ function fraseDelDia(rol: Rol) {
 export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: string }) {
   const { datos, cargando } = usePolling<DashboardData>("/api/dashboard", 7000);
   const esOperativo = rol === "ADMIN" || rol === "SUPERVISOR" || rol === "LIDER";
+  const [recordados, setRecordados] = useState<Set<string>>(new Set());
   const { datos: solicitudesTodas, recargar: recargarApoyo } = usePolling<SolicitudApoyo[]>(
     esOperativo ? "/api/apoyo" : null,
     5000
@@ -90,13 +92,32 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
     recargarApoyo();
   }
 
+  async function recordarLider(sol: SolicitudApoyo) {
+    const minutos = Math.max(0, Math.floor((Date.now() - new Date(sol.creadoEn).getTime()) / 60000));
+    const lugar = sol.inspeccion?.numeroParte ?? sol.inspeccion?.nombre ?? sol.estacion ?? "piso";
+    const contenido = `⏰ Recordatorio: la solicitud de apoyo de ${sol.usuario.nombre} en ${lugar} sigue sin atenderse (hace ${minutos} min). ¿Algún líder puede ir?`;
+    setRecordados((prev) => new Set(prev).add(sol.id));
+    await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contenido }),
+    });
+    setTimeout(() => {
+      setRecordados((prev) => {
+        const next = new Set(prev);
+        next.delete(sol.id);
+        return next;
+      });
+    }, 15000);
+  }
+
   if (cargando || !datos) {
     return <p className="text-sm text-navy-500">Cargando dashboard…</p>;
   }
 
   return (
     <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-xl">
+      <div className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden">
         <div className="relative h-72 w-full sm:h-96">
           <Image
             src="/dashboard-hero.png"
@@ -190,6 +211,22 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
                           >
                             Atender
                           </button>
+                          {rol === "SUPERVISOR" && (
+                            <button
+                              type="button"
+                              disabled={apoyoAqui.some((sol) => recordados.has(sol.id))}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                apoyoAqui.forEach((sol) => recordarLider(sol));
+                              }}
+                              className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-bold hover:bg-white/30 disabled:opacity-60"
+                            >
+                              {apoyoAqui.some((sol) => recordados.has(sol.id))
+                                ? "✓ Avisado"
+                                : "Recordar a líder"}
+                            </button>
+                          )}
                         </span>
                       )}
                     </div>
