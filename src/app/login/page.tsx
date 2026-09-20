@@ -60,7 +60,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden px-4 py-8">
+    <div className="relative flex min-h-[100dvh] items-end justify-center overflow-hidden px-4 pb-16 pt-8 sm:pb-24">
       <Image
         src="/login-bg.png"
         alt=""
@@ -69,11 +69,10 @@ export default function LoginPage() {
         sizes="100vw"
         className="object-cover object-center"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-navy-900/80 via-navy-900/70 to-navy-900/90" />
 
       <div className="relative z-10 w-full max-w-sm">
         {cargando ? (
-          <p className="text-center text-white/70">Cargando…</p>
+          <p className="text-center text-white/90 drop-shadow">Cargando…</p>
         ) : (
           <form onSubmit={manejarEnvio} className="card space-y-4 bg-white/95 backdrop-blur">
             {requiereBootstrap && (
