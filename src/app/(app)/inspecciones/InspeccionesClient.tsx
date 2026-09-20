@@ -145,6 +145,7 @@ function NuevaInspeccionForm({ onCerrar, onCreada }: { onCerrar: () => void; onC
   const [numeroParte, setNumeroParte] = useState("");
   const [cliente, setCliente] = useState("");
   const [planta, setPlanta] = useState("");
+  const [puntoLimpio, setPuntoLimpio] = useState("");
   const [meta, setMeta] = useState("");
   const [precioPorPieza, setPrecioPorPieza] = useState("");
   const [fechaEntrega, setFechaEntrega] = useState("");
@@ -177,6 +178,7 @@ function NuevaInspeccionForm({ onCerrar, onCreada }: { onCerrar: () => void; onC
         numeroParte: numeroParte || undefined,
         cliente: cliente || undefined,
         planta: planta || undefined,
+        puntoLimpio: puntoLimpio || undefined,
         meta: meta ? Number(meta) : undefined,
         precioPorPieza: precioPorPieza ? Number(precioPorPieza) : undefined,
         fechaEntrega: fechaEntrega ? new Date(fechaEntrega).toISOString() : undefined,
@@ -220,6 +222,15 @@ function NuevaInspeccionForm({ onCerrar, onCreada }: { onCerrar: () => void; onC
               </option>
             ))}
           </select>
+        </div>
+        <div>
+          <label className="label">Punto Limpio (identificación)</label>
+          <input
+            className="input"
+            placeholder="Ej. Mesa 3"
+            value={puntoLimpio}
+            onChange={(e) => setPuntoLimpio(e.target.value)}
+          />
         </div>
         <div>
           <label className="label">Meta de piezas</label>

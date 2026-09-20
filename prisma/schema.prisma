@@ -79,6 +79,16 @@ model Inspeccion {
   cerradoEn           DateTime?
   creadoEn            DateTime  @default(now())
 
+  // Punto Limpio: identificación del punto/mesa de trabajo y su verificación
+  // de limpieza al iniciar el sorteo (evidencia fotográfica + confirmación).
+  puntoLimpio             String?
+  puntoLimpioFotoUrl      String?
+  puntoLimpioReportadoPor String?
+  puntoLimpioReportadoEn  DateTime?
+  puntoLimpioOk           Boolean   @default(false)
+  puntoLimpioOkPor        String?
+  puntoLimpioOkEn         DateTime?
+
   capturas         Captura[]
   defectos         DefectoResumen[]
   inspectores      InspeccionInspector[]

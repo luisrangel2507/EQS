@@ -40,6 +40,13 @@ type Inspeccion = {
   cerradoEn: string | null;
   inspectores: { usuario: { id: string; nombre: string } }[];
   defectos: { tipo: string; cantidad: number }[];
+  puntoLimpio: string | null;
+  puntoLimpioFotoUrl: string | null;
+  puntoLimpioReportadoPor: string | null;
+  puntoLimpioReportadoEn: string | null;
+  puntoLimpioOk: boolean;
+  puntoLimpioOkPor: string | null;
+  puntoLimpioOkEn: string | null;
 };
 
 export default function InspeccionDetalleClient({
@@ -139,7 +146,7 @@ export default function InspeccionDetalleClient({
           valor={`${(rechazo * 100).toFixed(1)}%`}
           alerta={rechazo >= 0.08}
         />
-        <Metrica etiqueta="Meta" valor={`${total} / ${inspeccion.meta || "—"}`} />
+        <PuntoLimpioMetrica inspeccion={inspeccion} />
       </div>
       <div className="h-2 w-full rounded-full bg-navy-100">
         <div className="h-2 rounded-full bg-yellow" style={{ width: `${progreso}%` }} />
@@ -328,6 +335,8 @@ function VistaInspectorJuego({
         </div>
       </div>
 
+      {puedeCapturar && <PuntoLimpioPanel inspeccion={inspeccion} onActualizado={recargar} />}
+
       {puedeCapturar && (
         <CapturaPanel
           inspeccionId={id}
@@ -461,6 +470,167 @@ function Metrica({
       <p className={`mt-1 font-display text-2xl font-bold ${alerta ? "text-red-700" : "text-navy-900"}`}>
         {valor}
       </p>
+    </div>
+  );
+}
+
+function PuntoLimpioMetrica({ inspeccion }: { inspeccion: Inspeccion }) {
+  const estado = inspeccion.puntoLimpioOk
+    ? { texto: "✅ Verificado", color: "text-green-700" }
+    : inspeccion.puntoLimpioFotoUrl
+      ? { texto: "🟡 Pendiente OK", color: "text-amber-600" }
+      : { texto: "— Sin reportar", color: "text-navy-400" };
+
+  return (
+    <div className="card">
+      <p className="text-xs font-semibold uppercase tracking-wide text-navy-500">🧼 Punto Limpio</p>
+      <p className="mt-1 font-display text-lg font-bold text-navy-900">
+        {inspeccion.puntoLimpio || "Sin identificar"}
+      </p>
+      <p className={`text-xs font-semibold ${estado.color}`}>{estado.texto}</p>
+      {inspeccion.puntoLimpioFotoUrl && (
+        <a
+          href={inspeccion.puntoLimpioFotoUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-1 inline-block text-xs font-semibold text-navy underline"
+        >
+          Ver evidencia
+        </a>
+      )}
+    </div>
+  );
+}
+
+function PuntoLimpioPanel({
+  inspeccion,
+  onActualizado,
+}: {
+  inspeccion: Inspeccion;
+  onActualizado: () => void;
+}) {
+  const [foto, setFoto] = useState<File | null>(null);
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function reportarFoto(e: React.FormEvent) {
+    e.preventDefault();
+    if (!foto) return;
+    setEnviando(true);
+    setError(null);
+
+    const form = new FormData();
+    form.append("foto", foto);
+    const resFoto = await fetch("/api/upload", { method: "POST", body: form });
+    if (!resFoto.ok) {
+      setEnviando(false);
+      setError("No se pudo subir la foto");
+      return;
+    }
+    const { url } = await resFoto.json();
+
+    const res = await fetch(`/api/inspecciones/${inspeccion.id}/punto-limpio`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fotoUrl: url }),
+    });
+    setEnviando(false);
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      setError(d.error ?? "No se pudo reportar el Punto Limpio");
+      return;
+    }
+    setFoto(null);
+    onActualizado();
+  }
+
+  async function confirmarOk() {
+    setEnviando(true);
+    setError(null);
+    const res = await fetch(`/api/inspecciones/${inspeccion.id}/punto-limpio`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ok: true }),
+    });
+    setEnviando(false);
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      setError(d.error ?? "No se pudo confirmar el Punto Limpio");
+      return;
+    }
+    onActualizado();
+  }
+
+  return (
+    <div className="card">
+      <h2 className="mb-2 font-display font-semibold text-navy-900">
+        🧼 Punto Limpio{inspeccion.puntoLimpio ? `: ${inspeccion.puntoLimpio}` : ""}
+      </h2>
+
+      {inspeccion.puntoLimpioOk ? (
+        <div className="space-y-2">
+          <p className="text-sm font-semibold text-green-700">
+            ✅ Verificado por {inspeccion.puntoLimpioOkPor}
+            {inspeccion.puntoLimpioOkEn &&
+              ` el ${new Date(inspeccion.puntoLimpioOkEn).toLocaleString("es-MX")}`}
+          </p>
+          {inspeccion.puntoLimpioFotoUrl && (
+            <a
+              href={inspeccion.puntoLimpioFotoUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs font-semibold text-navy underline"
+            >
+              Ver evidencia
+            </a>
+          )}
+        </div>
+      ) : inspeccion.puntoLimpioFotoUrl ? (
+        <div className="space-y-3">
+          <p className="text-sm text-navy-600">
+            Evidencia enviada por {inspeccion.puntoLimpioReportadoPor}. Confirma que el punto está
+            limpio para continuar.
+          </p>
+          <a
+            href={inspeccion.puntoLimpioFotoUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-block text-xs font-semibold text-navy underline"
+          >
+            Ver foto enviada
+          </a>
+          <button
+            type="button"
+            onClick={confirmarOk}
+            disabled={enviando}
+            className="w-full rounded-lg bg-green-600 py-2 text-sm font-bold text-white transition hover:bg-green-700 disabled:opacity-40"
+          >
+            {enviando ? "Confirmando…" : "✅ Punto limpio OK"}
+          </button>
+        </div>
+      ) : (
+        <form onSubmit={reportarFoto} className="space-y-2">
+          <p className="text-sm text-navy-600">
+            Antes de empezar, sube una foto como evidencia de que el punto está limpio.
+          </p>
+          <input
+            className="input text-xs"
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={(e) => setFoto(e.target.files?.[0] ?? null)}
+          />
+          <button
+            type="submit"
+            disabled={enviando || !foto}
+            className="w-full rounded-lg bg-navy py-2 text-sm font-bold text-white transition hover:bg-navy-600 disabled:opacity-40"
+          >
+            {enviando ? "Enviando…" : "📸 Reportar Punto Limpio"}
+          </button>
+        </form>
+      )}
+
+      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
     </div>
   );
 }
@@ -895,6 +1065,7 @@ function EditarModal({
   const [numeroParte, setNumeroParte] = useState(inspeccion.numeroParte ?? "");
   const [cliente, setCliente] = useState(inspeccion.cliente ?? "");
   const [planta, setPlanta] = useState(inspeccion.planta ?? "");
+  const [puntoLimpio, setPuntoLimpio] = useState(inspeccion.puntoLimpio ?? "");
   const [meta, setMeta] = useState(inspeccion.meta ? String(inspeccion.meta) : "");
   const [precioPorPieza, setPrecioPorPieza] = useState(
     inspeccion.precioPorPieza ? String(inspeccion.precioPorPieza) : ""
@@ -937,6 +1108,7 @@ function EditarModal({
         numeroParte: numeroParte || null,
         cliente: cliente || null,
         planta: planta || null,
+        puntoLimpio: puntoLimpio || null,
         meta: meta ? Number(meta) : 0,
         precioPorPieza: precioPorPieza ? Number(precioPorPieza) : 0,
         fechaEntrega: fechaEntrega ? new Date(fechaEntrega).toISOString() : null,
@@ -990,6 +1162,15 @@ function EditarModal({
                 </option>
               ))}
             </select>
+          </div>
+          <div>
+            <label className="label">Punto Limpio (identificación)</label>
+            <input
+              className="input"
+              placeholder="Ej. Mesa 3"
+              value={puntoLimpio}
+              onChange={(e) => setPuntoLimpio(e.target.value)}
+            />
           </div>
           <div>
             <label className="label">Meta de piezas</label>
