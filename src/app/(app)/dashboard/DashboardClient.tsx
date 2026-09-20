@@ -16,6 +16,18 @@ type Inspeccion = {
   porcentajeRechazo: number;
 };
 
+type SorteoAbierto = {
+  id: string;
+  nombre: string;
+  numeroParte: string | null;
+  cliente: string | null;
+  planta: string | null;
+  piezasBuenas: number;
+  piezasMalas: number;
+  inspectoresRevisando: number;
+  topDefecto: string | null;
+};
+
 type DashboardData = {
   kpis: {
     inspeccionesActivas: number;
@@ -26,6 +38,7 @@ type DashboardData = {
   alertasRechazo: Inspeccion[];
   inspectoresEnPausa: { usuarioId: string; nombre: string; estado: string; minutos: number }[];
   estadoInspectores: { usuarioId: string; nombre: string; estado: string; desde: string }[];
+  sorteosAbiertos: SorteoAbierto[];
 };
 
 type SolicitudApoyo = {
@@ -136,6 +149,45 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
       </div>
 
       {esOperativo && (
+        <div className="card">
+          <h2 className="mb-3 font-display font-semibold text-navy-900">Sorteos abiertos</h2>
+          {datos.sorteosAbiertos.length === 0 ? (
+            <p className="text-sm text-navy-400">No hay sorteos activos por el momento.</p>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {datos.sorteosAbiertos.map((s) => {
+                const total = s.piezasBuenas + s.piezasMalas;
+                const rechazo = total > 0 ? (s.piezasMalas / total) * 100 : 0;
+                return (
+                  <Link
+                    key={s.id}
+                    href={`/inspecciones/${s.id}`}
+                    className="block rounded-2xl border border-navy-100 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+                  >
+                    <p className="truncate font-display font-semibold text-navy-900">
+                      {s.numeroParte ?? s.nombre}
+                    </p>
+                    <p className="truncate text-xs text-navy-400">{s.nombre}</p>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {s.cliente && <Pill tono="navy">🏢 {s.cliente}</Pill>}
+                      <Pill tono="azul">
+                        {s.numeroParte ?? "—"}
+                      </Pill>
+                      <Pill tono="verde">👥 {s.inspectoresRevisando} revisando</Pill>
+                      {s.topDefecto && <Pill tono="rojo">⚠️ {s.topDefecto}</Pill>}
+                      {rechazo >= 8 && (
+                        <Pill tono="rojo">🔥 {rechazo.toFixed(0)}% rechazo</Pill>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {esOperativo && (
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="card">
             <h2 className="mb-3 font-display font-semibold text-navy-900">
@@ -207,6 +259,23 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
         </div>
       )}
     </div>
+  );
+}
+
+const TONOS_PILL: Record<string, string> = {
+  navy: "from-navy-700 to-navy-900 text-white",
+  azul: "from-blue-500 to-indigo-600 text-white",
+  verde: "from-emerald-500 to-teal-600 text-white",
+  rojo: "from-red-500 to-orange-500 text-white",
+};
+
+function Pill({ tono, children }: { tono: keyof typeof TONOS_PILL; children: React.ReactNode }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r px-2.5 py-1 text-[11px] font-semibold shadow-sm ring-1 ring-black/5 ${TONOS_PILL[tono]}`}
+    >
+      {children}
+    </span>
   );
 }
 

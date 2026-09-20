@@ -13,6 +13,10 @@ export async function GET() {
     const inspecciones = await prisma.inspeccion.findMany({
       where,
       orderBy: { creadoEn: "desc" },
+      include: {
+        inspectores: { select: { usuarioId: true } },
+        defectos: true,
+      },
     });
 
     const activas = inspecciones.filter((i) => !i.cerrado);
@@ -60,6 +64,17 @@ export async function GET() {
       estado: string;
       desde: string;
     }> = [];
+    let sorteosAbiertos: Array<{
+      id: string;
+      nombre: string;
+      numeroParte: string | null;
+      cliente: string | null;
+      planta: string | null;
+      piezasBuenas: number;
+      piezasMalas: number;
+      inspectoresRevisando: number;
+      topDefecto: string | null;
+    }> = [];
 
     if (esLiderazgo(user.rol)) {
       alertasRechazo = enCritico;
@@ -85,6 +100,28 @@ export async function GET() {
           return { usuarioId: e.usuarioId, nombre: e.usuario.nombre, estado: e.estado, desde: e.desde.toISOString(), minutos };
         })
         .filter((e) => superaTolerancia(e.estado, e.minutos));
+
+      const inspectoresActivosIds = new Set(
+        estados.filter((e) => e.estado === "activo").map((e) => e.usuarioId)
+      );
+
+      sorteosAbiertos = activas.map((i) => {
+        const topDefecto = [...i.defectos].sort((a, b) => b.cantidad - a.cantidad)[0]?.tipo ?? null;
+        const inspectoresRevisando = i.inspectores.filter((a) =>
+          inspectoresActivosIds.has(a.usuarioId)
+        ).length;
+        return {
+          id: i.id,
+          nombre: i.nombre,
+          numeroParte: i.numeroParte,
+          cliente: i.cliente,
+          planta: i.planta,
+          piezasBuenas: i.piezasBuenas,
+          piezasMalas: i.piezasMalas,
+          inspectoresRevisando,
+          topDefecto,
+        };
+      });
     }
 
     return Response.json({
@@ -92,6 +129,7 @@ export async function GET() {
       alertasRechazo,
       inspectoresEnPausa,
       estadoInspectores,
+      sorteosAbiertos,
     });
   } catch (error) {
     return manejarErrorApi(error);

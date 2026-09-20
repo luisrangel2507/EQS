@@ -1,10 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import type { Rol } from "@prisma/client";
 import { ROL_ETIQUETAS } from "@/lib/constants";
+
+const CLAVE_ULTIMA_LECTURA_CHAT = "eqs_chat_ultima_lectura";
 
 type Props = {
   nombre: string;
@@ -88,6 +91,70 @@ export default function AppShell({ nombre, rol, children }: Props) {
         </nav>
       </header>
       <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
+      <BurbujaChat rol={rol} pathname={pathname} />
     </div>
+  );
+}
+
+function BurbujaChat({ rol, pathname }: { rol: Rol; pathname: string | null }) {
+  const puedeChatear = rol === "ADMIN" || rol === "SUPERVISOR" || rol === "LIDER";
+  const [noLeidos, setNoLeidos] = useState(0);
+
+  useEffect(() => {
+    if (!puedeChatear) return;
+
+    let desde: string;
+    try {
+      desde = localStorage.getItem(CLAVE_ULTIMA_LECTURA_CHAT) ?? "";
+    } catch {
+      desde = "";
+    }
+    if (!desde) {
+      desde = new Date().toISOString();
+      try {
+        localStorage.setItem(CLAVE_ULTIMA_LECTURA_CHAT, desde);
+      } catch {
+        // localStorage no disponible (modo privado, etc.): seguimos sin persistir
+      }
+    }
+
+    function consultar() {
+      fetch(`/api/chat/no-leidos?desde=${encodeURIComponent(desde)}`)
+        .then((r) => r.json())
+        .then((d) => setNoLeidos(d.noLeidos ?? 0))
+        .catch(() => {});
+    }
+
+    consultar();
+    const intervalo = setInterval(consultar, 8000);
+    return () => clearInterval(intervalo);
+  }, [puedeChatear]);
+
+  useEffect(() => {
+    if (pathname !== "/chat") return;
+    const ahora = new Date().toISOString();
+    try {
+      localStorage.setItem(CLAVE_ULTIMA_LECTURA_CHAT, ahora);
+    } catch {
+      // ignorar si no hay localStorage disponible
+    }
+    setNoLeidos(0);
+  }, [pathname]);
+
+  if (!puedeChatear || pathname === "/chat") return null;
+
+  return (
+    <Link
+      href="/chat"
+      className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-navy text-2xl text-white shadow-lg ring-4 ring-white/40 transition hover:scale-105 hover:bg-navy-600"
+      aria-label="Abrir chat de liderazgo"
+    >
+      💬
+      {noLeidos > 0 && (
+        <span className="absolute -right-1 -top-1 flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold text-white shadow ring-2 ring-white">
+          {noLeidos > 9 ? "9+" : noLeidos}
+        </span>
+      )}
+    </Link>
   );
 }
