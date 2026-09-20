@@ -257,8 +257,8 @@ function VistaInspectorJuego({
   const progreso = inspeccion.meta > 0 ? Math.min(100, (total / inspeccion.meta) * 100) : 0;
   const metaCumplida = inspeccion.meta > 0 && total >= inspeccion.meta;
 
-  function manejarResultado(esBuena: boolean) {
-    setRacha((r) => (esBuena ? r + 1 : 0));
+  function manejarResultado(esBuena: boolean, cantidad: number) {
+    setRacha((r) => (esBuena ? r + cantidad : 0));
   }
 
   return (
@@ -387,6 +387,50 @@ function Metrica({
   );
 }
 
+function ContadorPiezas({
+  cantidad,
+  onCambiar,
+  disabled,
+  colorTexto,
+}: {
+  cantidad: number;
+  onCambiar: (nuevo: number) => void;
+  disabled?: boolean;
+  colorTexto: string;
+}) {
+  return (
+    <div className="flex items-center justify-center gap-1">
+      {[-10, -1].map((paso) => (
+        <button
+          key={paso}
+          type="button"
+          disabled={disabled}
+          onClick={() => onCambiar(Math.max(0, cantidad + paso))}
+          className="flex h-10 min-w-[2.75rem] items-center justify-center rounded-lg border border-navy-200 bg-white px-2 text-sm font-bold text-navy-700 transition hover:bg-navy-50 disabled:opacity-40"
+        >
+          {paso}
+        </button>
+      ))}
+      <span
+        className={`mx-1 w-14 text-center font-display text-2xl font-extrabold ${colorTexto}`}
+      >
+        {cantidad}
+      </span>
+      {[1, 10, 100].map((paso) => (
+        <button
+          key={paso}
+          type="button"
+          disabled={disabled}
+          onClick={() => onCambiar(cantidad + paso)}
+          className="flex h-10 min-w-[2.75rem] items-center justify-center rounded-lg border border-navy-200 bg-white px-2 text-sm font-bold text-navy-700 transition hover:bg-navy-50 disabled:opacity-40"
+        >
+          +{paso}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function CapturaPanel({
   inspeccionId,
   onCapturado,
@@ -396,12 +440,14 @@ function CapturaPanel({
   inspeccionId: string;
   onCapturado: () => void;
   mostrarExtras: boolean;
-  onResultado?: (esBuena: boolean) => void;
+  onResultado?: (esBuena: boolean, cantidad: number) => void;
 }) {
-  const [mostrarMala, setMostrarMala] = useState(false);
+  const [cantidadBuena, setCantidadBuena] = useState(0);
+  const [cantidadMala, setCantidadMala] = useState(0);
   const [defecto, setDefecto] = useState<string>(DEFECTOS_COMUNES[0]);
   const [foto, setFoto] = useState<File | null>(null);
-  const [enviando, setEnviando] = useState(false);
+  const [enviandoBuena, setEnviandoBuena] = useState(false);
+  const [enviandoMala, setEnviandoMala] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -409,8 +455,8 @@ function CapturaPanel({
   const [hoy, setHoy] = useState<{ buenas: number; malas: number } | null>(null);
   const [llamandoApoyo, setLlamandoApoyo] = useState(false);
   const [apoyoAvisado, setApoyoAvisado] = useState(false);
-  const [popBuena, setPopBuena] = useState(false);
-  const [popMala, setPopMala] = useState(false);
+  const [popBuena, setPopBuena] = useState<number | null>(null);
+  const [popMala, setPopMala] = useState<number | null>(null);
 
   const cargarHoy = useCallback(() => {
     if (!mostrarExtras) return;
@@ -439,15 +485,16 @@ function CapturaPanel({
     setTimeout(() => setApoyoAvisado(false), 15000);
   }
 
-  async function capturarBuena() {
-    setEnviando(true);
+  async function registrarBuenas() {
+    if (cantidadBuena <= 0) return;
+    setEnviandoBuena(true);
     setError(null);
     const res = await fetch(`/api/inspecciones/${inspeccionId}/capturas`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tipo: "buena" }),
+      body: JSON.stringify({ tipo: "buena", cantidad: cantidadBuena }),
     });
-    setEnviando(false);
+    setEnviandoBuena(false);
     if (!res.ok) {
       const d = await res.json().catch(() => ({}));
       setError(d.error ?? "No se pudo registrar la pieza");
@@ -455,14 +502,16 @@ function CapturaPanel({
     }
     onCapturado();
     cargarHoy();
-    onResultado?.(true);
-    setPopBuena(true);
-    setTimeout(() => setPopBuena(false), 900);
+    onResultado?.(true, cantidadBuena);
+    setPopBuena(cantidadBuena);
+    setTimeout(() => setPopBuena(null), 900);
+    setCantidadBuena(0);
   }
 
-  async function capturarMala(e: React.FormEvent) {
+  async function registrarMalas(e: React.FormEvent) {
     e.preventDefault();
-    setEnviando(true);
+    if (cantidadMala <= 0) return;
+    setEnviandoMala(true);
     setError(null);
 
     let fotoUrl: string | undefined;
@@ -478,22 +527,22 @@ function CapturaPanel({
     const res = await fetch(`/api/inspecciones/${inspeccionId}/capturas`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tipo: "mala", defecto, fotoUrl }),
+      body: JSON.stringify({ tipo: "mala", cantidad: cantidadMala, defecto, fotoUrl }),
     });
-    setEnviando(false);
+    setEnviandoMala(false);
     if (!res.ok) {
       const d = await res.json().catch(() => ({}));
       setError(d.error ?? "No se pudo registrar la pieza");
       return;
     }
-    setMostrarMala(false);
     setFoto(null);
     if (inputRef.current) inputRef.current.value = "";
     onCapturado();
     cargarHoy();
-    onResultado?.(false);
-    setPopMala(true);
-    setTimeout(() => setPopMala(false), 900);
+    onResultado?.(false, cantidadMala);
+    setPopMala(cantidadMala);
+    setTimeout(() => setPopMala(null), 900);
+    setCantidadMala(0);
   }
 
   return (
@@ -513,44 +562,45 @@ function CapturaPanel({
           </div>
         )}
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="relative">
-          {popBuena && (
-            <span className="animate-pop-plus pointer-events-none absolute inset-x-0 top-2 text-center text-2xl font-extrabold text-green-500">
-              +1
-            </span>
-          )}
-          <button
-            onClick={capturarBuena}
-            disabled={enviando}
-            className={`flex h-28 w-full flex-col items-center justify-center rounded-xl bg-green-600 text-white shadow-sm transition hover:bg-green-700 disabled:opacity-50 ${popBuena ? "animate-tap-bounce" : ""}`}
-          >
-            <span className="text-3xl font-bold">+1</span>
-            <span className="text-sm font-medium">Pieza buena</span>
-          </button>
-        </div>
-        <div className="relative">
-          {popMala && (
-            <span className="animate-pop-plus pointer-events-none absolute inset-x-0 top-2 text-center text-2xl font-extrabold text-red-500">
-              +1
-            </span>
-          )}
-          <button
-            onClick={() => setMostrarMala(true)}
-            disabled={enviando}
-            className="flex h-28 w-full flex-col items-center justify-center rounded-xl bg-red-600 text-white shadow-sm transition hover:bg-red-700 disabled:opacity-50"
-          >
-            <span className="text-3xl font-bold">+1</span>
-            <span className="text-sm font-medium">Pieza mala</span>
-          </button>
-        </div>
-      </div>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
 
-      {mostrarMala && (
-        <form onSubmit={capturarMala} className="mt-4 space-y-3 rounded-lg border border-navy-100 p-3">
-          <div>
-            <label className="label">Tipo de defecto</label>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="relative rounded-xl border border-green-200 bg-green-50 p-3">
+          {popBuena !== null && (
+            <span className="animate-pop-plus pointer-events-none absolute inset-x-0 top-1 text-center text-xl font-extrabold text-green-600">
+              +{popBuena}
+            </span>
+          )}
+          <p className="mb-2 text-center text-sm font-semibold text-green-800">✅ Piezas buenas</p>
+          <ContadorPiezas
+            cantidad={cantidadBuena}
+            onCambiar={setCantidadBuena}
+            disabled={enviandoBuena}
+            colorTexto="text-green-700"
+          />
+          <button
+            type="button"
+            onClick={registrarBuenas}
+            disabled={enviandoBuena || cantidadBuena <= 0}
+            className="mt-3 w-full rounded-lg bg-green-600 py-2 text-sm font-bold text-white transition hover:bg-green-700 disabled:opacity-40"
+          >
+            {enviandoBuena ? "Guardando…" : `Registrar ${cantidadBuena || ""} buena${cantidadBuena === 1 ? "" : "s"}`}
+          </button>
+        </div>
+
+        <div className="relative rounded-xl border border-red-200 bg-red-50 p-3">
+          {popMala !== null && (
+            <span className="animate-pop-plus pointer-events-none absolute inset-x-0 top-1 text-center text-xl font-extrabold text-red-600">
+              +{popMala}
+            </span>
+          )}
+          <p className="mb-2 text-center text-sm font-semibold text-red-800">❌ Piezas malas</p>
+          <ContadorPiezas
+            cantidad={cantidadMala}
+            onCambiar={setCantidadMala}
+            disabled={enviandoMala}
+            colorTexto="text-red-700"
+          />
+          <form onSubmit={registrarMalas} className="mt-3 space-y-2">
             <select className="input" value={defecto} onChange={(e) => setDefecto(e.target.value)}>
               {DEFECTOS_COMUNES.map((d) => (
                 <option key={d} value={d}>
@@ -558,28 +608,25 @@ function CapturaPanel({
                 </option>
               ))}
             </select>
-          </div>
-          <div>
-            <label className="label">Foto de evidencia (opcional)</label>
             <input
               ref={inputRef}
-              className="input"
+              className="input text-xs"
               type="file"
               accept="image/*"
               capture="environment"
               onChange={(e) => setFoto(e.target.files?.[0] ?? null)}
             />
-          </div>
-          <div className="flex gap-2">
-            <button type="submit" className="btn-primary" disabled={enviando}>
-              {enviando ? "Guardando…" : "Registrar pieza mala"}
+            <button
+              type="submit"
+              disabled={enviandoMala || cantidadMala <= 0}
+              className="w-full rounded-lg bg-red-600 py-2 text-sm font-bold text-white transition hover:bg-red-700 disabled:opacity-40"
+            >
+              {enviandoMala ? "Guardando…" : `Registrar ${cantidadMala || ""} mala${cantidadMala === 1 ? "" : "s"}`}
             </button>
-            <button type="button" className="btn-secondary" onClick={() => setMostrarMala(false)}>
-              Cancelar
-            </button>
-          </div>
-        </form>
-      )}
+          </form>
+        </div>
+      </div>
+      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
 
       {mostrarExtras && (
         <button

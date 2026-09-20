@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 const capturaSchema = z
   .object({
     tipo: z.enum(["buena", "mala"]),
+    cantidad: z.coerce.number().int().min(1).max(999).optional().default(1),
     defecto: z.string().trim().optional().nullable(),
     fotoUrl: z.string().trim().optional().nullable(),
   })
@@ -34,28 +35,31 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const body = await req.json();
     const datos = capturaSchema.parse(body);
     const esBuena = datos.tipo === "buena";
+    const cantidad = datos.cantidad;
 
     const [captura] = await prisma.$transaction([
       prisma.captura.create({
         data: {
           inspeccionId: params.id,
           usuarioId: user.id,
-          buenas: esBuena ? 1 : 0,
-          malas: esBuena ? 0 : 1,
+          buenas: esBuena ? cantidad : 0,
+          malas: esBuena ? 0 : cantidad,
           defecto: esBuena ? null : datos.defecto,
           fotoUrl: datos.fotoUrl || null,
         },
       }),
       prisma.inspeccion.update({
         where: { id: params.id },
-        data: esBuena ? { piezasBuenas: { increment: 1 } } : { piezasMalas: { increment: 1 } },
+        data: esBuena
+          ? { piezasBuenas: { increment: cantidad } }
+          : { piezasMalas: { increment: cantidad } },
       }),
       ...(!esBuena && datos.defecto
         ? [
             prisma.defectoResumen.upsert({
               where: { inspeccionId_tipo: { inspeccionId: params.id, tipo: datos.defecto } },
-              create: { inspeccionId: params.id, tipo: datos.defecto, cantidad: 1 },
-              update: { cantidad: { increment: 1 } },
+              create: { inspeccionId: params.id, tipo: datos.defecto, cantidad },
+              update: { cantidad: { increment: cantidad } },
             }),
           ]
         : []),
