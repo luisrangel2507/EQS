@@ -60,13 +60,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4">
+    <div className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden px-4 py-8">
       <Image
         src="/login-bg.png"
         alt=""
         fill
         priority
-        className="object-cover"
+        sizes="100vw"
+        className="object-cover object-center"
       />
       <div className="absolute inset-0 bg-gradient-to-b from-navy-900/80 via-navy-900/70 to-navy-900/90" />
 
@@ -74,71 +75,62 @@ export default function LoginPage() {
         {cargando ? (
           <p className="text-center text-white/70">Cargando…</p>
         ) : (
-          <>
-            <div className="mb-8 text-center">
-              <h1 className="font-display text-2xl font-bold text-white drop-shadow">
-                Control de Inspecciones
-              </h1>
-              <p className="text-sm text-white/70">Ethical Quality Services</p>
+          <form onSubmit={manejarEnvio} className="card space-y-4 bg-white/95 backdrop-blur">
+            {requiereBootstrap && (
+              <div className="rounded-lg bg-yellow-50 px-3 py-2 text-sm text-navy-800">
+                No hay usuarios registrados todavía. Crea la cuenta del primer{" "}
+                <strong>Administrador</strong>.
+              </div>
+            )}
+
+            {requiereBootstrap && (
+              <div>
+                <label className="label">Nombre completo</label>
+                <input
+                  className="input"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  required
+                  minLength={2}
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="label">Usuario</label>
+              <input
+                className="input"
+                value={usuario}
+                onChange={(e) => setUsuario(e.target.value)}
+                required
+                minLength={3}
+                autoCapitalize="none"
+                autoCorrect="off"
+              />
             </div>
 
-            <form onSubmit={manejarEnvio} className="card space-y-4 bg-white/95 backdrop-blur">
-              {requiereBootstrap && (
-                <div className="rounded-lg bg-yellow-50 px-3 py-2 text-sm text-navy-800">
-                  No hay usuarios registrados todavía. Crea la cuenta del primer{" "}
-                  <strong>Administrador</strong>.
-                </div>
-              )}
+            <div>
+              <label className="label">Contraseña</label>
+              <input
+                className="input"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+            </div>
 
-              {requiereBootstrap && (
-                <div>
-                  <label className="label">Nombre completo</label>
-                  <input
-                    className="input"
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
-                    required
-                    minLength={2}
-                  />
-                </div>
-              )}
+            {error && <p className="text-sm text-red-600">{error}</p>}
 
-              <div>
-                <label className="label">Usuario</label>
-                <input
-                  className="input"
-                  value={usuario}
-                  onChange={(e) => setUsuario(e.target.value)}
-                  required
-                  minLength={3}
-                  autoCapitalize="none"
-                  autoCorrect="off"
-                />
-              </div>
-
-              <div>
-                <label className="label">Contraseña</label>
-                <input
-                  className="input"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
-              </div>
-
-              {error && <p className="text-sm text-red-600">{error}</p>}
-
-              <button type="submit" className="btn-accent w-full" disabled={enviando}>
-                {enviando
-                  ? "Procesando…"
-                  : requiereBootstrap
-                    ? "Crear administrador e ingresar"
-                    : "Ingresar"}
-              </button>
-            </form>
-          </>
+            <button type="submit" className="btn-accent w-full" disabled={enviando}>
+              {enviando
+                ? "Procesando…"
+                : requiereBootstrap
+                  ? "Crear administrador e ingresar"
+                  : "Ingresar"}
+            </button>
+          </form>
         )}
       </div>
     </div>

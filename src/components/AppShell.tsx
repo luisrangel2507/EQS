@@ -33,7 +33,7 @@ export default function AppShell({ nombre, rol, children }: Props) {
                 EQS
               </span>
               <span className="hidden font-display text-sm font-semibold sm:block">
-                Control de Inspecciones
+                InspeccionApp
               </span>
             </Link>
             <nav className="hidden gap-1 md:flex">

@@ -15,7 +15,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "EQS · Control de Inspecciones",
+  title: "InspeccionApp",
   description: "Control de inspecciones de calidad — Ethical Quality Services",
 };
 
