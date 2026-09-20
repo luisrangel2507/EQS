@@ -26,9 +26,9 @@ export default function InspeccionesClient({ rol }: { rol: Rol }) {
   const [inspecciones, setInspecciones] = useState<Inspeccion[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarForm, setMostrarForm] = useState(false);
-  const [filtro, setFiltro] = useState<"todas" | "activas" | "cerradas">(
-    esInspector ? "cerradas" : "activas"
-  );
+  const [filtro, setFiltro] = useState<"todas" | "activas" | "cerradas">("activas");
+  // Para el inspector, Historial es solo lo cerrado: lo activo ya vive en "Mis inspecciones".
+  const filtroEfectivo = esInspector ? "cerradas" : filtro;
 
   const puedeCrear = rol === "ADMIN" || rol === "SUPERVISOR";
 
@@ -43,8 +43,8 @@ export default function InspeccionesClient({ rol }: { rol: Rol }) {
   }, [cargar]);
 
   const filtradas = inspecciones.filter((i) => {
-    if (filtro === "activas") return !i.cerrado;
-    if (filtro === "cerradas") return i.cerrado;
+    if (filtroEfectivo === "activas") return !i.cerrado;
+    if (filtroEfectivo === "cerradas") return i.cerrado;
     return true;
   });
 
@@ -61,19 +61,21 @@ export default function InspeccionesClient({ rol }: { rol: Rol }) {
         )}
       </div>
 
-      <div className="flex gap-2">
-        {(["activas", "cerradas", "todas"] as const).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFiltro(f)}
-            className={`rounded-full px-3 py-1 text-xs font-semibold ${
-              filtro === f ? "bg-navy text-white" : "bg-white text-navy-500 border border-navy-200"
-            }`}
-          >
-            {f === "activas" ? "Activas" : f === "cerradas" ? "Cerradas" : "Todas"}
-          </button>
-        ))}
-      </div>
+      {!esInspector && (
+        <div className="flex gap-2">
+          {(["activas", "cerradas", "todas"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFiltro(f)}
+              className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                filtro === f ? "bg-navy text-white" : "bg-white text-navy-500 border border-navy-200"
+              }`}
+            >
+              {f === "activas" ? "Activas" : f === "cerradas" ? "Cerradas" : "Todas"}
+            </button>
+          ))}
+        </div>
+      )}
 
       {mostrarForm && (
         <NuevaInspeccionForm
