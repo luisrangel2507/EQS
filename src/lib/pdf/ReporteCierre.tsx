@@ -52,6 +52,17 @@ const styles = StyleSheet.create({
   tablaFila: { flexDirection: "row", borderTopWidth: 1, borderTopColor: "#EEE" },
   tablaCeldaHeader: { flex: 1, padding: 6, color: "#FFF", fontWeight: 700, fontSize: 9 },
   tablaCelda: { flex: 1, padding: 6, fontSize: 9 },
+  paretoFila: { flexDirection: "row", alignItems: "center", marginBottom: 7 },
+  paretoEtiqueta: { width: 120, fontSize: 8, color: "#333" },
+  paretoBarraFondo: {
+    flex: 1,
+    height: 13,
+    backgroundColor: "#F0F1F6",
+    borderRadius: 3,
+    flexDirection: "row",
+  },
+  paretoBarra: { height: 13, backgroundColor: NAVY, borderRadius: 3 },
+  paretoValor: { width: 24, fontSize: 8, textAlign: "right", marginLeft: 6, color: "#333" },
   firma: {
     marginTop: 24,
     paddingTop: 10,
@@ -92,6 +103,7 @@ export default function ReporteCierre({ datos }: { datos: DatosReporte }) {
   const total = datos.piezasBuenas + datos.piezasMalas;
   const porcentajeRechazo = total > 0 ? (datos.piezasMalas / total) * 100 : 0;
   const topDefectos = [...datos.defectos].sort((a, b) => b.cantidad - a.cantidad).slice(0, 8);
+  const maxCantidad = topDefectos.reduce((max, d) => Math.max(max, d.cantidad), 0);
 
   return (
     <Document title={`Reporte de cierre - ${datos.nombre}`}>
@@ -158,7 +170,31 @@ export default function ReporteCierre({ datos }: { datos: DatosReporte }) {
         </View>
 
         <View style={styles.seccion}>
-          <Text style={styles.seccionTitulo}>Top de defectos</Text>
+          <Text style={styles.seccionTitulo}>Pareto de defectos</Text>
+          {topDefectos.length === 0 ? (
+            <Text>No se registraron defectos.</Text>
+          ) : (
+            <View>
+              {topDefectos.map((d) => (
+                <View style={styles.paretoFila} key={d.tipo}>
+                  <Text style={styles.paretoEtiqueta}>{d.tipo}</Text>
+                  <View style={styles.paretoBarraFondo}>
+                    <View
+                      style={[
+                        styles.paretoBarra,
+                        { width: `${maxCantidad > 0 ? (d.cantidad / maxCantidad) * 100 : 0}%` },
+                      ]}
+                    />
+                  </View>
+                  <Text style={styles.paretoValor}>{d.cantidad}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+
+        <View style={styles.seccion}>
+          <Text style={styles.seccionTitulo}>Detalle de defectos</Text>
           {topDefectos.length === 0 ? (
             <Text>No se registraron defectos.</Text>
           ) : (
