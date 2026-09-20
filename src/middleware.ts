@@ -7,6 +7,6 @@ export const config = {
     "/usuarios/:path*",
     "/reportes/:path*",
     "/estacion/:path*",
-    "/chat/:path*",
+    "/residentes/:path*",
   ],
 };
