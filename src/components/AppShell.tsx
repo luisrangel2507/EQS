@@ -37,12 +37,12 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
       <header className="sticky top-0 z-20 border-b border-navy-100 bg-navy-900 text-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-6">
-            <Link href={inicio} className="flex items-center gap-2">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-yellow font-display text-lg font-extrabold text-navy-900">
-                EQS
+            <Link href={inicio} className="flex items-center gap-0.5">
+              <span className="font-display text-xl font-extrabold tracking-tight text-white">
+                Inspeccion
               </span>
-              <span className="hidden font-display text-sm font-semibold sm:block">
-                InspeccionApp
+              <span className="font-display text-xl font-extrabold tracking-tight text-yellow">
+                APP
               </span>
             </Link>
             <nav className="hidden gap-1 md:flex">

@@ -255,8 +255,13 @@ function VistaInspectorJuego({
   const [racha, setRacha] = useState(0);
 
   const total = inspeccion.piezasBuenas + inspeccion.piezasMalas;
+  const rechazo = total > 0 ? inspeccion.piezasMalas / total : 0;
   const progreso = inspeccion.meta > 0 ? Math.min(100, (total / inspeccion.meta) * 100) : 0;
   const metaCumplida = inspeccion.meta > 0 && total >= inspeccion.meta;
+  const datosPareto = [...inspeccion.defectos]
+    .sort((a, b) => b.cantidad - a.cantidad)
+    .slice(0, 8)
+    .map((d) => ({ tipo: d.tipo, cantidad: d.cantidad }));
 
   function manejarResultado(esBuena: boolean, cantidad: number) {
     setRacha((r) => (esBuena ? r + cantidad : 0));
@@ -360,10 +365,54 @@ function VistaInspectorJuego({
       )}
 
       {inspeccion.cerrado && (
-        <div className="card bg-navy-50 text-center">
-          <p className="text-sm text-navy-700">
-            🏁 Esta inspección ya está cerrada. ¡Buen trabajo!
-          </p>
+        <div className="space-y-4">
+          <div className="card bg-navy-50 text-center">
+            <p className="text-sm text-navy-700">
+              🏁 Esta inspección ya está cerrada. ¡Buen trabajo!
+            </p>
+          </div>
+
+          <div className="card">
+            <h2 className="mb-3 font-display font-semibold text-navy-900">
+              📋 Reporte de resultados
+            </h2>
+            <div className="grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
+              <Metrica etiqueta="Piezas buenas" valor={inspeccion.piezasBuenas} />
+              <Metrica etiqueta="Piezas malas" valor={inspeccion.piezasMalas} />
+              <Metrica
+                etiqueta="% Rechazo"
+                valor={`${(rechazo * 100).toFixed(1)}%`}
+                alerta={rechazo >= 0.08}
+              />
+              <Metrica etiqueta="Meta" valor={`${total} / ${inspeccion.meta || "—"}`} />
+            </div>
+          </div>
+
+          <div className="card">
+            <h2 className="mb-3 font-display font-semibold text-navy-900">Pareto de defectos</h2>
+            {datosPareto.length === 0 ? (
+              <p className="text-sm text-navy-400">No se registraron defectos.</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={datosPareto} layout="vertical" margin={{ left: 24 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                  <XAxis type="number" allowDecimals={false} />
+                  <YAxis type="category" dataKey="tipo" width={140} tick={{ fontSize: 12 }} />
+                  <Tooltip />
+                  <Bar dataKey="cantidad" fill="#142B6B" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          {inspeccion.cerradoPor && (
+            <div className="card bg-navy-50">
+              <p className="text-sm text-navy-700">
+                Cerrada por <strong>{inspeccion.cerradoPor}</strong> el{" "}
+                {inspeccion.cerradoEn && new Date(inspeccion.cerradoEn).toLocaleString("es-MX")}
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>
