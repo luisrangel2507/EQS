@@ -40,6 +40,7 @@ model Inspeccion {
   cliente             String?
   planta              String?
   meta                Int       @default(0)
+  precioPorPieza      Float     @default(0)
   fechaEntrega        DateTime?
   instrucciones       String?
   instruccionesPdfUrl String?

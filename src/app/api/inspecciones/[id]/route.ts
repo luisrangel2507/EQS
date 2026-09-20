@@ -12,6 +12,7 @@ const actualizarInspeccionSchema = z.object({
   cliente: z.string().trim().optional().nullable(),
   planta: z.string().trim().optional().nullable(),
   meta: z.coerce.number().int().min(0).optional(),
+  precioPorPieza: z.coerce.number().min(0).optional(),
   fechaEntrega: z.string().datetime().optional().nullable().or(z.literal("").transform(() => null)),
   instrucciones: z.string().trim().optional().nullable(),
   instruccionesPdfUrl: z.string().trim().optional().nullable(),
@@ -45,6 +46,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (datos.cliente !== undefined) data.cliente = datos.cliente || null;
     if (datos.planta !== undefined) data.planta = datos.planta || null;
     if (datos.meta !== undefined) data.meta = datos.meta;
+    if (datos.precioPorPieza !== undefined) data.precioPorPieza = datos.precioPorPieza;
     if (datos.fechaEntrega !== undefined) {
       data.fechaEntrega = datos.fechaEntrega ? new Date(datos.fechaEntrega) : null;
     }

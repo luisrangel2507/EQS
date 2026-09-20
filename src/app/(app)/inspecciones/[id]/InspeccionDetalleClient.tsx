@@ -28,6 +28,7 @@ type Inspeccion = {
   cliente: string | null;
   planta: string | null;
   meta: number;
+  precioPorPieza: number;
   fechaEntrega: string | null;
   instrucciones: string | null;
   instruccionesPdfUrl: string | null;
@@ -443,12 +444,13 @@ function CapturaPanel({
   onResultado?: (esBuena: boolean, cantidad: number) => void;
 }) {
   const [cantidadBuena, setCantidadBuena] = useState(0);
-  const [cantidadMala, setCantidadMala] = useState(0);
+  const [cantidadMala, setCantidadMala] = useState(1);
   const [defecto, setDefecto] = useState<string>(DEFECTOS_COMUNES[0]);
   const [foto, setFoto] = useState<File | null>(null);
   const [enviandoBuena, setEnviandoBuena] = useState(false);
   const [enviandoMala, setEnviandoMala] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mostrarFormDefecto, setMostrarFormDefecto] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [estacion, setEstacion] = useState<string | null>(null);
@@ -542,7 +544,8 @@ function CapturaPanel({
     onResultado?.(false, cantidadMala);
     setPopMala(cantidadMala);
     setTimeout(() => setPopMala(null), 900);
-    setCantidadMala(0);
+    setCantidadMala(1);
+    setMostrarFormDefecto(false);
   }
 
   return (
@@ -563,14 +566,16 @@ function CapturaPanel({
         )}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="space-y-3">
         <div className="relative rounded-xl border border-green-200 bg-green-50 p-3">
           {popBuena !== null && (
             <span className="animate-pop-plus pointer-events-none absolute inset-x-0 top-1 text-center text-xl font-extrabold text-green-600">
               +{popBuena}
             </span>
           )}
-          <p className="mb-2 text-center text-sm font-semibold text-green-800">✅ Piezas buenas</p>
+          <p className="mb-2 text-center text-sm font-semibold text-green-800">
+            📦 Cantidad inspeccionada
+          </p>
           <ContadorPiezas
             cantidad={cantidadBuena}
             onCambiar={setCantidadBuena}
@@ -583,7 +588,9 @@ function CapturaPanel({
             disabled={enviandoBuena || cantidadBuena <= 0}
             className="mt-3 w-full rounded-lg bg-green-600 py-2 text-sm font-bold text-white transition hover:bg-green-700 disabled:opacity-40"
           >
-            {enviandoBuena ? "Guardando…" : `Registrar ${cantidadBuena || ""} buena${cantidadBuena === 1 ? "" : "s"}`}
+            {enviandoBuena
+              ? "Guardando…"
+              : `Registrar ${cantidadBuena || ""} pieza${cantidadBuena === 1 ? "" : "s"} inspeccionada${cantidadBuena === 1 ? "" : "s"}`}
           </button>
         </div>
 
@@ -593,37 +600,60 @@ function CapturaPanel({
               +{popMala}
             </span>
           )}
-          <p className="mb-2 text-center text-sm font-semibold text-red-800">❌ Piezas malas</p>
-          <ContadorPiezas
-            cantidad={cantidadMala}
-            onCambiar={setCantidadMala}
-            disabled={enviandoMala}
-            colorTexto="text-red-700"
-          />
-          <form onSubmit={registrarMalas} className="mt-3 space-y-2">
-            <select className="input" value={defecto} onChange={(e) => setDefecto(e.target.value)}>
-              {DEFECTOS_COMUNES.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-            <input
-              ref={inputRef}
-              className="input text-xs"
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={(e) => setFoto(e.target.files?.[0] ?? null)}
-            />
+          {!mostrarFormDefecto ? (
             <button
-              type="submit"
-              disabled={enviandoMala || cantidadMala <= 0}
-              className="w-full rounded-lg bg-red-600 py-2 text-sm font-bold text-white transition hover:bg-red-700 disabled:opacity-40"
+              type="button"
+              onClick={() => setMostrarFormDefecto(true)}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-600 py-3 text-sm font-bold text-white transition hover:bg-red-700"
             >
-              {enviandoMala ? "Guardando…" : `Registrar ${cantidadMala || ""} mala${cantidadMala === 1 ? "" : "s"}`}
+              ⚠️ Reportar defecto
             </button>
-          </form>
+          ) : (
+            <>
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-sm font-semibold text-red-800">⚠️ Reportar defecto</p>
+                <button
+                  type="button"
+                  onClick={() => setMostrarFormDefecto(false)}
+                  className="text-xs font-semibold text-red-400 hover:text-red-700"
+                >
+                  Cancelar
+                </button>
+              </div>
+              <ContadorPiezas
+                cantidad={cantidadMala}
+                onCambiar={setCantidadMala}
+                disabled={enviandoMala}
+                colorTexto="text-red-700"
+              />
+              <form onSubmit={registrarMalas} className="mt-3 space-y-2">
+                <select className="input" value={defecto} onChange={(e) => setDefecto(e.target.value)}>
+                  {DEFECTOS_COMUNES.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  ref={inputRef}
+                  className="input text-xs"
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={(e) => setFoto(e.target.files?.[0] ?? null)}
+                />
+                <button
+                  type="submit"
+                  disabled={enviandoMala || cantidadMala <= 0}
+                  className="w-full rounded-lg bg-red-600 py-2 text-sm font-bold text-white transition hover:bg-red-700 disabled:opacity-40"
+                >
+                  {enviandoMala
+                    ? "Guardando…"
+                    : `Reportar ${cantidadMala || ""} defecto${cantidadMala === 1 ? "" : "s"}`}
+                </button>
+              </form>
+            </>
+          )}
         </div>
       </div>
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
@@ -768,6 +798,9 @@ function EditarModal({
   const [cliente, setCliente] = useState(inspeccion.cliente ?? "");
   const [planta, setPlanta] = useState(inspeccion.planta ?? "");
   const [meta, setMeta] = useState(inspeccion.meta ? String(inspeccion.meta) : "");
+  const [precioPorPieza, setPrecioPorPieza] = useState(
+    inspeccion.precioPorPieza ? String(inspeccion.precioPorPieza) : ""
+  );
   const [fechaEntrega, setFechaEntrega] = useState(
     inspeccion.fechaEntrega ? inspeccion.fechaEntrega.slice(0, 10) : ""
   );
@@ -807,6 +840,7 @@ function EditarModal({
         cliente: cliente || null,
         planta: planta || null,
         meta: meta ? Number(meta) : 0,
+        precioPorPieza: precioPorPieza ? Number(precioPorPieza) : 0,
         fechaEntrega: fechaEntrega ? new Date(fechaEntrega).toISOString() : null,
         instrucciones: instrucciones || null,
         instruccionesPdfUrl: instruccionesPdfUrl || null,
@@ -867,6 +901,17 @@ function EditarModal({
               min={0}
               value={meta}
               onChange={(e) => setMeta(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="label">Precio por pieza (facturación)</label>
+            <input
+              className="input"
+              type="number"
+              min={0}
+              step="0.01"
+              value={precioPorPieza}
+              onChange={(e) => setPrecioPorPieza(e.target.value)}
             />
           </div>
           <div>

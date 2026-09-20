@@ -21,12 +21,23 @@ export async function GET() {
 
     const activas = inspecciones.filter((i) => !i.cerrado);
 
-    const inicioHoy = new Date();
-    inicioHoy.setHours(0, 0, 0, 0);
-    const piezasHoy = await prisma.captura.aggregate({
-      where: { inspeccion: { ...where }, creadoEn: { gte: inicioHoy } },
+    const inicioMes = new Date();
+    inicioMes.setDate(1);
+    inicioMes.setHours(0, 0, 0, 0);
+    const capturasMes = await prisma.captura.groupBy({
+      by: ["inspeccionId"],
+      where: { inspeccion: { ...where }, creadoEn: { gte: inicioMes } },
       _sum: { buenas: true, malas: true },
     });
+
+    const precioPorId = new Map(inspecciones.map((i) => [i.id, i.precioPorPieza]));
+    let piezasInspeccionadasMes = 0;
+    let facturadoMes = 0;
+    for (const c of capturasMes) {
+      const piezas = (c._sum.buenas ?? 0) + (c._sum.malas ?? 0);
+      piezasInspeccionadasMes += piezas;
+      facturadoMes += piezas * (precioPorId.get(c.inspeccionId) ?? 0);
+    }
 
     const totalBuenas = activas.reduce((acc, i) => acc + i.piezasBuenas, 0);
     const totalMalas = activas.reduce((acc, i) => acc + i.piezasMalas, 0);
@@ -45,7 +56,8 @@ export async function GET() {
 
     const kpis = {
       inspeccionesActivas: activas.length,
-      piezasHoy: (piezasHoy._sum.buenas ?? 0) + (piezasHoy._sum.malas ?? 0),
+      piezasInspeccionadasMes,
+      facturadoMes: esLiderazgo(user.rol) ? facturadoMes : null,
       porcentajeRechazoGlobal,
       inspeccionesEnCritico: enCritico.length,
     };

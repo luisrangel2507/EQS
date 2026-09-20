@@ -31,7 +31,8 @@ type SorteoAbierto = {
 type DashboardData = {
   kpis: {
     inspeccionesActivas: number;
-    piezasHoy: number;
+    piezasInspeccionadasMes: number;
+    facturadoMes: number | null;
     porcentajeRechazoGlobal: number;
     inspeccionesEnCritico: number;
   };
@@ -51,6 +52,14 @@ type SolicitudApoyo = {
 
 function estadoInfo(valor: string) {
   return ESTADOS_INSPECTOR.find((e) => e.valor === valor) ?? ESTADOS_INSPECTOR[0];
+}
+
+function formatoMoneda(valor: number) {
+  return new Intl.NumberFormat("es-MX", {
+    style: "currency",
+    currency: "MXN",
+    maximumFractionDigits: 0,
+  }).format(valor);
 }
 
 function fraseDelDia() {
@@ -135,9 +144,12 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
         <Kpi etiqueta="Inspecciones activas" valor={datos.kpis.inspeccionesActivas} />
-        <Kpi etiqueta="Piezas hoy" valor={datos.kpis.piezasHoy} />
+        <Kpi etiqueta="Piezas inspeccionadas (mes)" valor={datos.kpis.piezasInspeccionadasMes} />
+        {datos.kpis.facturadoMes !== null && (
+          <Kpi etiqueta="Facturado en el mes" valor={formatoMoneda(datos.kpis.facturadoMes)} />
+        )}
         <Kpi
           etiqueta="% Rechazo global"
           valor={`${(datos.kpis.porcentajeRechazoGlobal * 100).toFixed(1)}%`}
