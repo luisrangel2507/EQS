@@ -529,7 +529,7 @@ function PuntoLimpioMetrica({
             className="input text-sm"
             value={valor}
             onChange={(e) => setValor(e.target.value)}
-            placeholder="Ej. Mesa 3"
+            placeholder="Ej. Lote 4521"
             autoFocus
           />
           <div className="flex gap-2">
@@ -670,8 +670,8 @@ function PuntoLimpioPanel({
       ) : inspeccion.puntoLimpioFotoUrl ? (
         <div className="space-y-3">
           <p className="text-sm text-navy-600">
-            Evidencia enviada por {inspeccion.puntoLimpioReportadoPor}. Confirma que el punto está
-            limpio para continuar.
+            Evidencia enviada por {inspeccion.puntoLimpioReportadoPor}. Confirma que el material
+            certificado llegó correctamente.
           </p>
           <a
             href={inspeccion.puntoLimpioFotoUrl}
@@ -693,7 +693,8 @@ function PuntoLimpioPanel({
       ) : (
         <form onSubmit={reportarFoto} className="space-y-2">
           <p className="text-sm text-navy-600">
-            Antes de empezar, sube una foto como evidencia de que el punto está limpio.
+            Sube una foto como evidencia de que llegó el material ya certificado/bueno del
+            proveedor.
           </p>
           <input
             className="input text-xs"
@@ -1246,10 +1247,10 @@ function EditarModal({
             </select>
           </div>
           <div>
-            <label className="label">Punto Limpio (identificación)</label>
+            <label className="label">Punto Limpio (lote de material certificado)</label>
             <input
               className="input"
-              placeholder="Ej. Mesa 3"
+              placeholder="Ej. Lote 4521"
               value={puntoLimpio}
               onChange={(e) => setPuntoLimpio(e.target.value)}
             />

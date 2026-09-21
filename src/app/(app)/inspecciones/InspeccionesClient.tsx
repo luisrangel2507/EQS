@@ -224,13 +224,17 @@ function NuevaInspeccionForm({ onCerrar, onCreada }: { onCerrar: () => void; onC
           </select>
         </div>
         <div>
-          <label className="label">Punto Limpio (identificación)</label>
+          <label className="label">Punto Limpio (lote de material certificado)</label>
           <input
             className="input"
-            placeholder="Ej. Mesa 3"
+            placeholder="Ej. Lote 4521"
             value={puntoLimpio}
             onChange={(e) => setPuntoLimpio(e.target.value)}
           />
+          <p className="mt-1 text-xs text-navy-400">
+            Identifica el lote de material ya bueno/certificado que llega de la planta del
+            proveedor.
+          </p>
         </div>
         <div>
           <label className="label">Meta de piezas</label>

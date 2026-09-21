@@ -81,8 +81,9 @@ model Inspeccion {
   cerradoEn           DateTime?
   creadoEn            DateTime  @default(now())
 
-  // Punto Limpio: identificación del punto/mesa de trabajo y su verificación
-  // de limpieza al iniciar el sorteo (evidencia fotográfica + confirmación).
+  // Punto Limpio: identificación del lote de material ya certificado/bueno
+  // que llega de la planta del proveedor a la del cliente, con evidencia
+  // fotográfica de que llegó y su confirmación (no es un check de 5S).
   puntoLimpio             String?
   puntoLimpioFotoUrl      String?
   puntoLimpioReportadoPor String?
