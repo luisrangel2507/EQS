@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import type { Rol } from "@prisma/client";
 import { ROL_ETIQUETAS } from "@/lib/constants";
@@ -11,6 +11,19 @@ import ChatPanel from "./ChatPanel";
 import PushToggle from "./PushToggle";
 
 const CLAVE_ULTIMA_LECTURA_CHAT = "eqs_chat_ultima_lectura";
+
+// Permite que una pantalla (ej. la captura activa del inspector) le pida al
+// AppShell que se achique a solo una flecha de regreso, para ganar espacio.
+const OcultarHeaderContext = createContext<(oculto: boolean) => void>(() => {});
+
+export function useModoInmersivo(activo: boolean) {
+  const set = useContext(OcultarHeaderContext);
+  useEffect(() => {
+    if (!activo) return;
+    set(true);
+    return () => set(false);
+  }, [activo, set]);
+}
 
 type Props = {
   id: string;
@@ -31,77 +44,97 @@ const ENLACES: { href: string; label: string; roles: Rol[] }[] = [
 
 export default function AppShell({ id, nombre, rol, children }: Props) {
   const pathname = usePathname();
+  const router = useRouter();
   const enlaces = ENLACES.filter((e) => e.roles.includes(rol));
   const inicio = rol === "INSPECTOR" ? "/estacion" : "/dashboard";
   const esOperativo = rol === "ADMIN" || rol === "SUPERVISOR" || rol === "GERENTE" || rol === "LIDER";
+  const [inmersivo, setInmersivo] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-20 border-b border-navy-100 bg-navy-900 text-white">
-        <div className="mx-auto flex w-full max-w-[1920px] items-center justify-between px-6 py-3">
-          <div className="flex items-center gap-6">
-            <Link href={inicio} className="flex items-center">
-              <Image
-                src="/logo-header.png"
-                alt="EQS InspeccionAPP"
-                width={800}
-                height={266}
-                priority
-                className="h-[42px] w-auto sm:h-[52px]"
-              />
-            </Link>
-            <nav className="hidden gap-1 md:flex">
-              {enlaces.map((enlace) => {
-                const activo = pathname?.startsWith(enlace.href);
-                return (
-                  <Link
-                    key={enlace.href}
-                    href={enlace.href}
-                    className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
-                      activo
-                        ? "bg-white/10 text-yellow"
-                        : "text-white/80 hover:bg-white/5 hover:text-white"
-                    }`}
-                  >
-                    {enlace.label}
+    <OcultarHeaderContext.Provider value={setInmersivo}>
+      <div className="min-h-screen bg-background">
+        <header className="sticky top-0 z-20 border-b border-navy-100 bg-navy-900 text-white">
+          {inmersivo ? (
+            <div className="flex items-center px-4 py-3">
+              <button
+                type="button"
+                onClick={() => router.push(inicio)}
+                className="flex items-center gap-1.5 text-sm font-semibold text-white/90 hover:text-white"
+              >
+                ← Regresar
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="mx-auto flex w-full max-w-[1920px] items-center justify-between px-6 py-3">
+                <div className="flex items-center gap-6">
+                  <Link href={inicio} className="flex items-center">
+                    <Image
+                      src="/logo-header.png"
+                      alt="EQS InspeccionAPP"
+                      width={800}
+                      height={266}
+                      priority
+                      className="h-[42px] w-auto sm:h-[52px]"
+                    />
                   </Link>
-                );
-              })}
-            </nav>
-          </div>
-          <div className="flex items-center gap-3">
-            {esOperativo && (
-              <Link
-                href="/dashboard/ejecutivo"
-                className="flex items-center gap-1.5 rounded-md bg-yellow px-3 py-1.5 text-xs font-bold text-navy-900 transition hover:bg-yellow-400"
-              >
-                📊 <span className="hidden sm:inline">Dashboard Ejecutivo</span>
-              </Link>
-            )}
-            <NotificacionesBell rol={rol} />
-            <PerfilMenu nombre={nombre} rol={rol} />
-          </div>
-        </div>
-        <nav className="flex gap-1 overflow-x-auto border-t border-white/10 px-2 py-1 md:hidden">
-          {enlaces.map((enlace) => {
-            const activo = pathname?.startsWith(enlace.href);
-            return (
-              <Link
-                key={enlace.href}
-                href={enlace.href}
-                className={`shrink-0 rounded-md px-3 py-1.5 text-sm font-medium ${
-                  activo ? "bg-white/10 text-yellow" : "text-white/80"
-                }`}
-              >
-                {enlace.label}
-              </Link>
-            );
-          })}
-        </nav>
-      </header>
-      <main className="mx-auto max-w-7xl px-4 pb-24 pt-6">{children}</main>
-      <BurbujaChat rol={rol} miId={id} />
-    </div>
+                  <nav className="hidden gap-1 md:flex">
+                    {enlaces.map((enlace) => {
+                      const activo = pathname?.startsWith(enlace.href);
+                      return (
+                        <Link
+                          key={enlace.href}
+                          href={enlace.href}
+                          className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
+                            activo
+                              ? "bg-white/10 text-yellow"
+                              : "text-white/80 hover:bg-white/5 hover:text-white"
+                          }`}
+                        >
+                          {enlace.label}
+                        </Link>
+                      );
+                    })}
+                  </nav>
+                </div>
+                <div className="flex items-center gap-3">
+                  {esOperativo && (
+                    <Link
+                      href="/dashboard/ejecutivo"
+                      className="flex items-center gap-1.5 rounded-md bg-yellow px-3 py-1.5 text-xs font-bold text-navy-900 transition hover:bg-yellow-400"
+                    >
+                      📊 <span className="hidden sm:inline">Dashboard Ejecutivo</span>
+                    </Link>
+                  )}
+                  <NotificacionesBell rol={rol} />
+                  <PerfilMenu nombre={nombre} rol={rol} />
+                </div>
+              </div>
+              <nav className="flex gap-1 overflow-x-auto border-t border-white/10 px-2 py-1 md:hidden">
+                {enlaces.map((enlace) => {
+                  const activo = pathname?.startsWith(enlace.href);
+                  return (
+                    <Link
+                      key={enlace.href}
+                      href={enlace.href}
+                      className={`shrink-0 rounded-md px-3 py-1.5 text-sm font-medium ${
+                        activo ? "bg-white/10 text-yellow" : "text-white/80"
+                      }`}
+                    >
+                      {enlace.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </>
+          )}
+        </header>
+        <main className={inmersivo ? "px-4 pb-24 pt-4" : "mx-auto max-w-7xl px-4 pb-24 pt-6"}>
+          {children}
+        </main>
+        <BurbujaChat rol={rol} miId={id} />
+      </div>
+    </OcultarHeaderContext.Provider>
   );
 }
 

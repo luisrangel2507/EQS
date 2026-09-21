@@ -15,6 +15,7 @@ import { usePolling } from "@/lib/usePolling";
 import { DEFECTOS_COMUNES, ESTADOS_INSPECTOR, PLANTAS } from "@/lib/constants";
 import SubidaPdf from "@/components/SubidaPdf";
 import ClienteSelect from "@/components/ClienteSelect";
+import { useModoInmersivo } from "@/components/AppShell";
 
 type SesionUsuario = {
   id: string;
@@ -256,6 +257,7 @@ function VistaInspectorJuego({
 }) {
   const router = useRouter();
   const [racha, setRacha] = useState(0);
+  useModoInmersivo(!inspeccion.cerrado);
 
   const total = inspeccion.piezasBuenas + inspeccion.piezasMalas;
   const rechazo = total > 0 ? inspeccion.piezasMalas / total : 0;
@@ -273,12 +275,16 @@ function VistaInspectorJuego({
   return (
     <div className="mx-auto max-w-lg space-y-4">
       <div className="flex items-center justify-between">
-        <button
-          onClick={() => router.push("/estacion")}
-          className="text-xs font-semibold text-navy-400 hover:text-navy-700"
-        >
-          ← Mis inspecciones
-        </button>
+        {inspeccion.cerrado ? (
+          <button
+            onClick={() => router.push("/estacion")}
+            className="text-xs font-semibold text-navy-400 hover:text-navy-700"
+          >
+            ← Mis inspecciones
+          </button>
+        ) : (
+          <span />
+        )}
         {asignado && !inspeccion.cerrado && <EstadoInspectorChip />}
       </div>
 
