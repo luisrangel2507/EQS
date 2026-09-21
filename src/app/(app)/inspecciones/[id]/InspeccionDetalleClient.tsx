@@ -29,6 +29,7 @@ type Inspeccion = {
   numeroParte: string | null;
   cliente: string | null;
   planta: string | null;
+  creadoEn: string;
   meta: number;
   precioPorPieza: number;
   fechaEntrega: string | null;
@@ -267,7 +268,11 @@ function VistaInspectorJuego({
   const total = inspeccion.piezasBuenas + inspeccion.piezasMalas;
   const rechazo = total > 0 ? inspeccion.piezasMalas / total : 0;
   const progreso = inspeccion.meta > 0 ? Math.min(100, (total / inspeccion.meta) * 100) : 0;
-  const metaCumplida = inspeccion.meta > 0 && total >= inspeccion.meta;
+  const horasTranscurridas = Math.max(
+    (Date.now() - new Date(inspeccion.creadoEn).getTime()) / 3600000,
+    1 / 60
+  );
+  const piezasPorHora = total / horasTranscurridas;
   const datosPareto = [...inspeccion.defectos]
     .sort((a, b) => b.cantidad - a.cantidad)
     .slice(0, 8)
@@ -327,22 +332,16 @@ function VistaInspectorJuego({
           </div>
         </div>
 
-        <div className="mt-5">
-          <div className="mb-1 flex justify-between text-xs font-semibold text-white/70">
-            <span>🎯 Meta</span>
-            <span>
-              {total} / {inspeccion.meta || "—"} ({progreso.toFixed(0)}%)
+        <div className="mt-5 flex items-center justify-between rounded-xl bg-white/10 px-4 py-3">
+          <span className="text-xs font-semibold uppercase tracking-wide text-white/70">
+            ⚡ Ritmo
+          </span>
+          <span className="font-display text-xl font-extrabold text-yellow">
+            {piezasPorHora.toFixed(1)}{" "}
+            <span className="text-xs font-semibold uppercase tracking-wide text-white/70">
+              pzas/hora
             </span>
-          </div>
-          <div className="h-4 w-full overflow-hidden rounded-full bg-white/10">
-            <div
-              className="h-4 rounded-full bg-gradient-to-r from-yellow-600 to-yellow transition-all duration-500"
-              style={{ width: `${progreso}%` }}
-            />
-          </div>
-          {metaCumplida && (
-            <p className="mt-2 text-center text-sm font-bold text-yellow">🏆 ¡Meta cumplida!</p>
-          )}
+          </span>
         </div>
       </div>
 
