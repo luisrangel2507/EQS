@@ -601,29 +601,34 @@ function PuntoLimpioPanel({
     setEnviando(true);
     setError(null);
 
-    const form = new FormData();
-    form.append("foto", foto);
-    const resFoto = await fetch("/api/upload", { method: "POST", body: form });
-    if (!resFoto.ok) {
-      setEnviando(false);
-      setError("No se pudo subir la foto");
-      return;
-    }
-    const { url } = await resFoto.json();
+    try {
+      const form = new FormData();
+      form.append("foto", foto);
+      const resFoto = await fetch("/api/upload", { method: "POST", body: form });
+      if (!resFoto.ok) {
+        const d = await resFoto.json().catch(() => ({}));
+        setError(d.error ?? "No se pudo subir la foto");
+        return;
+      }
+      const { url } = await resFoto.json();
 
-    const res = await fetch(`/api/inspecciones/${inspeccion.id}/punto-limpio`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fotoUrl: url }),
-    });
-    setEnviando(false);
-    if (!res.ok) {
-      const d = await res.json().catch(() => ({}));
-      setError(d.error ?? "No se pudo reportar el Punto Limpio");
-      return;
+      const res = await fetch(`/api/inspecciones/${inspeccion.id}/punto-limpio`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fotoUrl: url }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setError(d.error ?? "No se pudo reportar el Punto Limpio");
+        return;
+      }
+      setFoto(null);
+      onActualizado();
+    } catch {
+      setError("Sin conexión. Revisa tu señal e intenta de nuevo.");
+    } finally {
+      setEnviando(false);
     }
-    setFoto(null);
-    onActualizado();
   }
 
   async function confirmarOk() {

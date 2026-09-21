@@ -7,7 +7,7 @@ import { UPLOADS_DIR } from "@/lib/uploads";
 
 const TIPOS_IMAGEN = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 const TIPOS_PERMITIDOS = [...TIPOS_IMAGEN, "application/pdf"];
-const TAMANO_MAXIMO_IMAGEN = 8 * 1024 * 1024; // 8MB
+const TAMANO_MAXIMO_IMAGEN = 20 * 1024 * 1024; // 20MB (fotos de cámara de celular pueden pesar bastante)
 const TAMANO_MAXIMO_PDF = 15 * 1024 * 1024; // 15MB
 
 export const dynamic = "force-dynamic";
