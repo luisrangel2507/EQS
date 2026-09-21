@@ -147,7 +147,12 @@ export default function InspeccionDetalleClient({
           valor={`${(rechazo * 100).toFixed(1)}%`}
           alerta={rechazo >= 0.08}
         />
-        <PuntoLimpioMetrica inspeccion={inspeccion} />
+        <PuntoLimpioMetrica
+          inspeccion={inspeccion}
+          puedeEditar={puedeGestionar && !inspeccion.cerrado}
+          inspeccionId={id}
+          onActualizado={recargar}
+        />
       </div>
       <div className="h-2 w-full rounded-full bg-navy-100">
         <div className="h-2 rounded-full bg-yellow" style={{ width: `${progreso}%` }} />
@@ -480,19 +485,90 @@ function Metrica({
   );
 }
 
-function PuntoLimpioMetrica({ inspeccion }: { inspeccion: Inspeccion }) {
+function PuntoLimpioMetrica({
+  inspeccion,
+  puedeEditar,
+  inspeccionId,
+  onActualizado,
+}: {
+  inspeccion: Inspeccion;
+  puedeEditar: boolean;
+  inspeccionId: string;
+  onActualizado: () => void;
+}) {
+  const [editando, setEditando] = useState(false);
+  const [valor, setValor] = useState(inspeccion.puntoLimpio ?? "");
+  const [guardando, setGuardando] = useState(false);
+
   const estado = inspeccion.puntoLimpioOk
     ? { texto: "✅ Verificado", color: "text-green-700" }
     : inspeccion.puntoLimpioFotoUrl
       ? { texto: "🟡 Pendiente OK", color: "text-amber-600" }
       : { texto: "— Sin reportar", color: "text-navy-400" };
 
+  async function guardar() {
+    setGuardando(true);
+    const res = await fetch(`/api/inspecciones/${inspeccionId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ puntoLimpio: valor.trim() || null }),
+    });
+    setGuardando(false);
+    if (res.ok) {
+      setEditando(false);
+      onActualizado();
+    }
+  }
+
   return (
     <div className="card">
       <p className="text-xs font-semibold uppercase tracking-wide text-navy-500">🧼 Punto Limpio</p>
-      <p className="mt-1 font-display text-lg font-bold text-navy-900">
-        {inspeccion.puntoLimpio || "Sin identificar"}
-      </p>
+      {editando ? (
+        <div className="mt-1 space-y-2">
+          <input
+            className="input text-sm"
+            value={valor}
+            onChange={(e) => setValor(e.target.value)}
+            placeholder="Ej. Mesa 3"
+            autoFocus
+          />
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={guardar}
+              disabled={guardando}
+              className="btn-primary flex-1 py-1 text-xs"
+            >
+              {guardando ? "Guardando…" : "Guardar"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEditando(false);
+                setValor(inspeccion.puntoLimpio ?? "");
+              }}
+              className="btn-secondary py-1 text-xs"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ) : puedeEditar ? (
+        <button
+          type="button"
+          onClick={() => setEditando(true)}
+          className="mt-1 block text-left"
+        >
+          <span className="font-display text-lg font-bold text-navy-900">
+            {inspeccion.puntoLimpio || "Sin identificar"}
+          </span>
+          <span className="ml-1.5 text-xs font-semibold text-navy-400">✏️</span>
+        </button>
+      ) : (
+        <p className="mt-1 font-display text-lg font-bold text-navy-900">
+          {inspeccion.puntoLimpio || "Sin identificar"}
+        </p>
+      )}
       <p className={`text-xs font-semibold ${estado.color}`}>{estado.texto}</p>
       {inspeccion.puntoLimpioFotoUrl && (
         <a
