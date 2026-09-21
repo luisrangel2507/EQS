@@ -54,7 +54,7 @@ export default function EstacionClient({
         <div className="card space-y-4">
           <div>
             <h1 className="font-display text-xl font-bold text-navy-900">
-              Hola {nombre.split(" ")[0]}, esto vas a inspeccionar
+              ¡Hola {nombre.split(" ")[0]}, esto vas a inspeccionar!
             </h1>
           </div>
 
