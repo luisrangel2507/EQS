@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { usePolling } from "@/lib/usePolling";
-import { ESTADOS_INSPECTOR, ROL_ETIQUETAS, TOLERANCIA_MINUTOS } from "@/lib/constants";
+import { ESTADOS_INSPECTOR, ROL_ETIQUETAS } from "@/lib/constants";
 import { Kpi } from "@/app/(app)/dashboard/shared";
 
 type Residente = {
@@ -14,17 +14,18 @@ type Residente = {
   _count: { notasResidente: number };
 };
 
+// un Residente se marca en alerta si lleva más de 4 horas en un estado que
+// no es "activo" (a diferencia del Inspector, sus pausas pueden ser largas).
+const TOLERANCIA_RESIDENTE_MINUTOS = 4 * 60;
+
 function minutosDesde(desde: string) {
   return Math.floor((Date.now() - new Date(desde).getTime()) / 60000);
 }
 
-// mismo criterio de tolerancia que usa el Dashboard para inspectores: si lleva
-// más de lo permitido en un estado que no es "activo", se marca en alerta.
 function enAlerta(r: Residente) {
   if (!r.estado) return false;
   if (r.estado.estado === "activo") return false;
-  const tolerancia = TOLERANCIA_MINUTOS[r.estado.estado] ?? 15;
-  return minutosDesde(r.estado.desde) >= tolerancia;
+  return minutosDesde(r.estado.desde) >= TOLERANCIA_RESIDENTE_MINUTOS;
 }
 
 type Nota = {
