@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePolling } from "@/lib/usePolling";
-import { ESTADOS_INSPECTOR, ROL_ETIQUETAS } from "@/lib/constants";
+import { ESTADOS_INSPECTOR, ROL_ETIQUETAS, TOLERANCIA_MINUTOS } from "@/lib/constants";
+import { Kpi } from "@/app/(app)/dashboard/shared";
 
 type Residente = {
   id: string;
@@ -12,6 +13,19 @@ type Residente = {
   estado: { estado: string; desde: string } | null;
   _count: { notasResidente: number };
 };
+
+function minutosDesde(desde: string) {
+  return Math.floor((Date.now() - new Date(desde).getTime()) / 60000);
+}
+
+// mismo criterio de tolerancia que usa el Dashboard para inspectores: si lleva
+// más de lo permitido en un estado que no es "activo", se marca en alerta.
+function enAlerta(r: Residente) {
+  if (!r.estado) return false;
+  if (r.estado.estado === "activo") return false;
+  const tolerancia = TOLERANCIA_MINUTOS[r.estado.estado] ?? 15;
+  return minutosDesde(r.estado.desde) >= tolerancia;
+}
 
 type Nota = {
   id: string;
@@ -27,6 +41,31 @@ function estadoInfo(valor: string) {
 export default function ResidentesClient() {
   const { datos: residentes, cargando } = usePolling<Residente[]>("/api/residentes", 15000);
   const [abiertoId, setAbiertoId] = useState<string | null>(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [plantaFiltro, setPlantaFiltro] = useState("");
+
+  const plantas = useMemo(() => {
+    const set = new Set((residentes ?? []).map((r) => r.plantaResidente).filter(Boolean) as string[]);
+    return Array.from(set).sort();
+  }, [residentes]);
+
+  const resumen = useMemo(() => {
+    const lista = residentes ?? [];
+    return {
+      total: lista.length,
+      activos: lista.filter((r) => r.estado?.estado === "activo").length,
+      alertas: lista.filter(enAlerta).length,
+      sinReportar: lista.filter((r) => !r.estado).length,
+    };
+  }, [residentes]);
+
+  const filtrados = useMemo(() => {
+    return (residentes ?? []).filter((r) => {
+      if (plantaFiltro && r.plantaResidente !== plantaFiltro) return false;
+      if (busqueda && !r.nombre.toLowerCase().includes(busqueda.toLowerCase())) return false;
+      return true;
+    });
+  }, [residentes, plantaFiltro, busqueda]);
 
   return (
     <div className="space-y-4">
@@ -38,29 +77,72 @@ export default function ResidentesClient() {
         </p>
       </div>
 
+      {!cargando && residentes && residentes.length > 0 && (
+        <>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <Kpi etiqueta="Residentes" valor={resumen.total} />
+            <Kpi etiqueta="Activos" valor={resumen.activos} />
+            <Kpi etiqueta="En alerta" valor={resumen.alertas} alerta={resumen.alertas > 0} />
+            <Kpi etiqueta="Sin reportar" valor={resumen.sinReportar} />
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <input
+              className="input max-w-xs flex-1"
+              placeholder="Buscar por nombre…"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+            <select
+              className="input max-w-[220px]"
+              value={plantaFiltro}
+              onChange={(e) => setPlantaFiltro(e.target.value)}
+            >
+              <option value="">Todas las plantas</option>
+              {plantas.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </div>
+        </>
+      )}
+
       {cargando ? (
         <p className="text-sm text-navy-500">Cargando…</p>
       ) : !residentes || residentes.length === 0 ? (
         <p className="card text-sm text-navy-400">
           Todavía no hay Residentes marcados. Puedes hacerlo desde Usuarios.
         </p>
+      ) : filtrados.length === 0 ? (
+        <p className="card text-sm text-navy-400">Ningún Residente coincide con el filtro.</p>
       ) : (
         <div className="space-y-3">
-          {residentes.map((r) => {
+          {filtrados.map((r) => {
             const info = r.estado ? estadoInfo(r.estado.estado) : null;
             const abierto = abiertoId === r.id;
+            const alerta = enAlerta(r);
             return (
-              <div key={r.id} className="card">
+              <div
+                key={r.id}
+                className="card"
+                style={alerta ? { borderColor: "#fca5a5", backgroundColor: "#fef2f2" } : undefined}
+              >
                 <button
                   type="button"
                   onClick={() => setAbiertoId(abierto ? null : r.id)}
                   className="flex w-full flex-wrap items-center justify-between gap-2 text-left"
                 >
                   <div>
-                    <p className="font-display font-semibold text-navy-900">{r.nombre}</p>
+                    <p className="font-display font-semibold text-navy-900">
+                      {alerta && "🚨 "}
+                      {r.nombre}
+                    </p>
                     <p className="text-xs text-navy-500">
                       {ROL_ETIQUETAS[r.rol] ?? r.rol}
                       {r.plantaResidente ? ` · 🏭 ${r.plantaResidente}` : ""}
+                      {r.estado && ` · hace ${minutosDesde(r.estado.desde)} min`}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">

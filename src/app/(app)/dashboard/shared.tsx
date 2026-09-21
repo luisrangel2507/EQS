@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Rol } from "@prisma/client";
 import { usePolling } from "@/lib/usePolling";
@@ -258,6 +258,74 @@ export function ResidentesResumenCard({ residentes }: { residentes: Residente[] 
               </Link>
             );
           })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// autorreporte de estado para el Residente: no tiene una pantalla de trabajo
+// como el Inspector, así que reporta su estado directo desde el Dashboard.
+export function MiEstadoResidenteCard() {
+  const [estado, setEstado] = useState<string | null>(null);
+  const [desde, setDesde] = useState<string | null>(null);
+  const [cargando, setCargando] = useState(true);
+  const [guardando, setGuardando] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/estado")
+      .then((r) => r.json())
+      .then((d) => {
+        setEstado(d?.estado ?? null);
+        setDesde(d?.desde ?? null);
+      })
+      .finally(() => setCargando(false));
+  }, []);
+
+  async function cambiar(valor: string) {
+    setGuardando(valor);
+    const res = await fetch("/api/estado", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ estado: valor }),
+    });
+    if (res.ok) {
+      setEstado(valor);
+      setDesde(new Date().toISOString());
+    }
+    setGuardando(null);
+  }
+
+  return (
+    <div className="card">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <TituloSeccion>Mi estado</TituloSeccion>
+        {desde && !cargando && (
+          <span className="text-xs text-navy-400">
+            Desde{" "}
+            {new Date(desde).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        )}
+      </div>
+      {cargando ? (
+        <p className="text-sm text-navy-400">Cargando…</p>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {ESTADOS_INSPECTOR.map((e) => (
+            <button
+              key={e.valor}
+              type="button"
+              onClick={() => cambiar(e.valor)}
+              disabled={guardando !== null}
+              className={`rounded-full border px-3 py-1.5 text-sm font-semibold transition disabled:opacity-60 ${
+                estado === e.valor
+                  ? `${e.color} border-transparent`
+                  : "border-navy-200 text-navy-600 hover:bg-navy-50"
+              }`}
+            >
+              {e.etiqueta}
+            </button>
+          ))}
         </div>
       )}
     </div>

@@ -8,6 +8,7 @@ import {
   Kpi,
   SorteosAbiertosCard,
   ResidentesResumenCard,
+  MiEstadoResidenteCard,
   type DashboardData,
   type Residente,
 } from "./shared";
@@ -69,19 +70,22 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <Kpi etiqueta="Inspecciones activas" valor={datos.kpis.inspeccionesActivas} />
-          <Kpi etiqueta="Piezas inspeccionadas (mes)" valor={datos.kpis.piezasInspeccionadasMes} />
-          <Kpi
-            etiqueta="% Rechazo global"
-            valor={`${(datos.kpis.porcentajeRechazoGlobal * 100).toFixed(1)}%`}
-            alerta={datos.kpis.porcentajeRechazoGlobal >= 0.08}
-          />
-          <Kpi
-            etiqueta="Inspecciones en crítico"
-            valor={datos.kpis.inspeccionesEnCritico}
-            alerta={datos.kpis.inspeccionesEnCritico > 0}
-          />
+        <div className="space-y-6">
+          {rol === "RESIDENTE" && <MiEstadoResidenteCard />}
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <Kpi etiqueta="Inspecciones activas" valor={datos.kpis.inspeccionesActivas} />
+            <Kpi etiqueta="Piezas inspeccionadas (mes)" valor={datos.kpis.piezasInspeccionadasMes} />
+            <Kpi
+              etiqueta="% Rechazo global"
+              valor={`${(datos.kpis.porcentajeRechazoGlobal * 100).toFixed(1)}%`}
+              alerta={datos.kpis.porcentajeRechazoGlobal >= 0.08}
+            />
+            <Kpi
+              etiqueta="Inspecciones en crítico"
+              valor={datos.kpis.inspeccionesEnCritico}
+              alerta={datos.kpis.inspeccionesEnCritico > 0}
+            />
+          </div>
         </div>
       )}
     </div>
