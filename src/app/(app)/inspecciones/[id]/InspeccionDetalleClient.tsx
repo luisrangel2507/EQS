@@ -279,19 +279,16 @@ function VistaInspectorJuego({
 
   return (
     <div className="mx-auto max-w-lg space-y-4">
-      <div className="flex items-center justify-between">
-        {inspeccion.cerrado ? (
+      {inspeccion.cerrado && (
+        <div className="flex items-center justify-between">
           <button
             onClick={() => router.push("/estacion")}
             className="text-xs font-semibold text-navy-400 hover:text-navy-700"
           >
             ← Mis inspecciones
           </button>
-        ) : (
-          <span />
-        )}
-        {asignado && !inspeccion.cerrado && <EstadoInspectorChip />}
-      </div>
+        </div>
+      )}
 
       <div className="card overflow-hidden border-none bg-gradient-to-br from-navy-800 to-navy-900 text-white shadow-lg">
         <div className="flex items-start justify-between gap-2">
@@ -303,9 +300,12 @@ function VistaInspectorJuego({
               {inspeccion.numeroParte ?? inspeccion.nombre}
             </h1>
           </div>
-          {racha >= 3 && (
-            <span className="badge animate-pulse bg-yellow text-navy-900">🔥 Racha x{racha}</span>
-          )}
+          <div className="flex flex-col items-end gap-1.5">
+            {asignado && !inspeccion.cerrado && <EstadoInspectorChip />}
+            {racha >= 3 && (
+              <span className="badge animate-pulse bg-yellow text-navy-900">🔥 Racha x{racha}</span>
+            )}
+          </div>
         </div>
 
         <div className="mt-5 grid grid-cols-2 gap-3 text-center">
