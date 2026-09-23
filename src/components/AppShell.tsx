@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import type { Rol } from "@prisma/client";
 import { ROL_ETIQUETAS } from "@/lib/constants";
+import { NOMBRE_APP } from "@/lib/branding";
 import ChatPanel from "./ChatPanel";
 import PushToggle from "./PushToggle";
 
@@ -70,7 +71,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
                   <Link href={inicio} className="flex items-center">
                     <Image
                       src="/logo-header.png"
-                      alt="EQS InspeccionAPP"
+                      alt={NOMBRE_APP}
                       width={800}
                       height={266}
                       priority

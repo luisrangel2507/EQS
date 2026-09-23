@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Manrope } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
+import { NOMBRE_CORTO, DESCRIPCION_APP } from "@/lib/branding";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -15,12 +16,12 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "InspeccionApp",
-  description: "Control de inspecciones de calidad — Ethical Quality Services",
+  title: NOMBRE_CORTO,
+  description: DESCRIPCION_APP,
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "InspeccionAPP",
+    title: NOMBRE_CORTO,
   },
 };
 

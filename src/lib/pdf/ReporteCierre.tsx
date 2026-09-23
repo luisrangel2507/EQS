@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { NOMBRE_EMPRESA, NOMBRE_LEGAL, PIE_PDF } from "@/lib/branding";
 
 const NAVY = "#142B6B";
 const YELLOW = "#F4D935";
@@ -110,11 +111,11 @@ export default function ReporteCierre({ datos }: { datos: DatosReporte }) {
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.logo}>EQS</Text>
+            <Text style={styles.logo}>{NOMBRE_EMPRESA}</Text>
           </View>
           <View style={{ alignItems: "flex-end" }}>
             <Text style={styles.headerTitulo}>Reporte de Cierre de Inspección</Text>
-            <Text style={styles.headerSub}>Ethical Quality Services</Text>
+            <Text style={styles.headerSub}>{NOMBRE_LEGAL}</Text>
           </View>
         </View>
 
@@ -232,7 +233,7 @@ export default function ReporteCierre({ datos }: { datos: DatosReporte }) {
         </View>
 
         <Text style={styles.footer}>
-          Generado automáticamente por EQS Control de Inspecciones · {new Date().toLocaleString("es-MX")}
+          {PIE_PDF} · {new Date().toLocaleString("es-MX")}
         </Text>
       </Page>
     </Document>

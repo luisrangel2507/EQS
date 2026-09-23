@@ -100,3 +100,77 @@ En iPhone, Safari solo permite notificaciones push si la app está agregada
 a la pantalla de inicio (Compartir → Agregar a pantalla de inicio) y se abre
 desde ahí, no desde una pestaña normal — es una limitación de iOS, no de la
 app. En Android/desktop funciona directo desde el navegador.
+
+## Despliegue para nuevos clientes (white-label)
+
+El código es agnóstico a la marca (EQS). Todo texto de interfaz relacionado
+con branding vive en `src/lib/branding.ts`, permitiendo deploys separados
+por cliente sin tocar el código.
+
+### 1. Personalizar branding (`src/lib/branding.ts`)
+
+Edita las constantes exportadas:
+
+```typescript
+export const NOMBRE_CORTO = "TuApp";              // Nombre corto en browser tabs
+export const NOMBRE_EMPRESA = "Tu Empresa";       // Logo y headers
+export const NOMBRE_LEGAL = "Tu Empresa S.A.";    // Subtítulos legales
+export const NOMBRE_APP = `Tu Empresa TuApp`;     // Título completo
+export const DESCRIPCION_APP = "Tu descripción";  // Meta description y PWA
+export const PIE_PDF = "Tu pie de página";        // Footer de PDFs
+```
+
+### 2. Swap logos
+
+En la carpeta `public/`:
+
+- Reemplaza `logo-header.png` (usado en AppShell, recomendado 200×60px)
+- Reemplaza `icon.png` (512×512px, PWA icon)
+- Reemplaza `apple-icon.png` (180×180px, acceso directo en iOS)
+
+### 3. Ajustar colores Tailwind
+
+En `tailwind.config.ts`, busca la sección de colores y cambia `navy` y `yellow`
+a tus colores corporativos:
+
+```typescript
+colors: {
+  navy: {
+    50: "#F8F9FC",
+    900: "#TuColorOscuro", // en lugar de "#142B6B"
+    // ... resto de tonalidades
+  },
+  yellow: "#TuColorAmarillo", // en lugar de "#F4D935"
+}
+```
+
+También actualiza `theme_color` en `app/manifest.ts` a tu color principal.
+
+### 4. Crear una instancia en Railway
+
+Sigue el checklist de salida a producción (arriba), pero:
+
+1. Crea un **nuevo repositorio privado en GitHub** (o rama nueva en `claude/new-session-*`)
+   para este cliente.
+
+2. En Railway, crea un nuevo **Proyecto** (no servicio dentro del existente).
+   Cada cliente tendrá su propia Postgres + servicio web aislados.
+
+3. Configura las variables de entorno idénticas al checklist:
+   `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, VAPID keys, etc.
+   (El `NEXTAUTH_URL` debe apuntar al dominio del cliente, ej.
+   `https://inspecciones.sucliente.com`).
+
+4. Despliega desde la rama personalizada. Railway detectará `Dockerfile` y
+   `package.json` automáticamente.
+
+### Verificación rápida post-despliegue
+
+Tras hacer deploy:
+
+- [ ] Logo y textos en header coinciden con branding.ts
+- [ ] Favicon en browser tabs muestra tu logo (ej. "TuApp")
+- [ ] PDF de cierre lleva tu pie de página correcto
+- [ ] Colores Tailwind (botones, cards, borders) son tus colores corporativos
+- [ ] Dominio es de cliente (no *.railway.app)
+- [ ] Primer usuario bootstrap se crea sin errores

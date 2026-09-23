@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { usePolling } from "@/lib/usePolling";
 import { ESTADOS_INSPECTOR, ROL_ETIQUETAS } from "@/lib/constants";
 import { Kpi } from "@/app/(app)/dashboard/shared";
+import { NOMBRE_EMPRESA } from "@/lib/branding";
 
 type Residente = {
   id: string;
@@ -73,7 +74,7 @@ export default function ResidentesClient() {
       <div>
         <h1 className="font-display text-2xl font-bold text-navy-900">Seguimiento de Residentes</h1>
         <p className="text-sm text-navy-500">
-          Personal de EQS asignado de forma fija a la planta de un cliente. Da clic en uno para ver
+          Personal de {NOMBRE_EMPRESA} asignado de forma fija a la planta de un cliente. Da clic en uno para ver
           o agregar notas de seguimiento.
         </p>
       </div>
