@@ -3,6 +3,7 @@ import { Inter, Manrope } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
 import { NOMBRE_CORTO, DESCRIPCION_APP } from "@/lib/branding";
+import { SCRIPT_TEMA } from "@/lib/tema";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -31,7 +32,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA }} />
+      </head>
       <body className={`${inter.variable} ${manrope.variable} antialiased`}>
         <Providers>{children}</Providers>
       </body>

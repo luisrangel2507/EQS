@@ -8,6 +8,8 @@ import { signOut } from "next-auth/react";
 import type { Rol } from "@prisma/client";
 import { ROL_ETIQUETAS } from "@/lib/constants";
 import { NOMBRE_APP } from "@/lib/branding";
+import { motion } from "framer-motion";
+import { BotonTema } from "@/components/ui/Tema";
 import ChatPanel from "./ChatPanel";
 import PushToggle from "./PushToggle";
 
@@ -50,6 +52,11 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
   const esOperativo = rol === "ADMIN" || rol === "SUPERVISOR" || rol === "GERENTE" || rol === "LIDER";
   const [inmersivo, setInmersivo] = useState(false);
 
+  useEffect(() => {
+    // siempre activo (no solo con push): da el caché que permite abrir pantallas sin señal
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
+  }, []);
+
   return (
     <OcultarHeaderContext.Provider value={setInmersivo}>
       <div className="min-h-screen bg-background">
@@ -83,15 +90,20 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
                       const activo = pathname?.startsWith(enlace.href);
                       return (
                         <Link
-                          key={enlace.href}
+                          key={enlace.href + enlace.label}
                           href={enlace.href}
-                          className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
-                            activo
-                              ? "bg-white/10 text-yellow"
-                              : "text-white/80 hover:bg-white/5 hover:text-white"
+                          className={`relative rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                            activo ? "text-yellow" : "text-white/80 hover:bg-white/5 hover:text-white"
                           }`}
                         >
-                          {enlace.label}
+                          {activo && (
+                            <motion.span
+                              layoutId="nav-activo"
+                              className="absolute inset-0 rounded-md bg-white/10"
+                              transition={{ type: "spring", stiffness: 500, damping: 38 }}
+                            />
+                          )}
+                          <span className="relative">{enlace.label}</span>
                         </Link>
                       );
                     })}
@@ -115,9 +127,9 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
                   const activo = pathname?.startsWith(enlace.href);
                   return (
                     <Link
-                      key={enlace.href}
+                      key={enlace.href + enlace.label}
                       href={enlace.href}
-                      className={`shrink-0 rounded-md px-3 py-1.5 text-sm font-medium ${
+                      className={`shrink-0 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                         activo ? "bg-white/10 text-yellow" : "text-white/80"
                       }`}
                     >
@@ -201,7 +213,12 @@ function NotificacionesBell({ rol }: { rol: Rol }) {
       {abierto && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setAbierto(false)} />
-          <div className="absolute right-0 top-full z-20 mt-2 max-h-96 w-80 overflow-y-auto rounded-lg border border-navy-100 bg-white py-1 text-navy-900 shadow-lg">
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 top-full z-20 mt-2 max-h-96 w-80 origin-top-right overflow-y-auto rounded-lg border border-navy-100 bg-white py-1 text-navy-900 shadow-lg"
+          >
             <p className="border-b border-navy-100 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-navy-500">
               Notificaciones
             </p>
@@ -229,7 +246,7 @@ function NotificacionesBell({ rol }: { rol: Rol }) {
                 </div>
               ))
             )}
-          </div>
+          </motion.div>
         </>
       )}
     </div>
@@ -247,6 +264,12 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
       .join("") || "?";
 
   function salir() {
+    navigator.serviceWorker?.controller?.postMessage("limpiar-cache");
+    try {
+      localStorage.removeItem("eqs_cola_capturas");
+    } catch {
+      // nada que limpiar
+    }
     signOut({
       callbackUrl: typeof window !== "undefined" ? `${window.location.origin}/login` : "/login",
     });
@@ -273,7 +296,12 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
       {abierto && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setAbierto(false)} />
-          <div className="absolute right-0 top-full z-20 mt-2 w-64 overflow-hidden rounded-lg border border-navy-100 bg-white py-1 text-navy-900 shadow-lg">
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 top-full z-20 mt-2 w-64 origin-top-right overflow-hidden rounded-lg border border-navy-100 bg-white py-1 text-navy-900 shadow-lg"
+          >
             <div className="border-b border-navy-100 px-4 py-2 sm:hidden">
               <p className="text-sm font-semibold text-navy-900">{nombre}</p>
               <p className="text-xs text-navy-500">{ROL_ETIQUETAS[rol]}</p>
@@ -287,6 +315,7 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
                 👤 Editar usuarios
               </Link>
             )}
+            <BotonTema />
             <PushToggle />
             <button
               type="button"
@@ -295,7 +324,7 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
             >
               Salir
             </button>
-          </div>
+          </motion.div>
         </>
       )}
     </div>
@@ -358,8 +387,12 @@ function BurbujaChat({ rol, miId }: { rol: Rol; miId: string }) {
   return (
     <>
       {!abierto && (
-        <button
+        <motion.button
           type="button"
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          whileTap={{ scale: 0.9 }}
+          transition={{ type: "spring", stiffness: 400, damping: 20 }}
           onClick={() => {
             setAbierto(true);
             marcarLeido();
@@ -369,11 +402,17 @@ function BurbujaChat({ rol, miId }: { rol: Rol; miId: string }) {
         >
           💬
           {noLeidos > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold text-white shadow ring-2 ring-white">
+            <motion.span
+              key={noLeidos}
+              initial={{ scale: 0.4 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 600, damping: 15 }}
+              className="absolute -right-1 -top-1 flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold text-white shadow ring-2 ring-white"
+            >
               {noLeidos > 9 ? "9+" : noLeidos}
-            </span>
+            </motion.span>
           )}
-        </button>
+        </motion.button>
       )}
       <ChatPanel
         miId={miId}

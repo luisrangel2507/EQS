@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import NumeroAnimado from "@/components/ui/NumeroAnimado";
 import type { Rol } from "@prisma/client";
 import { usePolling } from "@/lib/usePolling";
 import { ESTADOS_INSPECTOR } from "@/lib/constants";
@@ -157,15 +159,23 @@ export function SorteosAbiertosCard({
         <p className="text-sm text-navy-400">No hay sorteos activos por el momento.</p>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {sorteosAbiertos.map((s) => {
+          {sorteosAbiertos.map((s, idx) => {
             const total = s.piezasBuenas + s.piezasMalas;
             const rechazo = total > 0 ? (s.piezasMalas / total) * 100 : 0;
             const apoyoAqui = solicitudes?.filter((sol) => sol.inspeccion?.id === s.id) ?? [];
             return (
-              <Link
+              <motion.div
                 key={s.id}
+                layout
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: Math.min(idx, 8) * 0.05, duration: 0.35 }}
+              >
+              <Link
                 href={`/inspecciones/${s.id}`}
-                className="block rounded-2xl border border-navy-100 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+                className={`block h-full rounded-2xl border bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md ${
+                  rechazo >= 8 || apoyoAqui.length > 0 ? "animate-respirar border-red-200" : "border-navy-100"
+                }`}
               >
                 <p className="truncate font-display font-semibold text-navy-900">
                   {s.numeroParte ?? s.nombre}
@@ -217,6 +227,7 @@ export function SorteosAbiertosCard({
                   )}
                 </div>
               </Link>
+              </motion.div>
             );
           })}
         </div>
@@ -336,16 +347,25 @@ export function Kpi({
   etiqueta,
   valor,
   alerta,
+  formato,
+  decimales,
+  indice = 0,
 }: {
   etiqueta: string;
   valor: string | number;
   alerta?: boolean;
+  formato?: (n: number) => string;
+  decimales?: number;
+  indice?: number;
 }) {
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: indice * 0.06, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       className={`group relative overflow-hidden rounded-2xl border p-4 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl ${
         alerta
-          ? "border-red-500/30 bg-gradient-to-br from-red-950 via-navy-900 to-navy-950"
+          ? "animate-respirar border-red-500/30 bg-gradient-to-br from-red-950 via-navy-900 to-navy-950"
           : "border-yellow/20 bg-gradient-to-br from-navy-900 via-navy-800 to-navy-950"
       }`}
     >
@@ -362,8 +382,12 @@ export function Kpi({
           alerta ? "text-red-400" : "text-yellow"
         }`}
       >
-        {valor}
+        {typeof valor === "number" ? (
+          <NumeroAnimado valor={valor} formato={formato} decimales={decimales} />
+        ) : (
+          valor
+        )}
       </p>
-    </div>
+    </motion.div>
   );
 }

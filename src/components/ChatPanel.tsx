@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { usePolling } from "@/lib/usePolling";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { ROL_ETIQUETAS } from "@/lib/constants";
 
 type Mensaje = {
@@ -92,13 +94,23 @@ export default function ChatPanel({
 
         <div className="flex flex-1 flex-col overflow-y-auto p-4">
           {cargando ? (
-            <p className="text-sm text-navy-400">Cargando…</p>
+            <div className="space-y-3">
+              <Skeleton className="h-14 w-3/4" />
+              <Skeleton className="ml-auto h-10 w-2/3" />
+              <Skeleton className="h-12 w-1/2" />
+            </div>
           ) : mensajes && mensajes.length > 0 ? (
             <div className="flex flex-col gap-3">
               {mensajes.map((m) => {
                 const esMio = m.autor.id === miId;
                 return (
-                  <div key={m.id} className={`flex ${esMio ? "justify-end" : "justify-start"}`}>
+                  <motion.div
+                    key={m.id}
+                    initial={{ opacity: 0, y: 10, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.2 }}
+                    className={`flex ${esMio ? "justify-end" : "justify-start"}`}
+                  >
                     <div
                       className={`max-w-[85%] rounded-xl px-3 py-2 ${
                         esMio ? "bg-navy text-white" : "bg-navy-50 text-navy-900"
@@ -119,7 +131,7 @@ export default function ChatPanel({
                         })}
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
               <div ref={finRef} />

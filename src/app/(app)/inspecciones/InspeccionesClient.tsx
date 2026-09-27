@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
+import { SkeletonTarjetas } from "@/components/ui/Skeleton";
 import type { Rol } from "@prisma/client";
 import { PLANTAS } from "@/lib/constants";
 import ClienteSelect from "@/components/ClienteSelect";
@@ -68,38 +70,72 @@ export default function InspeccionesClient({ rol }: { rol: Rol }) {
             <button
               key={f}
               onClick={() => setFiltro(f)}
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                filtro === f ? "bg-navy text-white" : "bg-white text-navy-500 border border-navy-200"
+              className={`relative rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                filtro === f ? "border-navy text-white" : "border-navy-200 bg-white text-navy-500"
               }`}
             >
-              {f === "activas" ? "Activas" : f === "cerradas" ? "Cerradas" : "Todas"}
+              {filtro === f && (
+                <motion.span
+                  layoutId="filtro-inspecciones"
+                  className="absolute inset-0 rounded-full bg-navy"
+                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                />
+              )}
+              <span className="relative">
+                {f === "activas" ? "Activas" : f === "cerradas" ? "Cerradas" : "Todas"}
+              </span>
             </button>
           ))}
         </div>
       )}
 
-      {mostrarForm && (
-        <NuevaInspeccionForm
-          onCerrar={() => setMostrarForm(false)}
-          onCreada={() => {
-            setMostrarForm(false);
-            cargar();
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {mostrarForm && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden"
+          >
+            <NuevaInspeccionForm
+              onCerrar={() => setMostrarForm(false)}
+              onCreada={() => {
+                setMostrarForm(false);
+                cargar();
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {cargando ? (
-        <p className="text-sm text-navy-500">Cargando…</p>
+        <SkeletonTarjetas cantidad={6} alto="h-12" />
       ) : filtradas.length === 0 ? (
-        <p className="text-sm text-navy-500">No hay inspecciones para mostrar.</p>
+        <div className="card flex flex-col items-center gap-2 py-10 text-center">
+          <span className="text-4xl">📋</span>
+          <p className="text-sm text-navy-500">No hay inspecciones para mostrar.</p>
+        </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtradas.map((i) => {
+        <motion.div layout className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <AnimatePresence mode="popLayout">
+          {filtradas.map((i, idx) => {
             const total = i.piezasBuenas + i.piezasMalas;
             const rechazo = total > 0 ? i.piezasMalas / total : 0;
             const progreso = i.meta > 0 ? Math.min(100, (total / i.meta) * 100) : 0;
             return (
-              <Link key={i.id} href={`/inspecciones/${i.id}`} className="card block hover:shadow-md">
+              <motion.div
+                key={i.id}
+                layout
+                initial={{ opacity: 0, scale: 0.96, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ delay: Math.min(idx, 9) * 0.04, duration: 0.3 }}
+              >
+              <Link
+                href={`/inspecciones/${i.id}`}
+                className="card block h-full transition hover:-translate-y-0.5 hover:shadow-md"
+              >
                 <div className="mb-2 flex items-start justify-between">
                   <h3 className="font-display font-semibold text-navy-900">{i.nombre}</h3>
                   <span
@@ -121,9 +157,11 @@ export default function InspeccionesClient({ rol }: { rol: Rol }) {
                   </span>
                 </div>
                 <div className="mt-2 h-1.5 w-full rounded-full bg-navy-100">
-                  <div
+                  <motion.div
                     className="h-1.5 rounded-full bg-yellow"
-                    style={{ width: `${progreso}%` }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progreso}%` }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                   />
                 </div>
                 {i.inspectores.length > 0 && (
@@ -132,9 +170,11 @@ export default function InspeccionesClient({ rol }: { rol: Rol }) {
                   </p>
                 )}
               </Link>
+              </motion.div>
             );
           })}
-        </div>
+          </AnimatePresence>
+        </motion.div>
       )}
     </div>
   );

@@ -124,6 +124,8 @@ model Captura {
   malas        Int        @default(0)
   defecto      String?
   fotoUrl      String?
+  // id generado en el dispositivo: evita duplicados al reintentar capturas hechas sin señal
+  idCliente    String?    @unique
   creadoEn     DateTime   @default(now())
 
   @@index([inspeccionId, creadoEn])

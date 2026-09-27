@@ -16,6 +16,18 @@ import { DEFECTOS_COMUNES, ESTADOS_INSPECTOR, PLANTAS } from "@/lib/constants";
 import SubidaPdf from "@/components/SubidaPdf";
 import ClienteSelect from "@/components/ClienteSelect";
 import { useModoInmersivo } from "@/components/AppShell";
+import { AnimatePresence, motion } from "framer-motion";
+import Modal from "@/components/ui/Modal";
+import NumeroAnimado from "@/components/ui/NumeroAnimado";
+import { Skeleton, SkeletonKpis } from "@/components/ui/Skeleton";
+import { useToast } from "@/components/ui/Toast";
+import { vibrar, flashPantalla } from "@/lib/feedback";
+import {
+  enviarCaptura,
+  quitarDeCola,
+  useColaCapturas,
+  type ResultadoEnvio,
+} from "@/lib/colaCapturas";
 
 type SesionUsuario = {
   id: string;
@@ -72,7 +84,13 @@ export default function InspeccionDetalleClient({
   const puedeGestionar = sesion.rol === "ADMIN" || sesion.rol === "SUPERVISOR";
 
   if (cargando || !inspeccion) {
-    return <p className="text-sm text-navy-500">Cargando…</p>;
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-72" />
+        <SkeletonKpis />
+        <Skeleton className="h-72 w-full" />
+      </div>
+    );
   }
 
   if (sesion.rol === "INSPECTOR") {
@@ -141,11 +159,11 @@ export default function InspeccionDetalleClient({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Metrica etiqueta="Piezas buenas" valor={inspeccion.piezasBuenas} />
-        <Metrica etiqueta="Piezas malas" valor={inspeccion.piezasMalas} />
+        <Metrica etiqueta="Piezas buenas" valor={<NumeroAnimado valor={inspeccion.piezasBuenas} />} />
+        <Metrica etiqueta="Piezas malas" valor={<NumeroAnimado valor={inspeccion.piezasMalas} />} />
         <Metrica
           etiqueta="% Rechazo"
-          valor={`${(rechazo * 100).toFixed(1)}%`}
+          valor={<NumeroAnimado valor={rechazo * 100} formato={(n) => `${n.toFixed(1)}%`} />}
           alerta={rechazo >= 0.08}
         />
         <PuntoLimpioMetrica
@@ -155,8 +173,13 @@ export default function InspeccionDetalleClient({
           onActualizado={recargar}
         />
       </div>
-      <div className="h-2 w-full rounded-full bg-navy-100">
-        <div className="h-2 rounded-full bg-yellow" style={{ width: `${progreso}%` }} />
+      <div className="h-2 w-full overflow-hidden rounded-full bg-navy-100">
+        <motion.div
+          className="h-2 rounded-full bg-gradient-to-r from-yellow to-amber-500"
+          initial={{ width: 0 }}
+          animate={{ width: `${progreso}%` }}
+          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+        />
       </div>
 
       {(inspeccion.instrucciones || inspeccion.instruccionesPdfUrl) && (
@@ -219,7 +242,7 @@ export default function InspeccionDetalleClient({
         </div>
       )}
 
-      {mostrarCierre && (
+      <Modal abierto={mostrarCierre} onCerrar={() => setMostrarCierre(false)} ancho="max-w-sm">
         <CierreModal
           inspeccionId={id}
           nombreSugerido={sesion.nombre}
@@ -229,9 +252,9 @@ export default function InspeccionDetalleClient({
             recargar();
           }}
         />
-      )}
+      </Modal>
 
-      {mostrarEditar && (
+      <Modal abierto={mostrarEditar} onCerrar={() => setMostrarEditar(false)}>
         <EditarModal
           inspeccionId={id}
           inspeccion={inspeccion}
@@ -241,7 +264,7 @@ export default function InspeccionDetalleClient({
             recargar();
           }}
         />
-      )}
+      </Modal>
     </div>
   );
 }
@@ -264,6 +287,14 @@ function VistaInspectorJuego({
   const router = useRouter();
   const [racha, setRacha] = useState(0);
   useModoInmersivo(!inspeccion.cerrado);
+  const cola = useColaCapturas(id);
+  const pendientesCola = cola.pendientes;
+  useEffect(() => {
+    // al vaciarse la cola, refrescar para que los contadores del servidor ya incluyan lo sincronizado
+    recargar();
+  }, [pendientesCola, recargar]);
+  const buenasVista = inspeccion.piezasBuenas + cola.pendientesBuenas;
+  const malasVista = inspeccion.piezasMalas + cola.pendientesMalas;
 
   const total = inspeccion.piezasBuenas + inspeccion.piezasMalas;
   const rechazo = total > 0 ? inspeccion.piezasMalas / total : 0;
@@ -307,16 +338,27 @@ function VistaInspectorJuego({
           </div>
           <div className="flex flex-col items-end gap-1.5">
             {asignado && !inspeccion.cerrado && <EstadoInspectorChip />}
-            {racha >= 3 && (
-              <span className="badge animate-pulse bg-yellow text-navy-900">🔥 Racha x{racha}</span>
-            )}
+            <AnimatePresence>
+              {racha >= 3 && (
+                <motion.span
+                  key="racha"
+                  initial={{ scale: 0, rotate: -12 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 18 }}
+                  className="badge bg-yellow text-navy-900 shadow-[0_0_18px_rgba(244,217,53,0.6)]"
+                >
+                  🔥 Racha x{racha}
+                </motion.span>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
         <div className="mt-5 grid grid-cols-2 gap-3 text-center">
           <div className="rounded-xl bg-white/10 py-4">
             <p className="font-display text-5xl font-extrabold text-green-400">
-              {inspeccion.piezasBuenas}
+              <NumeroAnimado valor={buenasVista} duracion={0.5} />
             </p>
             <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-white/70">
               ✅ Buenas
@@ -324,7 +366,7 @@ function VistaInspectorJuego({
           </div>
           <div className="rounded-xl bg-white/10 py-4">
             <p className="font-display text-5xl font-extrabold text-red-400">
-              {inspeccion.piezasMalas}
+              <NumeroAnimado valor={malasVista} duracion={0.5} />
             </p>
             <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-white/70">
               ❌ Malas
@@ -337,7 +379,7 @@ function VistaInspectorJuego({
             ⚡ Ritmo
           </span>
           <span className="font-display text-xl font-extrabold text-yellow">
-            {piezasPorHora.toFixed(1)}{" "}
+            <NumeroAnimado valor={piezasPorHora} decimales={1} />{" "}
             <span className="text-xs font-semibold uppercase tracking-wide text-white/70">
               pzas/hora
             </span>
@@ -345,12 +387,33 @@ function VistaInspectorJuego({
         </div>
       </div>
 
+      <AnimatePresence>
+        {puedeCapturar && (!cola.enLinea || cola.pendientes > 0) && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className={`flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold ${
+              cola.enLinea ? "bg-blue-50 text-blue-800" : "bg-amber-50 text-amber-900"
+            }`}
+          >
+            <span className="text-lg">{cola.enLinea ? "🔄" : "📡"}</span>
+            {cola.enLinea
+              ? `Sincronizando ${cola.pendientes} captura${cola.pendientes === 1 ? "" : "s"}…`
+              : `Sin conexión. Tus capturas se guardan en el equipo${
+                  cola.pendientes > 0 ? ` (${cola.pendientes} pendiente${cola.pendientes === 1 ? "" : "s"})` : ""
+                } y se envían solas al volver la señal.`}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {puedeCapturar && (
         <CapturaPanel
           inspeccionId={id}
           onCapturado={recargar}
           mostrarExtras
           onResultado={manejarResultado}
+          onDeshecho={() => setRacha(0)}
         />
       )}
 
@@ -471,11 +534,11 @@ function Metrica({
   alerta,
 }: {
   etiqueta: string;
-  valor: string | number;
+  valor: React.ReactNode;
   alerta?: boolean;
 }) {
   return (
-    <div className={`card ${alerta ? "border-red-300 bg-red-50" : ""}`}>
+    <div className={`card ${alerta ? "animate-respirar border-red-300 bg-red-50" : ""}`}>
       <p className="text-xs font-semibold uppercase tracking-wide text-navy-500">{etiqueta}</p>
       <p className={`mt-1 font-display text-2xl font-bold ${alerta ? "text-red-700" : "text-navy-900"}`}>
         {valor}
@@ -740,24 +803,34 @@ function ContadorPiezas({
           key={paso}
           type="button"
           disabled={disabled}
-          onClick={() => onCambiar(Math.max(0, cantidad + paso))}
-          className="flex h-10 min-w-[2.75rem] items-center justify-center rounded-lg border border-navy-200 bg-white px-2 text-sm font-bold text-navy-700 transition hover:bg-navy-50 disabled:opacity-40"
+          onClick={() => {
+            vibrar("toque");
+            onCambiar(Math.max(0, cantidad + paso));
+          }}
+          className="flex h-10 min-w-[2.75rem] items-center justify-center rounded-lg border border-navy-200 bg-white px-2 text-sm font-bold text-navy-700 transition hover:bg-navy-50 active:scale-90 disabled:opacity-40"
         >
           {paso}
         </button>
       ))}
-      <span
+      <motion.span
+        key={cantidad}
+        initial={{ scale: 1.25 }}
+        animate={{ scale: 1 }}
+        transition={{ type: "spring", stiffness: 600, damping: 20 }}
         className={`mx-1 w-14 text-center font-display text-2xl font-extrabold ${colorTexto}`}
       >
         {cantidad}
-      </span>
+      </motion.span>
       {[1, 10, 100].map((paso) => (
         <button
           key={paso}
           type="button"
           disabled={disabled}
-          onClick={() => onCambiar(cantidad + paso)}
-          className="flex h-10 min-w-[2.75rem] items-center justify-center rounded-lg border border-navy-200 bg-white px-2 text-sm font-bold text-navy-700 transition hover:bg-navy-50 disabled:opacity-40"
+          onClick={() => {
+            vibrar("toque");
+            onCambiar(cantidad + paso);
+          }}
+          className="flex h-10 min-w-[2.75rem] items-center justify-center rounded-lg border border-navy-200 bg-white px-2 text-sm font-bold text-navy-700 transition hover:bg-navy-50 active:scale-90 disabled:opacity-40"
         >
           +{paso}
         </button>
@@ -771,19 +844,21 @@ function CapturaPanel({
   onCapturado,
   mostrarExtras,
   onResultado,
+  onDeshecho,
 }: {
   inspeccionId: string;
   onCapturado: () => void;
   mostrarExtras: boolean;
   onResultado?: (esBuena: boolean, cantidad: number) => void;
+  onDeshecho?: () => void;
 }) {
+  const toast = useToast();
   const [cantidadBuena, setCantidadBuena] = useState(0);
   const [cantidadMala, setCantidadMala] = useState(1);
   const [defecto, setDefecto] = useState<string>(DEFECTOS_COMUNES[0]);
   const [foto, setFoto] = useState<File | null>(null);
   const [enviandoBuena, setEnviandoBuena] = useState(false);
   const [enviandoMala, setEnviandoMala] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [mostrarFormDefecto, setMostrarFormDefecto] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -798,48 +873,84 @@ function CapturaPanel({
     if (!mostrarExtras) return;
     fetch(`/api/inspecciones/${inspeccionId}/hoy`)
       .then((r) => r.json())
-      .then(setHoy);
+      .then(setHoy)
+      .catch(() => {});
   }, [inspeccionId, mostrarExtras]);
 
   useEffect(() => {
     if (!mostrarExtras) return;
     fetch("/api/estado")
       .then((r) => r.json())
-      .then((d) => setEstacion(d?.estacion ?? null));
+      .then((d) => setEstacion(d?.estacion ?? null))
+      .catch(() => {});
     cargarHoy();
   }, [mostrarExtras, cargarHoy]);
 
   async function llamarApoyo() {
     setLlamandoApoyo(true);
-    await fetch("/api/apoyo", {
+    const res = await fetch("/api/apoyo", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ inspeccionId }),
-    });
+    }).catch(() => null);
     setLlamandoApoyo(false);
+    if (!res?.ok) {
+      toast.error("No se pudo avisar a liderazgo. Revisa tu señal.");
+      return;
+    }
+    vibrar("exito");
+    toast.exito("Se avisó a liderazgo, ya va alguien para tu estación");
     setApoyoAvisado(true);
     setTimeout(() => setApoyoAvisado(false), 15000);
+  }
+
+  async function deshacer(resultado: ResultadoEnvio) {
+    if (resultado.estado === "encolada") {
+      quitarDeCola(resultado.idCliente);
+    } else if (resultado.estado === "enviada") {
+      const res = await fetch(`/api/inspecciones/${inspeccionId}/capturas/${resultado.capturaId}`, {
+        method: "DELETE",
+      }).catch(() => null);
+      if (!res?.ok) {
+        const d = await res?.json().catch(() => ({}));
+        toast.error(d?.error ?? "No se pudo deshacer la captura");
+        return;
+      }
+    }
+    vibrar("toque");
+    toast.info("Captura deshecha");
+    onDeshecho?.();
+    onCapturado();
+    cargarHoy();
+  }
+
+  function confirmar(resultado: ResultadoEnvio, mensaje: string) {
+    const texto =
+      resultado.estado === "encolada" ? `${mensaje} · sin señal, se enviará al reconectar` : mensaje;
+    toast.exito(texto, {
+      duracion: 5000,
+      accion: { etiqueta: "Deshacer", onClick: () => deshacer(resultado) },
+    });
   }
 
   async function registrarBuenas() {
     if (cantidadBuena <= 0) return;
     setEnviandoBuena(true);
-    setError(null);
-    const res = await fetch(`/api/inspecciones/${inspeccionId}/capturas`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tipo: "buena", cantidad: cantidadBuena }),
-    });
+    const cantidad = cantidadBuena;
+    const resultado = await enviarCaptura(inspeccionId, { tipo: "buena", cantidad });
     setEnviandoBuena(false);
-    if (!res.ok) {
-      const d = await res.json().catch(() => ({}));
-      setError(d.error ?? "No se pudo registrar la pieza");
+    if (resultado.estado === "error") {
+      vibrar("error");
+      toast.error(resultado.mensaje);
       return;
     }
+    vibrar("exito");
+    flashPantalla("exito");
+    confirmar(resultado, `+${cantidad} pieza${cantidad === 1 ? "" : "s"} registrada${cantidad === 1 ? "" : "s"}`);
     onCapturado();
     cargarHoy();
-    onResultado?.(true, cantidadBuena);
-    setPopBuena(cantidadBuena);
+    onResultado?.(true, cantidad);
+    setPopBuena(cantidad);
     setTimeout(() => setPopBuena(null), 900);
     setCantidadBuena(0);
   }
@@ -848,35 +959,23 @@ function CapturaPanel({
     e.preventDefault();
     if (cantidadMala <= 0) return;
     setEnviandoMala(true);
-    setError(null);
-
-    let fotoUrl: string | undefined;
-    if (foto) {
-      const form = new FormData();
-      form.append("foto", foto);
-      const resFoto = await fetch("/api/upload", { method: "POST", body: form });
-      if (resFoto.ok) {
-        fotoUrl = (await resFoto.json()).url;
-      }
-    }
-
-    const res = await fetch(`/api/inspecciones/${inspeccionId}/capturas`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tipo: "mala", cantidad: cantidadMala, defecto, fotoUrl }),
-    });
+    const cantidad = cantidadMala;
+    const resultado = await enviarCaptura(inspeccionId, { tipo: "mala", cantidad, defecto }, foto);
     setEnviandoMala(false);
-    if (!res.ok) {
-      const d = await res.json().catch(() => ({}));
-      setError(d.error ?? "No se pudo registrar la pieza");
+    if (resultado.estado === "error") {
+      vibrar("error");
+      toast.error(resultado.mensaje);
       return;
     }
+    vibrar("error");
+    flashPantalla("error");
+    confirmar(resultado, `${cantidad} defecto${cantidad === 1 ? "" : "s"} reportado${cantidad === 1 ? "" : "s"}: ${defecto}`);
     setFoto(null);
     if (inputRef.current) inputRef.current.value = "";
     onCapturado();
     cargarHoy();
-    onResultado?.(false, cantidadMala);
-    setPopMala(cantidadMala);
+    onResultado?.(false, cantidad);
+    setPopMala(cantidad);
     setTimeout(() => setPopMala(null), 900);
     setCantidadMala(1);
     setMostrarFormDefecto(false);
@@ -916,16 +1015,17 @@ function CapturaPanel({
             disabled={enviandoBuena}
             colorTexto="text-green-700"
           />
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.96 }}
             onClick={registrarBuenas}
             disabled={enviandoBuena || cantidadBuena <= 0}
-            className="mt-3 w-full rounded-lg bg-green-600 py-2 text-sm font-bold text-white transition hover:bg-green-700 disabled:opacity-40"
+            className="mt-3 w-full rounded-lg bg-green-600 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-green-700 disabled:opacity-40"
           >
             {enviandoBuena
               ? "Guardando…"
               : `Registrar ${cantidadBuena || ""} pieza${cantidadBuena === 1 ? "" : "s"} inspeccionada${cantidadBuena === 1 ? "" : "s"}`}
-          </button>
+          </motion.button>
         </div>
 
         <div className="relative rounded-xl border border-red-200 bg-red-50 p-3">
@@ -934,77 +1034,95 @@ function CapturaPanel({
               +{popMala}
             </span>
           )}
-          {!mostrarFormDefecto ? (
-            <button
-              type="button"
-              onClick={() => setMostrarFormDefecto(true)}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-600 py-3 text-sm font-bold text-white transition hover:bg-red-700"
-            >
-              ⚠️ Reportar defecto
-            </button>
-          ) : (
-            <>
-              <div className="mb-2 flex items-center justify-between">
-                <p className="text-sm font-semibold text-red-800">⚠️ Reportar defecto</p>
-                <button
-                  type="button"
-                  onClick={() => setMostrarFormDefecto(false)}
-                  className="text-xs font-semibold text-red-400 hover:text-red-700"
-                >
-                  Cancelar
-                </button>
-              </div>
-              <ContadorPiezas
-                cantidad={cantidadMala}
-                onCambiar={setCantidadMala}
-                disabled={enviandoMala}
-                colorTexto="text-red-700"
-              />
-              <form onSubmit={registrarMalas} className="mt-3 space-y-2">
-                <select className="input" value={defecto} onChange={(e) => setDefecto(e.target.value)}>
-                  {DEFECTOS_COMUNES.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  ref={inputRef}
-                  className="input text-xs"
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  onChange={(e) => setFoto(e.target.files?.[0] ?? null)}
+          <AnimatePresence mode="wait" initial={false}>
+            {!mostrarFormDefecto ? (
+              <motion.button
+                key="abrir"
+                type="button"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => {
+                  vibrar("toque");
+                  setMostrarFormDefecto(true);
+                }}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-600 py-3 text-sm font-bold text-white transition-colors hover:bg-red-700"
+              >
+                ⚠️ Reportar defecto
+              </motion.button>
+            ) : (
+              <motion.div
+                key="form"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.25 }}
+                className="overflow-hidden"
+              >
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-sm font-semibold text-red-800">⚠️ Reportar defecto</p>
+                  <button
+                    type="button"
+                    onClick={() => setMostrarFormDefecto(false)}
+                    className="text-xs font-semibold text-red-400 hover:text-red-700"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+                <ContadorPiezas
+                  cantidad={cantidadMala}
+                  onCambiar={setCantidadMala}
+                  disabled={enviandoMala}
+                  colorTexto="text-red-700"
                 />
-                <button
-                  type="submit"
-                  disabled={enviandoMala || cantidadMala <= 0}
-                  className="w-full rounded-lg bg-red-600 py-2 text-sm font-bold text-white transition hover:bg-red-700 disabled:opacity-40"
-                >
-                  {enviandoMala
-                    ? "Guardando…"
-                    : `Reportar ${cantidadMala || ""} defecto${cantidadMala === 1 ? "" : "s"}`}
-                </button>
-              </form>
-            </>
-          )}
+                <form onSubmit={registrarMalas} className="mt-3 space-y-2">
+                  <select className="input" value={defecto} onChange={(e) => setDefecto(e.target.value)}>
+                    {DEFECTOS_COMUNES.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    ref={inputRef}
+                    className="input text-xs"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={(e) => setFoto(e.target.files?.[0] ?? null)}
+                  />
+                  <motion.button
+                    type="submit"
+                    whileTap={{ scale: 0.96 }}
+                    disabled={enviandoMala || cantidadMala <= 0}
+                    className="w-full rounded-lg bg-red-600 py-3 text-sm font-bold text-white transition-colors hover:bg-red-700 disabled:opacity-40"
+                  >
+                    {enviandoMala
+                      ? "Guardando…"
+                      : `Reportar ${cantidadMala || ""} defecto${cantidadMala === 1 ? "" : "s"}`}
+                  </motion.button>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
 
       {mostrarExtras && (
-        <button
+        <motion.button
           type="button"
+          whileTap={{ scale: 0.97 }}
           onClick={llamarApoyo}
           disabled={llamandoApoyo || apoyoAvisado}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-orange-600 disabled:opacity-60"
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-orange-600 disabled:opacity-60"
         >
           {apoyoAvisado
             ? "✓ Se avisó a liderazgo"
             : llamandoApoyo
               ? "Avisando…"
               : "🔔 Llamar líder / supervisor"}
-        </button>
+        </motion.button>
       )}
     </div>
   );
@@ -1109,8 +1227,7 @@ function CierreModal({
   }
 
   return (
-    <div className="fixed inset-0 z-30 flex items-center justify-center bg-navy-900/60 px-4">
-      <form onSubmit={confirmar} className="w-full max-w-sm rounded-xl bg-white p-5 shadow-lg">
+    <form onSubmit={confirmar} className="w-full rounded-xl bg-white p-5 shadow-lg">
         <h2 className="mb-1 font-display text-lg font-bold text-navy-900">Cerrar inspección</h2>
         <p className="mb-4 text-sm text-navy-500">
           Esta acción es definitiva. Ya no se podrán registrar más piezas.
@@ -1132,8 +1249,7 @@ function CierreModal({
             Cancelar
           </button>
         </div>
-      </form>
-    </div>
+    </form>
   );
 }
 
@@ -1214,10 +1330,9 @@ function EditarModal({
   }
 
   return (
-    <div className="fixed inset-0 z-30 flex items-center justify-center overflow-y-auto bg-navy-900/60 px-4 py-8">
       <form
         onSubmit={manejarEnvio}
-        className="w-full max-w-lg space-y-3 rounded-xl bg-white p-5 shadow-lg"
+        className="w-full space-y-3 rounded-xl bg-white p-5 shadow-lg"
       >
         <h2 className="font-display text-lg font-bold text-navy-900">Editar inspección</h2>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -1335,6 +1450,5 @@ function EditarModal({
           </button>
         </div>
       </form>
-    </div>
   );
 }

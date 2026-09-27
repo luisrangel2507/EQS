@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { motion } from "framer-motion";
+import { Skeleton, SkeletonKpis, SkeletonTarjetas } from "@/components/ui/Skeleton";
 import type { Rol } from "@prisma/client";
 import { usePolling } from "@/lib/usePolling";
 import { FRASES_DEL_DIA, FRASES_DEL_DIA_CLIENTE } from "@/lib/constants";
@@ -26,7 +28,13 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
   const { datos: residentes } = usePolling<Residente[]>(esOperativo ? "/api/residentes" : null, 20000);
 
   if (cargando || !datos) {
-    return <p className="text-sm text-navy-500">Cargando dashboard…</p>;
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-72 w-full sm:h-96" />
+        <SkeletonKpis cantidad={2} />
+        <SkeletonTarjetas />
+      </div>
+    );
   }
 
   return (
@@ -39,11 +47,16 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
             fill
             priority
             sizes="100vw"
-            className="object-cover"
+            className="animate-ken-burns object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-navy-900/90 via-navy-900/40 to-navy-900/5" />
         </div>
-        <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-8">
+        <motion.div
+          className="absolute inset-0 flex flex-col justify-end p-5 sm:p-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
           <p className="text-xs font-semibold uppercase tracking-wide text-yellow sm:text-sm">
             Dashboard
           </p>
@@ -53,7 +66,7 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
           <p className="mt-2 max-w-xl text-sm text-white/80 sm:text-base">
             <span className="font-semibold text-white">Frase del día:</span> {fraseDelDia(rol)}
           </p>
-        </div>
+        </motion.div>
       </div>
 
       {esOperativo ? (
@@ -61,7 +74,7 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
           <div className="mx-auto max-w-[1800px] space-y-6 px-4 sm:px-8">
             <div className="grid grid-cols-2 gap-4">
               <Kpi etiqueta="Sorteos activos" valor={datos.kpis.inspeccionesActivas} />
-              <Kpi etiqueta="Residentes activos" valor={residentes ? residentes.length : "…"} />
+              <Kpi etiqueta="Residentes activos" valor={residentes ? residentes.length : "…"} indice={1} />
             </div>
 
             <SorteosAbiertosCard rol={rol} sorteosAbiertos={datos.sorteosAbiertos} />
@@ -74,16 +87,19 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
           {rol === "RESIDENTE" && <MiEstadoResidenteCard />}
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <Kpi etiqueta="Inspecciones activas" valor={datos.kpis.inspeccionesActivas} />
-            <Kpi etiqueta="Piezas inspeccionadas (mes)" valor={datos.kpis.piezasInspeccionadasMes} />
+            <Kpi etiqueta="Piezas inspeccionadas (mes)" valor={datos.kpis.piezasInspeccionadasMes} indice={1} />
             <Kpi
               etiqueta="% Rechazo global"
-              valor={`${(datos.kpis.porcentajeRechazoGlobal * 100).toFixed(1)}%`}
+              valor={datos.kpis.porcentajeRechazoGlobal * 100}
+              formato={(n) => `${n.toFixed(1)}%`}
               alerta={datos.kpis.porcentajeRechazoGlobal >= 0.08}
+              indice={2}
             />
             <Kpi
               etiqueta="Inspecciones en crítico"
               valor={datos.kpis.inspeccionesEnCritico}
               alerta={datos.kpis.inspeccionesEnCritico > 0}
+              indice={3}
             />
           </div>
         </div>

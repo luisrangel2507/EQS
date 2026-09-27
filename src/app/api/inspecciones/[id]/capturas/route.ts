@@ -14,6 +14,7 @@ const capturaSchema = z
     cantidad: z.coerce.number().int().min(1).max(999).optional().default(1),
     defecto: z.string().trim().optional().nullable(),
     fotoUrl: z.string().trim().optional().nullable(),
+    idCliente: z.string().trim().max(64).optional().nullable(),
   })
   .refine((d) => d.tipo !== "mala" || Boolean(d.defecto), {
     message: "Selecciona el tipo de defecto",
@@ -36,6 +37,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     const body = await req.json();
     const datos = capturaSchema.parse(body);
+    if (datos.idCliente) {
+      const repetida = await prisma.captura.findUnique({ where: { idCliente: datos.idCliente } });
+      if (repetida) return Response.json(repetida, { status: 200 });
+    }
+
     const esBuena = datos.tipo === "buena";
     const cantidad = datos.cantidad;
 
@@ -48,6 +54,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
           malas: esBuena ? 0 : cantidad,
           defecto: esBuena ? null : datos.defecto,
           fotoUrl: datos.fotoUrl || null,
+          idCliente: datos.idCliente || null,
         },
       }),
       prisma.inspeccion.update({

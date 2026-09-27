@@ -3,13 +3,14 @@
 import Link from "next/link";
 import type { Rol } from "@prisma/client";
 import { usePolling } from "@/lib/usePolling";
+import { SkeletonPagina } from "@/components/ui/Skeleton";
 import { Kpi, SorteosAbiertosCard, estadoInfo, formatoMoneda, type DashboardData } from "../shared";
 
 export default function DashboardEjecutivoClient({ rol }: { rol: Rol }) {
   const { datos, cargando } = usePolling<DashboardData>("/api/dashboard", 7000);
 
   if (cargando || !datos) {
-    return <p className="text-sm text-navy-500">Cargando…</p>;
+    return <SkeletonPagina />;
   }
 
   return (
@@ -23,19 +24,27 @@ export default function DashboardEjecutivoClient({ rol }: { rol: Rol }) {
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
         <Kpi etiqueta="Sorteos activos" valor={datos.kpis.inspeccionesActivas} />
-        <Kpi etiqueta="Piezas inspeccionadas (mes)" valor={datos.kpis.piezasInspeccionadasMes} />
+        <Kpi etiqueta="Piezas inspeccionadas (mes)" valor={datos.kpis.piezasInspeccionadasMes} indice={1} />
         {datos.kpis.facturadoMes !== null && (
-          <Kpi etiqueta="Facturado en el mes" valor={formatoMoneda(datos.kpis.facturadoMes)} />
+          <Kpi
+            etiqueta="Facturado en el mes"
+            valor={datos.kpis.facturadoMes}
+            formato={formatoMoneda}
+            indice={2}
+          />
         )}
         <Kpi
           etiqueta="% Rechazo global"
-          valor={`${(datos.kpis.porcentajeRechazoGlobal * 100).toFixed(1)}%`}
+          valor={datos.kpis.porcentajeRechazoGlobal * 100}
+          formato={(n) => `${n.toFixed(1)}%`}
           alerta={datos.kpis.porcentajeRechazoGlobal >= 0.08}
+          indice={3}
         />
         <Kpi
           etiqueta="Inspecciones en crítico"
           valor={datos.kpis.inspeccionesEnCritico}
           alerta={datos.kpis.inspeccionesEnCritico > 0}
+          indice={4}
         />
       </div>
 

@@ -59,6 +59,237 @@ body {
   animation: tap-bounce 0.35s ease-out;
 }
 
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.skeleton,
+.skeleton-dark {
+  position: relative;
+  overflow: hidden;
+  background-color: #e3e7f3;
+}
+.skeleton-dark {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+.skeleton::after,
+.skeleton-dark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: shimmer 1.4s infinite;
+}
+.skeleton-dark::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+}
+
+@keyframes flash-pantalla {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.flash-pantalla {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  animation: flash-pantalla 0.45s ease-out forwards;
+}
+.flash-exito {
+  box-shadow: inset 0 0 0 6px rgba(16, 185, 129, 0.9), inset 0 0 90px rgba(16, 185, 129, 0.35);
+}
+.flash-error {
+  box-shadow: inset 0 0 0 6px rgba(239, 68, 68, 0.9), inset 0 0 90px rgba(239, 68, 68, 0.4);
+}
+
+@keyframes respirar {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+  }
+}
+.animate-respirar {
+  animation: respirar 1.8s ease-in-out infinite;
+}
+
+@keyframes ken-burns {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.08) translate(-1%, -1%);
+  }
+}
+.animate-ken-burns {
+  animation: ken-burns 22s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-ken-burns,
+  .skeleton::after,
+  .skeleton-dark::after,
+  .animate-respirar,
+  .animate-pop-plus,
+  .animate-tap-bounce {
+    animation: none;
+  }
+}
+
+/* ---------- Modo oscuro ----------
+   La app usa utilidades claras directamente (bg-white, text-navy-900...), así
+   que en vez de duplicar cada clase con dark:, se remapean aquí las superficies
+   y textos más comunes. */
+.dark {
+  --background: #0b1020;
+  --foreground: #e6eaf5;
+  color-scheme: dark;
+}
+.dark .bg-white,
+.dark .card {
+  background-color: #131a2e;
+}
+.dark .bg-navy-50,
+.dark .hover\:bg-navy-50:hover,
+.dark .hover\:bg-navy-100:hover {
+  background-color: #1b2440;
+}
+.dark .bg-navy-100 {
+  background-color: #222c4c;
+}
+.dark .card,
+.dark .border-navy-100,
+.dark .border-navy-50 {
+  border-color: #26304f;
+}
+.dark .border-navy-200 {
+  border-color: #33406a;
+}
+.dark .divide-navy-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #26304f;
+}
+.dark .text-navy-900:not([class*="bg-yellow"]):not([class*="from-yellow"]),
+.dark .text-navy-800:not([class*="bg-yellow"]):not([class*="from-yellow"]),
+.dark .text-navy-700,
+.dark .text-navy {
+  color: #e6eaf5;
+}
+.dark .text-navy-600,
+.dark .text-navy-500 {
+  color: #aab4d4;
+}
+.dark .text-navy-400 {
+  color: #7d88ab;
+}
+.dark .input {
+  background-color: #0f1528;
+  border-color: #33406a;
+  color: #e6eaf5;
+}
+.dark .btn-secondary {
+  background-color: #131a2e;
+  border-color: #33406a;
+  color: #e6eaf5;
+}
+.dark .btn-secondary:hover {
+  background-color: #1b2440;
+}
+.dark .btn-accent,
+.dark .bg-yellow {
+  color: #0a163c;
+}
+.dark .bg-green-50 {
+  background-color: rgba(16, 185, 129, 0.1);
+}
+.dark .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.12);
+}
+.dark .bg-orange-50 {
+  background-color: rgba(249, 115, 22, 0.12);
+}
+.dark .bg-yellow-50 {
+  background-color: rgba(244, 217, 53, 0.1);
+}
+.dark .border-green-200 {
+  border-color: rgba(16, 185, 129, 0.35);
+}
+.dark .border-red-200,
+.dark .border-red-300 {
+  border-color: rgba(239, 68, 68, 0.4);
+}
+.dark .text-green-800,
+.dark .text-green-700 {
+  color: #6ee7b7;
+}
+.dark .text-red-800,
+.dark .text-red-700,
+.dark .text-red-900 {
+  color: #fca5a5;
+}
+.dark .text-orange-900,
+.dark .text-orange-700 {
+  color: #fdba74;
+}
+.dark .bg-green-100 {
+  background-color: rgba(16, 185, 129, 0.18);
+}
+.dark .bg-red-100 {
+  background-color: rgba(239, 68, 68, 0.2);
+}
+.dark .bg-orange-100 {
+  background-color: rgba(249, 115, 22, 0.2);
+}
+.dark .bg-amber-100,
+.dark .bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.18);
+}
+.dark .bg-blue-100,
+.dark .bg-blue-50 {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+.dark .bg-purple-100 {
+  background-color: rgba(168, 85, 247, 0.2);
+}
+.dark .text-amber-800,
+.dark .text-amber-900 {
+  color: #fcd34d;
+}
+.dark .text-blue-800 {
+  color: #93c5fd;
+}
+.dark .text-purple-800 {
+  color: #d8b4fe;
+}
+.dark .text-orange-800 {
+  color: #fdba74;
+}
+.dark .recharts-bar-rectangle path {
+  fill: #5d74c7;
+}
+.dark .skeleton {
+  background-color: #1b2440;
+}
+.dark .skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07), transparent);
+}
+.dark .recharts-cartesian-axis-tick-value {
+  fill: #aab4d4;
+}
+.dark .recharts-cartesian-grid line {
+  stroke: #26304f;
+}
+
 @layer components {
   .btn-primary {
     @apply inline-flex items-center justify-center rounded-lg bg-navy px-4 py-2 font-semibold text-white transition hover:bg-navy-600 disabled:cursor-not-allowed disabled:opacity-50;

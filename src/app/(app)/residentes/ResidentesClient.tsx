@@ -5,6 +5,7 @@ import { usePolling } from "@/lib/usePolling";
 import { ESTADOS_INSPECTOR, ROL_ETIQUETAS } from "@/lib/constants";
 import { Kpi } from "@/app/(app)/dashboard/shared";
 import { NOMBRE_EMPRESA } from "@/lib/branding";
+import { SkeletonTarjetas } from "@/components/ui/Skeleton";
 
 type Residente = {
   id: string;
@@ -83,9 +84,9 @@ export default function ResidentesClient() {
         <>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <Kpi etiqueta="Residentes" valor={resumen.total} />
-            <Kpi etiqueta="Activos" valor={resumen.activos} />
-            <Kpi etiqueta="En alerta" valor={resumen.alertas} alerta={resumen.alertas > 0} />
-            <Kpi etiqueta="Sin reportar" valor={resumen.sinReportar} />
+            <Kpi etiqueta="Activos" valor={resumen.activos} indice={1} />
+            <Kpi etiqueta="En alerta" valor={resumen.alertas} alerta={resumen.alertas > 0} indice={2} />
+            <Kpi etiqueta="Sin reportar" valor={resumen.sinReportar} indice={3} />
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -112,7 +113,7 @@ export default function ResidentesClient() {
       )}
 
       {cargando ? (
-        <p className="text-sm text-navy-500">Cargando…</p>
+        <SkeletonTarjetas cantidad={3} alto="h-6" />
       ) : !residentes || residentes.length === 0 ? (
         <p className="card text-sm text-navy-400">
           Todavía no hay Residentes marcados. Puedes hacerlo desde Usuarios.
