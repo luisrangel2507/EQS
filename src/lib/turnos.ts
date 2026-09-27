@@ -65,3 +65,14 @@ export function mesActualLocal() {
   const { anio, mes } = partesLocales(new Date());
   return { anio, mes };
 }
+
+/** "YYYY-MM-DD" del día local de planta. */
+export function claveDiaLocal(fecha: Date) {
+  const { anio, mes, dia } = partesLocales(fecha);
+  return `${anio}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+}
+
+export function inicioDiaLocal(fecha = new Date(), diasAtras = 0) {
+  const { anio, mes, dia } = partesLocales(fecha);
+  return fechaLocal(anio, mes, dia - diasAtras, 0);
+}
