@@ -14,6 +14,7 @@ import ChatPanel from "./ChatPanel";
 import PushToggle from "./PushToggle";
 import EscanerCodigo from "./EscanerCodigo";
 import PaletaComandos from "./PaletaComandos";
+import TourBienvenida from "./TourBienvenida";
 import { EVENTO_ESCANER } from "@/lib/eventos";
 
 const CLAVE_ULTIMA_LECTURA_CHAT = "eqs_chat_ultima_lectura";
@@ -90,7 +91,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
                       className="h-[42px] w-auto sm:h-[52px]"
                     />
                   </Link>
-                  <nav className="hidden gap-1 lg:flex">
+                  <nav className="hidden gap-1 lg:flex" data-tour="nav">
                     {enlaces.map((enlace) => {
                       const activo = pathname?.startsWith(enlace.href);
                       return (
@@ -118,6 +119,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
                   {esOperativo && (
                     <Link
                       href="/dashboard/ejecutivo"
+                      data-tour="ejecutivo"
                       className="flex items-center gap-1.5 rounded-md bg-yellow px-3 py-1.5 text-xs font-bold text-navy-900 transition hover:bg-yellow-400"
                     >
                       📊 <span className="hidden 2xl:inline">Dashboard Ejecutivo</span>
@@ -139,7 +141,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
                   <PerfilMenu nombre={nombre} rol={rol} />
                 </div>
               </div>
-              <nav className="flex gap-1 overflow-x-auto border-t border-white/10 px-2 py-1 lg:hidden">
+              <nav className="flex gap-1 overflow-x-auto border-t border-white/10 px-2 py-1 lg:hidden" data-tour="nav">
                 {enlaces.map((enlace) => {
                   const activo = pathname?.startsWith(enlace.href);
                   return (
@@ -165,6 +167,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
           <BurbujaChat rol={rol} miId={id} />
         </div>
         <PaletaComandos rol={rol} />
+        <TourBienvenida rol={rol} nombre={nombre} usuarioId={id} />
       </div>
     </OcultarHeaderContext.Provider>
   );
@@ -184,6 +187,7 @@ function BotonEscanear() {
         onClick={() => setAbierto(true)}
         className="flex h-9 w-9 items-center justify-center rounded-full text-lg transition hover:bg-white/10"
         aria-label="Escanear código"
+        data-tour="escanear"
         title="Escanear QR o código de barras"
       >
         📷
@@ -244,6 +248,7 @@ function NotificacionesBell({ rol }: { rol: Rol }) {
         onClick={alternar}
         className="relative flex h-9 w-9 items-center justify-center rounded-full text-lg transition hover:bg-white/10"
         aria-label="Notificaciones"
+        data-tour="notificaciones"
       >
         🔔
         {noLeidas > 0 && (
@@ -325,6 +330,7 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
         onClick={() => setAbierto((a) => !a)}
         className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition hover:bg-white/10"
         aria-label="Perfil"
+        data-tour="perfil"
       >
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow text-sm font-bold text-navy-900">
           {iniciales}
@@ -460,6 +466,7 @@ function BurbujaChat({ rol, miId }: { rol: Rol; miId: string }) {
           }}
           className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-navy text-2xl text-white shadow-lg ring-4 ring-white/40 transition hover:scale-105 hover:bg-navy-600"
           aria-label="Abrir chat del equipo"
+          data-tour="chat"
         >
           💬
           {noLeidos > 0 && (
