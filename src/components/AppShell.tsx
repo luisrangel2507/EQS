@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 import { BotonTema } from "@/components/ui/Tema";
 import ChatPanel from "./ChatPanel";
 import PushToggle from "./PushToggle";
+import EscanerCodigo from "./EscanerCodigo";
 
 const CLAVE_ULTIMA_LECTURA_CHAT = "eqs_chat_ultima_lectura";
 
@@ -60,7 +61,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
   return (
     <OcultarHeaderContext.Provider value={setInmersivo}>
       <div className="min-h-screen bg-background">
-        <header className="sticky top-0 z-20 border-b border-navy-100 bg-navy-900 text-white">
+        <header className="sticky top-0 z-20 border-b border-navy-100 bg-navy-900 text-white print:hidden">
           {inmersivo ? (
             <div className="flex items-center px-4 py-3">
               <button
@@ -118,6 +119,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
                       📊 <span className="hidden sm:inline">Dashboard Ejecutivo</span>
                     </Link>
                   )}
+                  {rol !== "CLIENTE" && <BotonEscanear />}
                   <NotificacionesBell rol={rol} />
                   <PerfilMenu nombre={nombre} rol={rol} />
                 </div>
@@ -144,9 +146,29 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
         <main className={inmersivo ? "px-4 pb-24 pt-4" : "mx-auto max-w-7xl px-4 pb-24 pt-6"}>
           {children}
         </main>
-        <BurbujaChat rol={rol} miId={id} />
+        <div className="print:hidden">
+          <BurbujaChat rol={rol} miId={id} />
+        </div>
       </div>
     </OcultarHeaderContext.Provider>
+  );
+}
+
+function BotonEscanear() {
+  const [abierto, setAbierto] = useState(false);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setAbierto(true)}
+        className="flex h-9 w-9 items-center justify-center rounded-full text-lg transition hover:bg-white/10"
+        aria-label="Escanear código"
+        title="Escanear QR o código de barras"
+      >
+        📷
+      </button>
+      <EscanerCodigo abierto={abierto} onCerrar={() => setAbierto(false)} />
+    </>
   );
 }
 

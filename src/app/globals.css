@@ -313,3 +313,15 @@ body {
     @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
   }
 }
+
+@media print {
+  body {
+    background: #fff !important;
+  }
+  .dark .bg-white {
+    background-color: #fff !important;
+  }
+  .dark .text-navy-900 {
+    color: #0a163c !important;
+  }
+}

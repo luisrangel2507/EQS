@@ -145,6 +145,11 @@ export default function InspeccionDetalleClient({
           <a href={`/api/inspecciones/${id}/csv`} className="btn-secondary">
             Exportar CSV
           </a>
+          {puedeGestionar && (
+            <a href={`/inspecciones/${id}/etiqueta`} className="btn-secondary">
+              🏷️ Etiqueta QR
+            </a>
+          )}
           {puedeGestionar && !inspeccion.cerrado && (
             <button className="btn-secondary" onClick={() => setMostrarEditar(true)}>
               Editar
