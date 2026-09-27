@@ -45,6 +45,11 @@ export default function InspeccionesClient({ rol }: { rol: Rol }) {
     cargar();
   }, [cargar]);
 
+  useEffect(() => {
+    // la paleta de comandos abre el formulario con ?nueva=1
+    if (puedeCrear && new URLSearchParams(window.location.search).get("nueva") === "1") setMostrarForm(true);
+  }, [puedeCrear]);
+
   const filtradas = inspecciones.filter((i) => {
     if (filtroEfectivo === "activas") return !i.cerrado;
     if (filtroEfectivo === "cerradas") return i.cerrado;

@@ -13,6 +13,8 @@ import { BotonTema } from "@/components/ui/Tema";
 import ChatPanel from "./ChatPanel";
 import PushToggle from "./PushToggle";
 import EscanerCodigo from "./EscanerCodigo";
+import PaletaComandos from "./PaletaComandos";
+import { EVENTO_ESCANER } from "@/lib/eventos";
 
 const CLAVE_ULTIMA_LECTURA_CHAT = "eqs_chat_ultima_lectura";
 
@@ -118,9 +120,20 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
                       href="/dashboard/ejecutivo"
                       className="flex items-center gap-1.5 rounded-md bg-yellow px-3 py-1.5 text-xs font-bold text-navy-900 transition hover:bg-yellow-400"
                     >
-                      📊 <span className="hidden xl:inline">Dashboard Ejecutivo</span>
+                      📊 <span className="hidden 2xl:inline">Dashboard Ejecutivo</span>
                     </Link>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => window.dispatchEvent(new Event("eqs-abrir-paleta"))}
+                    className="flex h-9 items-center gap-2 rounded-full px-2.5 text-sm text-white/80 transition hover:bg-white/10 hover:text-white xl:border xl:border-white/15 xl:px-3"
+                    aria-label="Buscar (Ctrl K)"
+                    data-tour="buscar"
+                  >
+                    <span className="text-base">🔍</span>
+                    <span className="hidden xl:inline">Buscar</span>
+                    <kbd className="hidden rounded bg-white/10 px-1.5 text-[10px] font-semibold xl:inline">Ctrl K</kbd>
+                  </button>
                   {rol !== "CLIENTE" && <BotonEscanear />}
                   <NotificacionesBell rol={rol} />
                   <PerfilMenu nombre={nombre} rol={rol} />
@@ -151,6 +164,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
         <div className="print:hidden">
           <BurbujaChat rol={rol} miId={id} />
         </div>
+        <PaletaComandos rol={rol} />
       </div>
     </OcultarHeaderContext.Provider>
   );
@@ -158,6 +172,11 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
 
 function BotonEscanear() {
   const [abierto, setAbierto] = useState(false);
+  useEffect(() => {
+    const abrir = () => setAbierto(true);
+    window.addEventListener(EVENTO_ESCANER, abrir);
+    return () => window.removeEventListener(EVENTO_ESCANER, abrir);
+  }, []);
   return (
     <>
       <button

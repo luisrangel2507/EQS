@@ -60,6 +60,7 @@ export default function TurnosClient({ rol, miId }: { rol: Rol; miId: string }) 
 
   useEffect(() => {
     const t = setInterval(() => setAhora(Date.now()), 30000);
+    if (new URLSearchParams(window.location.search).get("entregar") === "1") setEntregando(true);
     return () => clearInterval(t);
   }, []);
 

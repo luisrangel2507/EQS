@@ -3,28 +3,33 @@
 import { useEffect, useState } from "react";
 import { CLAVE_TEMA } from "@/lib/tema";
 
+const EVENTO_TEMA = "eqs-tema";
+
+export function alternarTema() {
+  const oscuro = !document.documentElement.classList.contains("dark");
+  document.documentElement.classList.toggle("dark", oscuro);
+  try {
+    localStorage.setItem(CLAVE_TEMA, oscuro ? "oscuro" : "claro");
+  } catch {
+    // sin localStorage el tema solo dura esta sesión
+  }
+  window.dispatchEvent(new Event(EVENTO_TEMA));
+}
+
 export function BotonTema() {
   const [oscuro, setOscuro] = useState(false);
 
   useEffect(() => {
-    setOscuro(document.documentElement.classList.contains("dark"));
+    const leer = () => setOscuro(document.documentElement.classList.contains("dark"));
+    leer();
+    window.addEventListener(EVENTO_TEMA, leer);
+    return () => window.removeEventListener(EVENTO_TEMA, leer);
   }, []);
-
-  function alternar() {
-    const nuevo = !oscuro;
-    setOscuro(nuevo);
-    document.documentElement.classList.toggle("dark", nuevo);
-    try {
-      localStorage.setItem(CLAVE_TEMA, nuevo ? "oscuro" : "claro");
-    } catch {
-      // sin localStorage el tema solo dura esta sesión
-    }
-  }
 
   return (
     <button
       type="button"
-      onClick={alternar}
+      onClick={alternarTema}
       className="block w-full px-4 py-2 text-left text-sm font-semibold text-navy-700 hover:bg-navy-50"
     >
       {oscuro ? "☀️ Modo claro" : "🌙 Modo oscuro"}

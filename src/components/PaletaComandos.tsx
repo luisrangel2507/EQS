@@ -1,0 +1,254 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
+import type { Rol } from "@prisma/client";
+import { AnimatePresence, motion } from "framer-motion";
+import { alternarTema } from "@/components/ui/Tema";
+import { EVENTO_ESCANER } from "@/lib/eventos";
+
+type Comando = {
+  id: string;
+  grupo: "Ir a" | "Acciones" | "Inspecciones";
+  icono: string;
+  titulo: string;
+  detalle?: string;
+  claves?: string;
+  ejecutar: () => void;
+};
+
+type InspeccionLigera = {
+  id: string;
+  nombre: string;
+  numeroParte: string | null;
+  cliente: string | null;
+  planta: string | null;
+  cerrado: boolean;
+};
+
+const LIDERAZGO: Rol[] = ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER"];
+
+const normalizar = (t: string) =>
+  t
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
+
+function coincide(texto: string, consulta: string) {
+  const base = normalizar(texto);
+  return normalizar(consulta)
+    .split(/\s+/)
+    .filter(Boolean)
+    .every((palabra) => base.includes(palabra));
+}
+
+export default function PaletaComandos({ rol }: { rol: Rol }) {
+  const router = useRouter();
+  const [abierta, setAbierta] = useState(false);
+  const [consulta, setConsulta] = useState("");
+  const [activo, setActivo] = useState(0);
+  const [inspecciones, setInspecciones] = useState<InspeccionLigera[] | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listaRef = useRef<HTMLUListElement>(null);
+
+  useEffect(() => {
+    const tecla = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setAbierta((a) => !a);
+      }
+    };
+    const abrir = () => setAbierta(true);
+    window.addEventListener("keydown", tecla);
+    window.addEventListener("eqs-abrir-paleta", abrir);
+    return () => {
+      window.removeEventListener("keydown", tecla);
+      window.removeEventListener("eqs-abrir-paleta", abrir);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!abierta) {
+      setConsulta("");
+      setActivo(0);
+      return;
+    }
+    fetch("/api/inspecciones")
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setInspecciones)
+      .catch(() => setInspecciones([]));
+  }, [abierta]);
+
+  const comandos = useMemo<Comando[]>(() => {
+    const ir = (href: string) => () => router.push(href);
+    const lista: (Comando | false)[] = [
+      rol === "INSPECTOR" && { id: "estacion", grupo: "Ir a", icono: "🧰", titulo: "Mis inspecciones", ejecutar: ir("/estacion") },
+      rol !== "INSPECTOR" && { id: "dashboard", grupo: "Ir a", icono: "🏠", titulo: "Dashboard", ejecutar: ir("/dashboard") },
+      LIDERAZGO.includes(rol) && { id: "ejecutivo", grupo: "Ir a", icono: "📊", titulo: "Dashboard Ejecutivo", ejecutar: ir("/dashboard/ejecutivo") },
+      { id: "inspecciones", grupo: "Ir a", icono: "📋", titulo: rol === "INSPECTOR" ? "Historial" : "Inspecciones", ejecutar: ir("/inspecciones") },
+      LIDERAZGO.includes(rol) && { id: "residentes", grupo: "Ir a", icono: "🏭", titulo: "Residentes", ejecutar: ir("/residentes") },
+      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "turnos", grupo: "Ir a", icono: "🕐", titulo: "Turnos", ejecutar: ir("/turnos") },
+      (LIDERAZGO.includes(rol) || rol === "INSPECTOR") && { id: "ranking", grupo: "Ir a", icono: "🏆", titulo: "Ranking", ejecutar: ir("/ranking") },
+      (rol === "ADMIN" || rol === "GERENTE") && { id: "facturacion", grupo: "Ir a", icono: "💰", titulo: "Facturación", ejecutar: ir("/facturacion") },
+      rol === "ADMIN" && { id: "usuarios", grupo: "Ir a", icono: "👤", titulo: "Usuarios", ejecutar: ir("/usuarios") },
+      rol === "ADMIN" && { id: "empresas", grupo: "Ir a", icono: "🏢", titulo: "Empresas cliente", ejecutar: ir("/empresas") },
+      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "tv", grupo: "Ir a", icono: "📺", titulo: "Modo TV (piso)", ejecutar: ir("/tv") },
+      rol !== "CLIENTE" && {
+        id: "escanear",
+        grupo: "Acciones",
+        icono: "📷",
+        titulo: "Escanear código",
+        detalle: "QR de etiqueta, número de parte o lote",
+        ejecutar: () => window.dispatchEvent(new Event(EVENTO_ESCANER)),
+      },
+      (rol === "ADMIN" || rol === "SUPERVISOR") && { id: "nueva", grupo: "Acciones", icono: "➕", titulo: "Nueva inspección", ejecutar: ir("/inspecciones?nueva=1") },
+      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "entregar", grupo: "Acciones", icono: "📝", titulo: "Entregar turno", ejecutar: ir("/turnos?entregar=1") },
+      rol === "ADMIN" && { id: "alta-cliente", grupo: "Acciones", icono: "🤝", titulo: "Dar de alta un cliente", ejecutar: ir("/empresas?alta=1") },
+      { id: "tema", grupo: "Acciones", icono: "🌗", titulo: "Cambiar modo claro / oscuro", ejecutar: alternarTema },
+      { id: "tour", grupo: "Acciones", icono: "🎓", titulo: "Ver el recorrido de bienvenida", ejecutar: () => window.dispatchEvent(new Event("eqs-iniciar-tour")) },
+      {
+        id: "salir",
+        grupo: "Acciones",
+        icono: "🚪",
+        titulo: "Cerrar sesión",
+        ejecutar: () => signOut({ callbackUrl: `${window.location.origin}/login` }),
+      },
+    ];
+    return lista.filter(Boolean) as Comando[];
+  }, [rol, router]);
+
+  const resultados = useMemo(() => {
+    const fijos = consulta ? comandos.filter((c) => coincide(`${c.titulo} ${c.detalle ?? ""}`, consulta)) : comandos;
+    const deInspecciones: Comando[] = consulta
+      ? (inspecciones ?? [])
+          .filter((i) => coincide(`${i.numeroParte ?? ""} ${i.nombre} ${i.cliente ?? ""} ${i.planta ?? ""}`, consulta))
+          .sort((a, b) => Number(a.cerrado) - Number(b.cerrado))
+          .slice(0, 6)
+          .map((i) => ({
+            id: `insp-${i.id}`,
+            grupo: "Inspecciones" as const,
+            icono: i.cerrado ? "📁" : "🟢",
+            titulo: i.numeroParte ?? i.nombre,
+            detalle: [i.numeroParte ? i.nombre : null, i.cliente, i.cerrado ? "Cerrada" : "Activa"].filter(Boolean).join(" · "),
+            ejecutar: () => router.push(`/inspecciones/${i.id}`),
+          }))
+      : [];
+    return [...deInspecciones, ...fijos];
+  }, [comandos, consulta, inspecciones, router]);
+
+  useEffect(() => {
+    setActivo(0);
+  }, [consulta]);
+
+  useEffect(() => {
+    listaRef.current?.querySelector(`[data-indice="${activo}"]`)?.scrollIntoView({ block: "nearest" });
+  }, [activo]);
+
+  function ejecutar(c: Comando | undefined) {
+    if (!c) return;
+    setAbierta(false);
+    c.ejecutar();
+  }
+
+  function teclas(e: React.KeyboardEvent) {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActivo((a) => Math.min(resultados.length - 1, a + 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActivo((a) => Math.max(0, a - 1));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      ejecutar(resultados[activo]);
+    } else if (e.key === "Escape") {
+      setAbierta(false);
+    }
+  }
+
+  let grupoPrevio: string | null = null;
+
+  return (
+    <AnimatePresence>
+      {abierta && (
+        <motion.div
+          className="fixed inset-0 z-[70] flex items-start justify-center bg-navy-950/60 px-4 pt-[12vh] backdrop-blur-sm"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setAbierta(false)}
+        >
+          <motion.div
+            role="dialog"
+            aria-label="Paleta de comandos"
+            className="w-full max-w-xl overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-2xl"
+            initial={{ opacity: 0, y: -12, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 420, damping: 32 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 border-b border-navy-100 px-4">
+              <span className="text-lg text-navy-400">🔍</span>
+              <input
+                ref={inputRef}
+                autoFocus
+                value={consulta}
+                onChange={(e) => setConsulta(e.target.value)}
+                onKeyDown={teclas}
+                placeholder="Busca una pieza, cliente, página o acción…"
+                className="h-14 flex-1 bg-transparent text-base text-navy-900 outline-none placeholder:text-navy-400"
+              />
+              <kbd className="rounded border border-navy-200 px-1.5 py-0.5 text-[10px] font-semibold text-navy-400">Esc</kbd>
+            </div>
+            <ul ref={listaRef} className="max-h-[55vh] overflow-y-auto p-2">
+              {resultados.length === 0 && (
+                <li className="px-3 py-8 text-center text-sm text-navy-400">
+                  {inspecciones === null ? "Buscando…" : `Nada coincide con "${consulta}"`}
+                </li>
+              )}
+              {resultados.map((c, i) => {
+                const encabezado = c.grupo !== grupoPrevio ? c.grupo : null;
+                grupoPrevio = c.grupo;
+                return (
+                  <li key={c.id}>
+                    {encabezado && (
+                      <p className="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-navy-400">{encabezado}</p>
+                    )}
+                    <button
+                      data-indice={i}
+                      onMouseMove={() => setActivo(i)}
+                      onClick={() => ejecutar(c)}
+                      className={`relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors ${
+                        i === activo ? "text-navy-900" : "text-navy-700"
+                      }`}
+                    >
+                      {i === activo && (
+                        <motion.span
+                          layoutId="paleta-activo"
+                          className="absolute inset-0 rounded-xl bg-navy-50"
+                          transition={{ type: "spring", stiffness: 600, damping: 40 }}
+                        />
+                      )}
+                      <span className="relative text-lg">{c.icono}</span>
+                      <span className="relative min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold">{c.titulo}</span>
+                        {c.detalle && <span className="block truncate text-xs text-navy-400">{c.detalle}</span>}
+                      </span>
+                      {i === activo && <span className="relative text-xs text-navy-400">↵</span>}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="flex items-center gap-4 border-t border-navy-100 px-4 py-2 text-[11px] text-navy-400">
+              <span>↑↓ moverse</span>
+              <span>↵ abrir</span>
+              <span className="ml-auto">Ctrl K</span>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
