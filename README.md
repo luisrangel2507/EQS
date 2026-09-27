@@ -18,11 +18,31 @@ empresa de sorteo/inspección para la cadena de suministro automotriz
 
 Todas las reglas se validan en el servidor (API routes), no solo en la UI:
 
-- **Admin**: acceso total, gestiona usuarios y sus roles.
+- **Admin**: acceso total, gestiona usuarios, empresas y facturación.
 - **Supervisor**: crea y cierra inspecciones, asigna inspectores, ve todo.
+- **Gerente**: ve todo el piso y la facturación.
+- **Líder**: da seguimiento en piso (apoyo, turnos, 8D).
 - **Inspector**: solo ve y captura en las inspecciones donde está asignado.
+- **Residente**: personal fijo en la planta de un cliente; ve las inspecciones de su planta.
 - **Cliente**: solo lectura, solo ve inspecciones donde el campo "cliente"
   coincide con su registro de usuario (`clienteNombre`).
+
+## Módulos
+
+- **Captura en piso**: vibración y flash al registrar, botón *Deshacer* (2 min) y
+  **modo sin señal**: las capturas se guardan en el equipo (fotos incluidas) y se
+  envían solas al volver la conexión, sin duplicarse.
+- **Escaneo QR / código de barras** (📷 en el encabezado): abre la inspección por
+  etiqueta QR, número de parte o lote de Punto Limpio. Cada inspección tiene su
+  etiqueta imprimible en *🏷️ Etiqueta QR*.
+- **Turnos** (`/turnos`): números del turno en curso y bitácora de entrega/recepción de turno.
+- **Portal del cliente**: *🔗 Compartir* genera un enlace en vivo de solo lectura
+  (avance, Pareto y fotos, sin precios) con vigencia y revocable.
+- **Reportes 8D**: por inspección, con borrador automático de D1–D3 y PDF.
+- **Facturación** (`/facturacion`, Admin y Gerente): piezas × precio por mes y
+  cliente, estado de cuenta en PDF y CSV.
+- **Ranking** (`/ranking`): volumen y ritmo por inspector y por turno.
+- **Modo oscuro**: en el menú de perfil.
 
 ## Desarrollo local
 
@@ -86,6 +106,8 @@ servicio para que las fotos y PDFs persistan entre deploys.
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | Par de llaves para notificaciones push (Web Push). Genéralas UNA sola vez con `node -e "console.log(require('web-push').generateVAPIDKeys())"` y no las cambies después (invalidarías todas las suscripciones ya guardadas) |
 | `VAPID_SUBJECT` | `mailto:` de contacto que exige el estándar Web Push, ej. `mailto:soporte@eqservices.mx` |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Mismo valor que `VAPID_PUBLIC_KEY`; debe estar disponible en **build time** (Railway la necesita antes de correr `npm run build`, no solo en runtime) |
+| `NEXT_PUBLIC_ZONA_HORARIA` | Zona horaria de planta para turnos, cortes de mes y ranking (default `America/Monterrey`). Plantas fronterizas con horario de verano de EE. UU.: `America/Matamoros`. Se lee en **build time** |
+| `TASA_IVA` | Opcional. Tasa de IVA del estado de cuenta (default `0.16`) |
 
 `npm run start` corre `prisma migrate deploy` antes de arrancar el servidor,
 así que las migraciones se aplican automáticamente en cada deploy.
