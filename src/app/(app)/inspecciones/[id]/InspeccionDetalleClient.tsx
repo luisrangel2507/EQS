@@ -16,6 +16,7 @@ import { DEFECTOS_COMUNES, ESTADOS_INSPECTOR, PLANTAS } from "@/lib/constants";
 import SubidaPdf from "@/components/SubidaPdf";
 import CompartirInspeccion from "@/components/CompartirInspeccion";
 import Reportes8DCard from "@/components/Reportes8DCard";
+import SpcCard from "@/components/SpcCard";
 import GaleriaDefectos, { type FotoDefecto } from "@/components/GaleriaDefectos";
 import ClienteSelect from "@/components/ClienteSelect";
 import { useModoInmersivo } from "@/components/AppShell";
@@ -230,6 +231,8 @@ export default function InspeccionDetalleClient({
           </ResponsiveContainer>
         )}
       </div>
+
+      <SpcCard inspeccionId={id} />
 
       <GaleriaCard inspeccionId={id} />
 
