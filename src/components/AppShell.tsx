@@ -42,7 +42,9 @@ const ENLACES: { href: string; label: string; roles: Rol[] }[] = [
   { href: "/inspecciones", label: "Inspecciones", roles: ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER", "RESIDENTE", "CLIENTE"] },
   { href: "/inspecciones", label: "Historial", roles: ["INSPECTOR"] },
   { href: "/residentes", label: "Residentes", roles: ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER"] },
-  { href: "/empresas", label: "Empresas", roles: ["ADMIN"] },
+  { href: "/turnos", label: "Turnos", roles: ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER", "RESIDENTE"] },
+  { href: "/ranking", label: "Ranking", roles: ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER", "INSPECTOR"] },
+  { href: "/facturacion", label: "Facturación", roles: ["ADMIN", "GERENTE"] },
 ];
 
 export default function AppShell({ id, nombre, rol, children }: Props) {
@@ -86,7 +88,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
                       className="h-[42px] w-auto sm:h-[52px]"
                     />
                   </Link>
-                  <nav className="hidden gap-1 md:flex">
+                  <nav className="hidden gap-1 lg:flex">
                     {enlaces.map((enlace) => {
                       const activo = pathname?.startsWith(enlace.href);
                       return (
@@ -116,7 +118,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
                       href="/dashboard/ejecutivo"
                       className="flex items-center gap-1.5 rounded-md bg-yellow px-3 py-1.5 text-xs font-bold text-navy-900 transition hover:bg-yellow-400"
                     >
-                      📊 <span className="hidden sm:inline">Dashboard Ejecutivo</span>
+                      📊 <span className="hidden xl:inline">Dashboard Ejecutivo</span>
                     </Link>
                   )}
                   {rol !== "CLIENTE" && <BotonEscanear />}
@@ -124,7 +126,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
                   <PerfilMenu nombre={nombre} rol={rol} />
                 </div>
               </div>
-              <nav className="flex gap-1 overflow-x-auto border-t border-white/10 px-2 py-1 md:hidden">
+              <nav className="flex gap-1 overflow-x-auto border-t border-white/10 px-2 py-1 lg:hidden">
                 {enlaces.map((enlace) => {
                   const activo = pathname?.startsWith(enlace.href);
                   return (
@@ -335,6 +337,15 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
                 className="block w-full px-4 py-2 text-left text-sm font-semibold text-navy-700 hover:bg-navy-50"
               >
                 👤 Editar usuarios
+              </Link>
+            )}
+            {rol === "ADMIN" && (
+              <Link
+                href="/empresas"
+                onClick={() => setAbierto(false)}
+                className="block w-full px-4 py-2 text-left text-sm font-semibold text-navy-700 hover:bg-navy-50"
+              >
+                🏢 Empresas cliente
               </Link>
             )}
             <BotonTema />

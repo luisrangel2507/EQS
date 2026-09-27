@@ -47,6 +47,8 @@ model Usuario {
   notasComoAutor       NotaResidente[]       @relation("NotaResidenteAutor")
   notificaciones       Notificacion[]
   suscripcionesPush    SuscripcionPush[]
+  relevosEntregados    RelevoTurno[]         @relation("RelevoAutor")
+  relevosRecibidos     RelevoTurno[]         @relation("RelevoReceptor")
 }
 
 // bitácora de seguimiento del personal Residente (asignado de forma fija a
@@ -208,4 +210,27 @@ model SuscripcionPush {
   creadoEn  DateTime @default(now())
 
   @@index([usuarioId])
+}
+
+// bitácora de entrega de turno: quien sale deja novedades y pendientes, con
+// una foto de los números del turno, y quien entra confirma que lo recibió
+model RelevoTurno {
+  id            String    @id @default(cuid())
+  autor         Usuario   @relation("RelevoAutor", fields: [autorId], references: [id])
+  autorId       String
+  turno         String // "primero" | "segundo" | "tercero"
+  planta        String?
+  inicioTurno   DateTime
+  finTurno      DateTime
+  piezasBuenas  Int       @default(0)
+  piezasMalas   Int       @default(0)
+  novedades     String
+  pendientes    String?
+  recibidoPor   Usuario?  @relation("RelevoReceptor", fields: [recibidoPorId], references: [id])
+  recibidoPorId String?
+  recibidoEn    DateTime?
+  creadoEn      DateTime  @default(now())
+
+  @@index([creadoEn])
+  @@index([planta, creadoEn])
 }

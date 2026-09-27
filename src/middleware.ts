@@ -9,5 +9,8 @@ export const config = {
     "/estacion/:path*",
     "/residentes/:path*",
     "/empresas/:path*",
+    "/turnos/:path*",
+    "/ranking/:path*",
+    "/facturacion/:path*",
   ],
 };
