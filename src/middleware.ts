@@ -13,5 +13,6 @@ export const config = {
     "/ranking/:path*",
     "/facturacion/:path*",
     "/tv/:path*",
+    "/salud/:path*",
   ],
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { comprimirImagen } from "@/lib/imagen";
 
 // Cola local de capturas para seguir trabajando sin señal en piso. Cada captura
 // lleva un idCliente único: el servidor lo usa para no duplicar si un reintento
@@ -22,7 +23,7 @@ type CapturaEnCola = {
 };
 
 export type ResultadoEnvio =
-  | { estado: "enviada"; capturaId: string }
+  | { estado: "enviada"; capturaId: string; avisoFoto?: string }
   | { estado: "encolada"; idCliente: string }
   | { estado: "error"; mensaje: string };
 
@@ -105,9 +106,10 @@ async function postCaptura(inspeccionId: string, idCliente: string, cuerpo: Cuer
 export async function enviarCaptura(
   inspeccionId: string,
   cuerpo: CuerpoCaptura,
-  foto?: File | null
+  fotoOriginal?: File | null
 ): Promise<ResultadoEnvio> {
   const idCliente = nuevoId();
+  const foto = fotoOriginal ? await comprimirImagen(fotoOriginal) : null;
 
   const encolar = async (): Promise<ResultadoEnvio> => {
     if (foto) {
@@ -127,9 +129,19 @@ export async function enviarCaptura(
   if (typeof navigator !== "undefined" && !navigator.onLine) return encolar();
 
   try {
-    const fotoUrl = foto ? await subirFoto(foto) : undefined;
+    let fotoUrl: string | undefined;
+    let avisoFoto: string | undefined;
+    if (foto) {
+      try {
+        fotoUrl = await subirFoto(foto);
+      } catch (error) {
+        // la pieza NG se registra aunque la evidencia falle: perderla en piso es peor
+        if (!(error instanceof ErrorServidor)) throw error;
+        avisoFoto = error.message;
+      }
+    }
     const captura = await postCaptura(inspeccionId, idCliente, { ...cuerpo, fotoUrl });
-    return { estado: "enviada", capturaId: captura.id };
+    return { estado: "enviada", capturaId: captura.id, avisoFoto };
   } catch (error) {
     if (error instanceof ErrorServidor) return { estado: "error", mensaje: error.message };
     // TypeError de fetch = falla de red: se guarda para mandarla después

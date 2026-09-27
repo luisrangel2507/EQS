@@ -12,6 +12,19 @@ const TAMANO_MAXIMO_PDF = 15 * 1024 * 1024; // 15MB
 
 export const dynamic = "force-dynamic";
 
+// Un fallo de disco no es culpa del usuario: se traduce a algo que el Admin pueda
+// resolver en Railway en vez de un "error interno" genérico.
+function mensajeErrorDisco(error: unknown) {
+  const codigo = (error as NodeJS.ErrnoException)?.code;
+  if (codigo === "ENOSPC" || codigo === "EDQUOT") {
+    return "El almacenamiento de fotos del servidor está lleno. Avisa al administrador.";
+  }
+  if (codigo === "EACCES" || codigo === "EPERM" || codigo === "EROFS") {
+    return "El servidor no tiene permiso para guardar fotos. Avisa al administrador.";
+  }
+  return `El servidor no pudo guardar la foto (${codigo ?? "error de disco"}). Avisa al administrador.`;
+}
+
 // Guarda evidencias fotográficas o instrucciones de trabajo en PDF en disco
 // (Railway Volume montado en storage/uploads) y devuelve la URL servida por
 // /api/archivos/[archivo] — solo esa URL se guarda en Postgres.
@@ -19,7 +32,10 @@ export async function POST(req: NextRequest) {
   try {
     await requerirSesion();
 
-    const form = await req.formData();
+    const form = await req.formData().catch(() => {
+      // típico cuando la señal se corta a media subida
+      throw new ErrorPermiso("La foto no llegó completa. Revisa tu señal e intenta de nuevo.", 400);
+    });
     const archivo = form.get("archivo") ?? form.get("foto");
     if (!(archivo instanceof File)) {
       throw new ErrorPermiso("No se recibió ningún archivo", 400);
@@ -36,14 +52,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await mkdir(UPLOADS_DIR, { recursive: true });
-
     const extension = esPdf ? "pdf" : (archivo.type.split("/")[1] ?? "jpg");
     const nombreArchivo = `${randomUUID()}.${extension}`;
     const rutaCompleta = path.join(UPLOADS_DIR, nombreArchivo);
 
     const buffer = Buffer.from(await archivo.arrayBuffer());
-    await writeFile(rutaCompleta, buffer);
+    try {
+      await mkdir(UPLOADS_DIR, { recursive: true });
+      await writeFile(rutaCompleta, buffer);
+    } catch (error) {
+      console.error(`No se pudo guardar el archivo en ${UPLOADS_DIR}`, error);
+      throw new ErrorPermiso(mensajeErrorDisco(error), 507);
+    }
 
     const url = `/api/archivos/${nombreArchivo}`;
     return Response.json({ url }, { status: 201 });

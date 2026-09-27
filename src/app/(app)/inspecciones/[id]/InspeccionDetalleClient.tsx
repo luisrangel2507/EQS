@@ -26,6 +26,7 @@ import NumeroAnimado from "@/components/ui/NumeroAnimado";
 import { Skeleton, SkeletonKpis } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import { vibrar, flashPantalla } from "@/lib/feedback";
+import { comprimirImagen } from "@/lib/imagen";
 import {
   enviarCaptura,
   quitarDeCola,
@@ -719,7 +720,7 @@ function PuntoLimpioPanel({
 
     try {
       const form = new FormData();
-      form.append("foto", foto);
+      form.append("foto", await comprimirImagen(foto));
       const resFoto = await fetch("/api/upload", { method: "POST", body: form });
       if (!resFoto.ok) {
         const d = await resFoto.json().catch(() => ({}));
@@ -1024,6 +1025,9 @@ function CapturaPanel({
     vibrar("error");
     flashPantalla("error");
     confirmar(resultado, `${cantidad} defecto${cantidad === 1 ? "" : "s"} reportado${cantidad === 1 ? "" : "s"}: ${defecto}`);
+    if (resultado.estado === "enviada" && resultado.avisoFoto) {
+      toast.error(`El defecto quedó registrado, pero sin foto: ${resultado.avisoFoto}`, { duracion: 8000 });
+    }
     setFoto(null);
     if (inputRef.current) inputRef.current.value = "";
     onCapturado();

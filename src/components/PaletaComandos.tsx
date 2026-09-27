@@ -93,6 +93,7 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
       (rol === "ADMIN" || rol === "GERENTE") && { id: "facturacion", grupo: "Ir a", icono: "💰", titulo: "Facturación", ejecutar: ir("/facturacion") },
       rol === "ADMIN" && { id: "usuarios", grupo: "Ir a", icono: "👤", titulo: "Usuarios", ejecutar: ir("/usuarios") },
       rol === "ADMIN" && { id: "empresas", grupo: "Ir a", icono: "🏢", titulo: "Empresas cliente", ejecutar: ir("/empresas") },
+      rol === "ADMIN" && { id: "salud", grupo: "Ir a", icono: "🩺", titulo: "Estado del sistema", detalle: "Base de datos y almacenamiento de fotos", ejecutar: ir("/salud") },
       (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "tv", grupo: "Ir a", icono: "📺", titulo: "Modo TV (piso)", ejecutar: ir("/tv") },
       rol !== "CLIENTE" && {
         id: "escanear",
