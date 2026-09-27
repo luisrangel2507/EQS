@@ -19,7 +19,12 @@ export default function DashboardEjecutivoClient({ rol }: { rol: Rol }) {
         <Link href="/dashboard" className="text-xs font-semibold text-navy-400 hover:text-navy-700">
           ← Dashboard
         </Link>
-        <h1 className="font-display text-2xl font-bold text-navy-900">📊 Dashboard Ejecutivo</h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="font-display text-2xl font-bold text-navy-900">📊 Dashboard Ejecutivo</h1>
+          <Link href="/tv" className="btn-primary">
+            📺 Abrir modo TV
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">

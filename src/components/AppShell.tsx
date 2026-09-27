@@ -348,6 +348,15 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
                 🏢 Empresas cliente
               </Link>
             )}
+            {rol !== "INSPECTOR" && rol !== "CLIENTE" && (
+              <Link
+                href="/tv"
+                onClick={() => setAbierto(false)}
+                className="block w-full px-4 py-2 text-left text-sm font-semibold text-navy-700 hover:bg-navy-50"
+              >
+                📺 Modo TV (piso)
+              </Link>
+            )}
             <BotonTema />
             <PushToggle />
             <button

@@ -12,5 +12,6 @@ export const config = {
     "/turnos/:path*",
     "/ranking/:path*",
     "/facturacion/:path*",
+    "/tv/:path*",
   ],
 };

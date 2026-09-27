@@ -328,3 +328,22 @@ body {
 .dark .recharts-label-list text {
   fill: #aab4d4;
 }
+
+@keyframes cinta {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-cinta {
+  animation: cinta 45s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-cinta {
+    animation: none;
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+}
