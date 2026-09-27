@@ -275,7 +275,7 @@ body {
   color: #fdba74;
 }
 .dark .recharts-bar-rectangle path {
-  fill: #5d74c7;
+  fill: #8697d5;
 }
 .dark .skeleton {
   background-color: #1b2440;
@@ -324,4 +324,7 @@ body {
   .dark .text-navy-900 {
     color: #0a163c !important;
   }
+}
+.dark .recharts-label-list text {
+  fill: #aab4d4;
 }

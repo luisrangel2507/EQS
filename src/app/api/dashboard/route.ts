@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { requerirSesion, manejarErrorApi, esLiderazgo } from "@/lib/permissions";
 import { whereInspeccionesVisibles } from "@/lib/inspecciones";
 import { TOLERANCIA_MINUTOS, UMBRAL_RECHAZO_CRITICO } from "@/lib/constants";
+import { mesActualLocal, rangoMes } from "@/lib/turnos";
 
 export const dynamic = "force-dynamic";
 
@@ -21,9 +22,8 @@ export async function GET() {
 
     const activas = inspecciones.filter((i) => !i.cerrado);
 
-    const inicioMes = new Date();
-    inicioMes.setDate(1);
-    inicioMes.setHours(0, 0, 0, 0);
+    const { anio, mes } = mesActualLocal();
+    const { inicio: inicioMes } = rangoMes(anio, mes);
     const capturasMes = await prisma.captura.groupBy({
       by: ["inspeccionId"],
       where: { inspeccion: { ...where }, creadoEn: { gte: inicioMes } },

@@ -24,7 +24,7 @@ function partesLocales(fecha: Date) {
 }
 
 /** Convierte una hora de reloj local de planta al instante real (Date). */
-function fechaLocal(anio: number, mes: number, dia: number, hora: number) {
+export function fechaLocal(anio: number, mes: number, dia: number, hora: number) {
   const supuesta = Date.UTC(anio, mes - 1, dia, hora);
   const p = partesLocales(new Date(supuesta));
   const comoLocal = Date.UTC(p.anio, p.mes - 1, p.dia, p.hora, p.minuto);
@@ -54,4 +54,14 @@ export function horaLocal(fecha: Date | string) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+/** Mes calendario en hora local de planta: [inicio, fin). mes va de 1 a 12. */
+export function rangoMes(anio: number, mes: number) {
+  return { inicio: fechaLocal(anio, mes, 1, 0), fin: fechaLocal(anio, mes + 1, 1, 0) };
+}
+
+export function mesActualLocal() {
+  const { anio, mes } = partesLocales(new Date());
+  return { anio, mes };
 }
