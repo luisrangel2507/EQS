@@ -48,6 +48,7 @@ model Usuario {
   notificaciones       Notificacion[]
   suscripcionesPush    SuscripcionPush[]
   relevosEntregados    RelevoTurno[]         @relation("RelevoAutor")
+  enlacesCreados       EnlaceCompartido[]
   relevosRecibidos     RelevoTurno[]         @relation("RelevoReceptor")
 }
 
@@ -99,6 +100,7 @@ model Inspeccion {
   inspectores      InspeccionInspector[]
   solicitudesApoyo SolicitudApoyo[]
   notificaciones   Notificacion[]
+  enlaces          EnlaceCompartido[]
 
   @@index([cliente])
   @@index([cerrado])
@@ -233,4 +235,22 @@ model RelevoTurno {
 
   @@index([creadoEn])
   @@index([planta, creadoEn])
+}
+
+// enlace público de solo lectura a una inspección (portal del cliente sin cuenta):
+// quien tenga el token ve avance, Pareto y evidencias hasta que venza o se revoque
+model EnlaceCompartido {
+  id           String     @id @default(cuid())
+  token        String     @unique
+  inspeccion   Inspeccion @relation(fields: [inspeccionId], references: [id], onDelete: Cascade)
+  inspeccionId String
+  creadoPor    Usuario    @relation(fields: [creadoPorId], references: [id])
+  creadoPorId  String
+  expiraEn     DateTime?
+  revocado     Boolean    @default(false)
+  vistas       Int        @default(0)
+  ultimaVista  DateTime?
+  creadoEn     DateTime   @default(now())
+
+  @@index([inspeccionId])
 }

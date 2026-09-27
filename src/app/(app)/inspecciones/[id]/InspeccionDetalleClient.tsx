@@ -14,6 +14,8 @@ import {
 import { usePolling } from "@/lib/usePolling";
 import { DEFECTOS_COMUNES, ESTADOS_INSPECTOR, PLANTAS } from "@/lib/constants";
 import SubidaPdf from "@/components/SubidaPdf";
+import CompartirInspeccion from "@/components/CompartirInspeccion";
+import GaleriaDefectos, { type FotoDefecto } from "@/components/GaleriaDefectos";
 import ClienteSelect from "@/components/ClienteSelect";
 import { useModoInmersivo } from "@/components/AppShell";
 import { AnimatePresence, motion } from "framer-motion";
@@ -150,6 +152,9 @@ export default function InspeccionDetalleClient({
               🏷️ Etiqueta QR
             </a>
           )}
+          {sesion.rol !== "RESIDENTE" && (
+            <CompartirInspeccion inspeccionId={id} nombre={inspeccion.numeroParte ?? inspeccion.nombre} />
+          )}
           {puedeGestionar && !inspeccion.cerrado && (
             <button className="btn-secondary" onClick={() => setMostrarEditar(true)}>
               Editar
@@ -225,6 +230,8 @@ export default function InspeccionDetalleClient({
         )}
       </div>
 
+      <GaleriaCard inspeccionId={id} />
+
       {inspeccion.inspectores.length > 0 && (
         <div className="card">
           <h2 className="mb-2 font-display font-semibold text-navy-900">Inspectores asignados</h2>
@@ -270,6 +277,38 @@ export default function InspeccionDetalleClient({
           }}
         />
       </Modal>
+    </div>
+  );
+}
+
+function GaleriaCard({ inspeccionId }: { inspeccionId: string }) {
+  const { datos } = usePolling<
+    { id: string; fotoUrl: string; defecto: string | null; malas: number; creadoEn: string; usuario?: { nombre: string } }[]
+  >(`/api/inspecciones/${inspeccionId}/galeria`, 30000);
+
+  const fotos: FotoDefecto[] = (datos ?? []).map((f) => ({
+    id: f.id,
+    url: f.fotoUrl,
+    defecto: f.defecto,
+    cantidad: f.malas,
+    creadoEn: f.creadoEn,
+    autor: f.usuario?.nombre,
+  }));
+
+  return (
+    <div className="card">
+      <h2 className="mb-3 font-display font-semibold text-navy-900">
+        📸 Evidencia de defectos {fotos.length > 0 && <span className="text-navy-400">({fotos.length})</span>}
+      </h2>
+      {datos === null ? (
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="skeleton aspect-square rounded-xl" />
+          ))}
+        </div>
+      ) : (
+        <GaleriaDefectos fotos={fotos} />
+      )}
     </div>
   );
 }
