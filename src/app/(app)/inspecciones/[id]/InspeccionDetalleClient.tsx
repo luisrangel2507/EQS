@@ -15,6 +15,7 @@ import { usePolling } from "@/lib/usePolling";
 import { DEFECTOS_COMUNES, ESTADOS_INSPECTOR, PLANTAS } from "@/lib/constants";
 import SubidaPdf from "@/components/SubidaPdf";
 import CompartirInspeccion from "@/components/CompartirInspeccion";
+import Reportes8DCard from "@/components/Reportes8DCard";
 import GaleriaDefectos, { type FotoDefecto } from "@/components/GaleriaDefectos";
 import ClienteSelect from "@/components/ClienteSelect";
 import { useModoInmersivo } from "@/components/AppShell";
@@ -231,6 +232,12 @@ export default function InspeccionDetalleClient({
       </div>
 
       <GaleriaCard inspeccionId={id} />
+
+      <Reportes8DCard
+        inspeccionId={id}
+        defectos={datosPareto}
+        puedeCrear={["ADMIN", "SUPERVISOR", "GERENTE", "LIDER"].includes(sesion.rol)}
+      />
 
       {inspeccion.inspectores.length > 0 && (
         <div className="card">

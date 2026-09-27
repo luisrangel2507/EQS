@@ -49,6 +49,7 @@ model Usuario {
   suscripcionesPush    SuscripcionPush[]
   relevosEntregados    RelevoTurno[]         @relation("RelevoAutor")
   enlacesCreados       EnlaceCompartido[]
+  reportes8D           Reporte8D[]
   relevosRecibidos     RelevoTurno[]         @relation("RelevoReceptor")
 }
 
@@ -101,6 +102,7 @@ model Inspeccion {
   solicitudesApoyo SolicitudApoyo[]
   notificaciones   Notificacion[]
   enlaces          EnlaceCompartido[]
+  reportes8D       Reporte8D[]
 
   @@index([cliente])
   @@index([cerrado])
@@ -251,6 +253,32 @@ model EnlaceCompartido {
   vistas       Int        @default(0)
   ultimaVista  DateTime?
   creadoEn     DateTime   @default(now())
+
+  @@index([inspeccionId])
+}
+
+// reporte 8D (8 disciplinas) de contención y acción correctiva ligado a una inspección;
+// puede haber varios por inspección, uno por problema/defecto
+model Reporte8D {
+  id               String     @id @default(cuid())
+  folio            Int        @unique @default(autoincrement())
+  inspeccion       Inspeccion @relation(fields: [inspeccionId], references: [id], onDelete: Cascade)
+  inspeccionId     String
+  defecto          String?
+  estado           String     @default("abierto") // abierto | cerrado
+  creadoPor        Usuario    @relation(fields: [creadoPorId], references: [id])
+  creadoPorId      String
+  d1Equipo         String?
+  d2Problema       String?
+  d3Contencion     String?
+  d4CausaRaiz      String?
+  d5Acciones       String?
+  d6Implementacion String?
+  d7Prevencion     String?
+  d8Cierre         String?
+  cerradoEn        DateTime?
+  creadoEn         DateTime   @default(now())
+  actualizadoEn    DateTime   @updatedAt
 
   @@index([inspeccionId])
 }
