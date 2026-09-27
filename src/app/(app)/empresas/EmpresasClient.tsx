@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import AltaCliente from "@/components/AltaCliente";
 
 type Empresa = {
   id: string;
@@ -15,6 +16,7 @@ export default function EmpresasClient() {
   const [nombre, setNombre] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [asistente, setAsistente] = useState(false);
 
   const cargar = useCallback(async () => {
     const res = await fetch("/api/empresas");
@@ -24,6 +26,7 @@ export default function EmpresasClient() {
 
   useEffect(() => {
     cargar();
+    if (new URLSearchParams(window.location.search).get("alta") === "1") setAsistente(true);
   }, [cargar]);
 
   async function crear(e: React.FormEvent) {
@@ -62,13 +65,20 @@ export default function EmpresasClient() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-navy-900">Empresas</h1>
-        <p className="text-sm text-navy-500">
-          Da de alta las empresas cliente aquí; solo se podrán asignar usuarios de tipo Cliente a
-          una empresa ya registrada.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-navy-900">Empresas</h1>
+          <p className="text-sm text-navy-500">
+            Da de alta las empresas cliente aquí; solo se podrán asignar usuarios de tipo Cliente a
+            una empresa ya registrada.
+          </p>
+        </div>
+        <button className="btn-accent" onClick={() => setAsistente(true)}>
+          🤝 Alta de cliente completa
+        </button>
       </div>
+
+      <AltaCliente abierto={asistente} onCerrar={() => setAsistente(false)} onCreado={cargar} />
 
       <form onSubmit={crear} className="card flex flex-wrap items-end gap-3">
         <div className="flex-1 min-w-[200px]">
