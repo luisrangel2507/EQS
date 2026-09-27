@@ -8,3 +8,9 @@ export const NOMBRE_LEGAL = "Ethical Quality Services";
 export const NOMBRE_APP = `${NOMBRE_EMPRESA} ${NOMBRE_CORTO}`;
 export const DESCRIPCION_APP = `Control de inspecciones de calidad — ${NOMBRE_LEGAL}`;
 export const PIE_PDF = `Generado automáticamente por ${NOMBRE_EMPRESA} Control de Inspecciones`;
+
+// Contacto para "Solicitar demo" en la página pública. WhatsApp en formato
+// internacional sin signos (ej. 5218112345678). Si ambos quedan vacíos, la
+// página solo ofrece "Iniciar sesión".
+export const CONTACTO_WHATSAPP = process.env.NEXT_PUBLIC_CONTACTO_WHATSAPP ?? "";
+export const CONTACTO_EMAIL = process.env.NEXT_PUBLIC_CONTACTO_EMAIL ?? "";

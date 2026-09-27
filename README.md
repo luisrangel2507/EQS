@@ -42,6 +42,16 @@ Todas las reglas se validan en el servidor (API routes), no solo en la UI:
 - **Facturación** (`/facturacion`, Admin y Gerente): piezas × precio por mes y
   cliente, estado de cuenta en PDF y CSV.
 - **Ranking** (`/ranking`): volumen y ritmo por inspector y por turno.
+- **Modo TV / Andon** (`/tv`): pantalla de piso con semáforo por sorteo, banner de
+  llamados de apoyo, cinta de alertas y alarma sonora opcional. Filtra por planta con
+  `/tv?planta=Querétaro`.
+- **Control estadístico**: gráfica p por hora con límites de control y fecha estimada de
+  término en el detalle de cada inspección.
+- **Paleta de comandos** (Ctrl K o 🔍): busca piezas, clientes, páginas y acciones.
+- **Recorrido de bienvenida** por rol la primera vez que alguien entra.
+- **Alta de cliente** (Empresas → *Alta de cliente completa*): empresa, accesos con
+  contraseña generada y primera inspección en un solo paso.
+- **Página pública** en `/` para quien no tiene sesión, con botón de *Solicitar demo*.
 - **Modo oscuro**: en el menú de perfil.
 
 ## Desarrollo local
@@ -108,6 +118,8 @@ servicio para que las fotos y PDFs persistan entre deploys.
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Mismo valor que `VAPID_PUBLIC_KEY`; debe estar disponible en **build time** (Railway la necesita antes de correr `npm run build`, no solo en runtime) |
 | `NEXT_PUBLIC_ZONA_HORARIA` | Zona horaria de planta para turnos, cortes de mes y ranking (default `America/Monterrey`). Plantas fronterizas con horario de verano de EE. UU.: `America/Matamoros`. Se lee en **build time** |
 | `TASA_IVA` | Opcional. Tasa de IVA del estado de cuenta (default `0.16`) |
+| `NEXT_PUBLIC_CONTACTO_WHATSAPP` | Opcional. WhatsApp del botón *Solicitar demo* de la página pública, formato internacional sin signos (ej. `5218112345678`). Se lee en **build time** |
+| `NEXT_PUBLIC_CONTACTO_EMAIL` | Opcional. Correo alterno para *Solicitar demo* si no hay WhatsApp. Se lee en **build time** |
 
 `npm run start` corre `prisma migrate deploy` antes de arrancar el servidor,
 así que las migraciones se aplican automáticamente en cada deploy.
