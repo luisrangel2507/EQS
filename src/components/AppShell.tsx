@@ -39,15 +39,19 @@ type Props = {
   children: React.ReactNode;
 };
 
-const ENLACES: { href: string; label: string; roles: Rol[] }[] = [
-  { href: "/estacion", label: "Mis inspecciones", roles: ["INSPECTOR"] },
-  { href: "/dashboard", label: "Dashboard", roles: ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER", "RESIDENTE", "CLIENTE"] },
-  { href: "/inspecciones", label: "Inspecciones", roles: ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER", "RESIDENTE", "CLIENTE"] },
-  { href: "/inspecciones", label: "Historial", roles: ["INSPECTOR"] },
-  { href: "/residentes", label: "Residentes", roles: ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER"] },
-  { href: "/turnos", label: "Turnos", roles: ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER", "RESIDENTE"] },
-  { href: "/ranking", label: "Ranking", roles: ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER", "INSPECTOR"] },
-  { href: "/facturacion", label: "Facturación", roles: ["ADMIN", "GERENTE"] },
+const LIDERAZGO: Rol[] = ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER"];
+
+// "principal" va siempre visible en escritorio; el resto cae en el menú "Más"
+const ENLACES: { href: string; label: string; icono: string; roles: Rol[]; principal?: boolean }[] = [
+  { href: "/estacion", label: "Mis inspecciones", icono: "🧰", roles: ["INSPECTOR"], principal: true },
+  { href: "/dashboard", label: "Dashboard", icono: "🏠", roles: [...LIDERAZGO, "RESIDENTE", "CLIENTE"], principal: true },
+  { href: "/inspecciones", label: "Inspecciones", icono: "📋", roles: [...LIDERAZGO, "RESIDENTE", "CLIENTE"], principal: true },
+  { href: "/inspecciones", label: "Historial", icono: "📁", roles: ["INSPECTOR"], principal: true },
+  { href: "/solicitudes", label: "Solicitudes", icono: "📥", roles: [...LIDERAZGO, "CLIENTE"], principal: true },
+  { href: "/turnos", label: "Turnos", icono: "🕐", roles: [...LIDERAZGO, "RESIDENTE"], principal: true },
+  { href: "/ranking", label: "Ranking", icono: "🏆", roles: [...LIDERAZGO, "INSPECTOR"], principal: true },
+  { href: "/residentes", label: "Residentes", icono: "🏭", roles: LIDERAZGO },
+  { href: "/facturacion", label: "Facturación", icono: "💰", roles: ["ADMIN", "GERENTE"] },
 ];
 
 export default function AppShell({ id, nombre, rol, children }: Props) {
@@ -92,7 +96,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
                     />
                   </Link>
                   <nav className="hidden gap-1 lg:flex" data-tour="nav">
-                    {enlaces.map((enlace) => {
+                    {enlaces.filter((e) => e.principal).map((enlace) => {
                       const activo = pathname?.startsWith(enlace.href);
                       return (
                         <Link
@@ -113,6 +117,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
                         </Link>
                       );
                     })}
+                    <MenuMas enlaces={enlaces.filter((e) => !e.principal)} pathname={pathname ?? ""} />
                   </nav>
                 </div>
                 <div className="flex items-center gap-3">
@@ -173,6 +178,57 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
   );
 }
 
+function MenuMas({
+  enlaces,
+  pathname,
+}: {
+  enlaces: { href: string; label: string; icono: string }[];
+  pathname: string;
+}) {
+  const [abierto, setAbierto] = useState(false);
+  if (enlaces.length === 0) return null;
+  const activo = enlaces.some((e) => pathname.startsWith(e.href));
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setAbierto((a) => !a)}
+        className={`relative rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+          activo ? "text-yellow" : "text-white/80 hover:bg-white/5 hover:text-white"
+        }`}
+      >
+        {activo && <span className="absolute inset-0 rounded-md bg-white/10" />}
+        <span className="relative">Más ▾</span>
+      </button>
+      {abierto && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setAbierto(false)} />
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.15 }}
+            className="absolute left-0 top-full z-20 mt-2 w-56 overflow-hidden rounded-lg border border-navy-100 bg-white py-1 text-navy-900 shadow-lg"
+          >
+            {enlaces.map((e) => (
+              <Link
+                key={e.href}
+                href={e.href}
+                onClick={() => setAbierto(false)}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold hover:bg-navy-50 ${
+                  pathname.startsWith(e.href) ? "text-navy-900" : "text-navy-600"
+                }`}
+              >
+                <span>{e.icono}</span>
+                {e.label}
+              </Link>
+            ))}
+          </motion.div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function BotonEscanear() {
   const [abierto, setAbierto] = useState(false);
   useEffect(() => {
@@ -200,13 +256,14 @@ function BotonEscanear() {
 type Notificacion = {
   id: string;
   mensaje: string;
+  url: string | null;
   leida: boolean;
   creadoEn: string;
   inspeccion: { id: string; nombre: string; numeroParte: string | null } | null;
 };
 
 function NotificacionesBell({ rol }: { rol: Rol }) {
-  const puedeVer = rol === "CLIENTE" || rol === "LIDER";
+  const puedeVer = rol !== "INSPECTOR" && rol !== "RESIDENTE";
   const [abierto, setAbierto] = useState(false);
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
   const [noLeidas, setNoLeidas] = useState(0);
@@ -276,9 +333,11 @@ function NotificacionesBell({ rol }: { rol: Rol }) {
               </p>
             ) : (
               notificaciones.map((n) => (
-                <div
+                <Link
                   key={n.id}
-                  className={`border-b border-navy-50 px-4 py-2.5 text-sm last:border-b-0 ${
+                  href={n.url ?? (n.inspeccion ? `/inspecciones/${n.inspeccion.id}` : "#")}
+                  onClick={() => setAbierto(false)}
+                  className={`block border-b border-navy-50 px-4 py-2.5 text-sm transition-colors last:border-b-0 hover:bg-navy-50 ${
                     n.leida ? "" : "bg-yellow-50"
                   }`}
                 >
@@ -291,7 +350,7 @@ function NotificacionesBell({ rol }: { rol: Rol }) {
                       minute: "2-digit",
                     })}
                   </p>
-                </div>
+                </Link>
               ))
             )}
           </motion.div>

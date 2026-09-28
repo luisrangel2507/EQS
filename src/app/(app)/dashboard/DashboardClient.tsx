@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Skeleton, SkeletonKpis, SkeletonTarjetas } from "@/components/ui/Skeleton";
 import type { Rol } from "@prisma/client";
@@ -85,6 +86,22 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
       ) : (
         <div className="space-y-6">
           {rol === "RESIDENTE" && <MiEstadoResidenteCard />}
+          {rol === "CLIENTE" && (
+            <Link
+              href="/solicitudes?nueva=1"
+              className="group flex items-center justify-between gap-4 rounded-2xl bg-gradient-to-r from-yellow to-amber-400 p-5 text-navy-900 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
+            >
+              <div>
+                <p className="font-display text-xl font-extrabold">¿Necesitas un sorteo o retrabajo?</p>
+                <p className="text-sm font-medium text-navy-800/80">
+                  Levanta tu solicitud aquí y síguela en vivo, sin llamadas ni correos.
+                </p>
+              </div>
+              <span className="rounded-xl bg-navy px-4 py-2 font-semibold text-white transition group-hover:scale-105">
+                📥 Solicitar servicio
+              </span>
+            </Link>
+          )}
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <Kpi etiqueta="Inspecciones activas" valor={datos.kpis.inspeccionesActivas} />
             <Kpi etiqueta="Piezas inspeccionadas (mes)" valor={datos.kpis.piezasInspeccionadasMes} indice={1} />

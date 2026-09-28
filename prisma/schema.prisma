@@ -50,6 +50,8 @@ model Usuario {
   relevosEntregados    RelevoTurno[]         @relation("RelevoAutor")
   enlacesCreados       EnlaceCompartido[]
   reportes8D           Reporte8D[]
+  solicitudesServicio  SolicitudServicio[]   @relation("SolicitudServicioSolicitante")
+  solicitudesResueltas SolicitudServicio[]   @relation("SolicitudServicioAtendida")
   relevosRecibidos     RelevoTurno[]         @relation("RelevoReceptor")
 }
 
@@ -98,13 +100,14 @@ model Inspeccion {
   puntoLimpioOkPor        String?
   puntoLimpioOkEn         DateTime?
 
-  capturas         Captura[]
-  defectos         DefectoResumen[]
-  inspectores      InspeccionInspector[]
-  solicitudesApoyo SolicitudApoyo[]
-  notificaciones   Notificacion[]
-  enlaces          EnlaceCompartido[]
-  reportes8D       Reporte8D[]
+  capturas          Captura[]
+  defectos          DefectoResumen[]
+  inspectores       InspeccionInspector[]
+  solicitudesApoyo  SolicitudApoyo[]
+  notificaciones    Notificacion[]
+  enlaces           EnlaceCompartido[]
+  reportes8D        Reporte8D[]
+  solicitudServicio SolicitudServicio?
 
   @@index([cliente])
   @@index([cerrado])
@@ -198,8 +201,9 @@ model Notificacion {
   usuarioId    String
   inspeccion   Inspeccion? @relation(fields: [inspeccionId], references: [id], onDelete: Cascade)
   inspeccionId String?
-  tipo         String // "pieza_ng"
+  tipo         String // "pieza_ng" | "solicitud_nueva" | "solicitud_respuesta" | ...
   mensaje      String
+  url          String?
   leida        Boolean     @default(false)
   creadoEn     DateTime    @default(now())
 
@@ -285,4 +289,32 @@ model Reporte8D {
   actualizadoEn    DateTime   @updatedAt
 
   @@index([inspeccionId])
+}
+
+// pedido de servicio que el cliente levanta desde su portal; al aceptarse se
+// convierte en una inspección
+model SolicitudServicio {
+  id            String      @id @default(cuid())
+  folio         Int         @unique @default(autoincrement())
+  cliente       String
+  solicitante   Usuario     @relation("SolicitudServicioSolicitante", fields: [solicitanteId], references: [id])
+  solicitanteId String
+  tipo          String // sorteo | retrabajo | inspeccion_recibo | otro
+  numeroParte   String
+  descripcion   String
+  cantidad      Int?
+  planta        String?
+  urgencia      String      @default("normal") // normal | urgente | critica
+  fotoUrl       String?
+  estado        String      @default("pendiente") // pendiente | aceptada | rechazada
+  respuesta     String?
+  atendidaPor   Usuario?    @relation("SolicitudServicioAtendida", fields: [atendidaPorId], references: [id])
+  atendidaPorId String?
+  atendidaEn    DateTime?
+  inspeccion    Inspeccion? @relation(fields: [inspeccionId], references: [id], onDelete: SetNull)
+  inspeccionId  String?     @unique
+  creadoEn      DateTime    @default(now())
+
+  @@index([cliente, creadoEn])
+  @@index([estado])
 }

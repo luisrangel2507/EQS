@@ -88,6 +88,7 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
       LIDERAZGO.includes(rol) && { id: "ejecutivo", grupo: "Ir a", icono: "📊", titulo: "Dashboard Ejecutivo", ejecutar: ir("/dashboard/ejecutivo") },
       { id: "inspecciones", grupo: "Ir a", icono: "📋", titulo: rol === "INSPECTOR" ? "Historial" : "Inspecciones", ejecutar: ir("/inspecciones") },
       LIDERAZGO.includes(rol) && { id: "residentes", grupo: "Ir a", icono: "🏭", titulo: "Residentes", ejecutar: ir("/residentes") },
+      (LIDERAZGO.includes(rol) || rol === "CLIENTE") && { id: "solicitudes", grupo: "Ir a", icono: "📥", titulo: "Solicitudes de servicio", ejecutar: ir("/solicitudes") },
       (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "turnos", grupo: "Ir a", icono: "🕐", titulo: "Turnos", ejecutar: ir("/turnos") },
       (LIDERAZGO.includes(rol) || rol === "INSPECTOR") && { id: "ranking", grupo: "Ir a", icono: "🏆", titulo: "Ranking", ejecutar: ir("/ranking") },
       (rol === "ADMIN" || rol === "GERENTE") && { id: "facturacion", grupo: "Ir a", icono: "💰", titulo: "Facturación", ejecutar: ir("/facturacion") },
@@ -106,6 +107,7 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
       (rol === "ADMIN" || rol === "SUPERVISOR") && { id: "nueva", grupo: "Acciones", icono: "➕", titulo: "Nueva inspección", ejecutar: ir("/inspecciones?nueva=1") },
       (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "entregar", grupo: "Acciones", icono: "📝", titulo: "Entregar turno", ejecutar: ir("/turnos?entregar=1") },
       rol === "ADMIN" && { id: "alta-cliente", grupo: "Acciones", icono: "🤝", titulo: "Dar de alta un cliente", ejecutar: ir("/empresas?alta=1") },
+      (LIDERAZGO.includes(rol) || rol === "CLIENTE") && { id: "nueva-solicitud", grupo: "Acciones", icono: "📨", titulo: "Nueva solicitud de servicio", ejecutar: ir("/solicitudes?nueva=1") },
       { id: "tema", grupo: "Acciones", icono: "🌗", titulo: "Cambiar modo claro / oscuro", ejecutar: alternarTema },
       { id: "tour", grupo: "Acciones", icono: "🎓", titulo: "Ver el recorrido de bienvenida", ejecutar: () => window.dispatchEvent(new Event("eqs-iniciar-tour")) },
       {

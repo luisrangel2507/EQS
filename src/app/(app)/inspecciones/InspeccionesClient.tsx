@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { SkeletonTarjetas } from "@/components/ui/Skeleton";
+import { consumirParametro } from "@/lib/eventos";
 import type { Rol } from "@prisma/client";
 import { PLANTAS } from "@/lib/constants";
 import ClienteSelect from "@/components/ClienteSelect";
@@ -47,7 +48,7 @@ export default function InspeccionesClient({ rol }: { rol: Rol }) {
 
   useEffect(() => {
     // la paleta de comandos abre el formulario con ?nueva=1
-    if (puedeCrear && new URLSearchParams(window.location.search).get("nueva") === "1") setMostrarForm(true);
+    if (consumirParametro("nueva") === "1" && puedeCrear) setMostrarForm(true);
   }, [puedeCrear]);
 
   const filtradas = inspecciones.filter((i) => {

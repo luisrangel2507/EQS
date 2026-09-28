@@ -106,3 +106,18 @@ export const ROL_SELLO: Record<string, { icono: string; clase: string }> = {
   RESIDENTE: { icono: "🏭", clase: "bg-gradient-to-br from-orange-500 to-amber-600 text-white" },
   CLIENTE: { icono: "🤝", clase: "bg-gradient-to-br from-slate-500 to-slate-700 text-white" },
 };
+
+export const TIPOS_SOLICITUD = ["sorteo", "retrabajo", "inspeccion_recibo", "otro"] as const;
+
+export const TIPO_SOLICITUD_INFO: Record<string, { etiqueta: string; icono: string }> = {
+  sorteo: { etiqueta: "Sorteo", icono: "🔍" },
+  retrabajo: { etiqueta: "Retrabajo", icono: "🔧" },
+  inspeccion_recibo: { etiqueta: "Inspección de recibo", icono: "📦" },
+  otro: { etiqueta: "Otro servicio", icono: "📝" },
+};
+
+export const URGENCIAS = [
+  { valor: "normal", etiqueta: "Normal", clase: "bg-navy-100 text-navy-700" },
+  { valor: "urgente", etiqueta: "⚡ Urgente", clase: "bg-amber-100 text-amber-800" },
+  { valor: "critica", etiqueta: "🚨 Crítica", clase: "bg-red-100 text-red-800" },
+] as const;
