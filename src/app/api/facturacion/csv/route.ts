@@ -13,10 +13,20 @@ export async function GET(req: NextRequest) {
     if (!periodo) throw new ErrorPermiso("Mes inválido", 400);
     const datos = await facturacionDelMes(periodo.anio, periodo.mes);
 
-    const filas = [["Cliente", "Número de parte", "Inspección", "Planta", "Piezas", "Precio por pieza", "Importe"]];
+    const filas = [["Cliente", "Número de parte", "Inspección", "Planta", "Cobro", "Piezas", "Horas", "Precio unitario", "Importe"]];
     for (const c of datos.clientes) {
       for (const l of c.lineas) {
-        filas.push([c.cliente, l.numeroParte ?? "", l.nombre, l.planta ?? "", String(l.piezas), l.precio.toFixed(2), l.importe.toFixed(2)]);
+        filas.push([
+          c.cliente,
+          l.numeroParte ?? "",
+          l.nombre,
+          l.planta ?? "",
+          l.modo === "hora" ? "Por hora" : "Por pieza",
+          String(l.piezas),
+          l.horas.toFixed(2),
+          l.precio.toFixed(2),
+          l.importe.toFixed(2),
+        ]);
       }
     }
     const csv = "﻿" + filas.map((f) => f.map(escapar).join(",")).join("\n");

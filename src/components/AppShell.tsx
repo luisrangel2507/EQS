@@ -51,6 +51,7 @@ const ENLACES: { href: string; label: string; icono: string; roles: Rol[]; princ
   { href: "/turnos", label: "Turnos", icono: "🕐", roles: [...LIDERAZGO, "RESIDENTE"], principal: true },
   { href: "/ranking", label: "Ranking", icono: "🏆", roles: [...LIDERAZGO, "INSPECTOR"], principal: true },
   { href: "/residentes", label: "Residentes", icono: "🏭", roles: LIDERAZGO },
+  { href: "/asistencia", label: "Asistencia y horas", icono: "🕒", roles: LIDERAZGO },
   { href: "/facturacion", label: "Facturación", icono: "💰", roles: ["ADMIN", "GERENTE"] },
 ];
 

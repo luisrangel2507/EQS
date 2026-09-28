@@ -14,9 +14,11 @@ import {
 import { usePolling } from "@/lib/usePolling";
 import { DEFECTOS_COMUNES, ESTADOS_INSPECTOR, PLANTAS } from "@/lib/constants";
 import SubidaPdf from "@/components/SubidaPdf";
+import CampoCobro from "@/components/CampoCobro";
 import CompartirInspeccion from "@/components/CompartirInspeccion";
 import Reportes8DCard from "@/components/Reportes8DCard";
 import SpcCard from "@/components/SpcCard";
+import JornadaBarra from "@/components/JornadaBarra";
 import GaleriaDefectos, { type FotoDefecto } from "@/components/GaleriaDefectos";
 import ClienteSelect from "@/components/ClienteSelect";
 import { useModoInmersivo } from "@/components/AppShell";
@@ -49,6 +51,8 @@ type Inspeccion = {
   creadoEn: string;
   meta: number;
   precioPorPieza: number;
+  modoCobro: string;
+  precioPorHora: number;
   fechaEntrega: string | null;
   instrucciones: string | null;
   instruccionesPdfUrl: string | null;
@@ -454,6 +458,8 @@ function VistaInspectorJuego({
           </span>
         </div>
       </div>
+
+      {puedeCapturar && <JornadaBarra inspeccionId={id} />}
 
       <AnimatePresence>
         {puedeCapturar && (!cola.enLinea || cola.pendientes > 0) && (
@@ -1464,6 +1470,8 @@ function EditarModal({
   const [precioPorPieza, setPrecioPorPieza] = useState(
     inspeccion.precioPorPieza ? String(inspeccion.precioPorPieza) : ""
   );
+  const [modoCobro, setModoCobro] = useState<"pieza" | "hora">(inspeccion.modoCobro === "hora" ? "hora" : "pieza");
+  const [precioPorHora, setPrecioPorHora] = useState(inspeccion.precioPorHora ? String(inspeccion.precioPorHora) : "");
   const [fechaEntrega, setFechaEntrega] = useState(
     inspeccion.fechaEntrega ? inspeccion.fechaEntrega.slice(0, 10) : ""
   );
@@ -1505,6 +1513,8 @@ function EditarModal({
         puntoLimpio: puntoLimpio || null,
         meta: meta ? Number(meta) : 0,
         precioPorPieza: precioPorPieza ? Number(precioPorPieza) : 0,
+        modoCobro,
+        precioPorHora: precioPorHora ? Number(precioPorHora) : 0,
         fechaEntrega: fechaEntrega ? new Date(fechaEntrega).toISOString() : null,
         instrucciones: instrucciones || null,
         instruccionesPdfUrl: instruccionesPdfUrl || null,
@@ -1575,17 +1585,14 @@ function EditarModal({
               onChange={(e) => setMeta(e.target.value)}
             />
           </div>
-          <div>
-            <label className="label">Precio por pieza (facturación)</label>
-            <input
-              className="input"
-              type="number"
-              min={0}
-              step="0.01"
-              value={precioPorPieza}
-              onChange={(e) => setPrecioPorPieza(e.target.value)}
-            />
-          </div>
+          <CampoCobro
+            modo={modoCobro}
+            onModo={setModoCobro}
+            precioPieza={precioPorPieza}
+            onPrecioPieza={setPrecioPorPieza}
+            precioHora={precioPorHora}
+            onPrecioHora={setPrecioPorHora}
+          />
           <div>
             <label className="label">Fecha de entrega</label>
             <input

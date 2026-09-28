@@ -100,7 +100,7 @@ export default function EstadoCuenta({
 
         <View style={s.tabla}>
           <View style={s.filaHeader}>
-            {["Inspección / Número de parte", "Planta", "Piezas", "Precio/pza", "Importe"].map((t, i) => (
+            {["Inspección / Número de parte", "Planta", "Cantidad", "Precio", "Importe"].map((t, i) => (
               <Text key={t} style={[s.celdaH, { flex: ANCHOS[i], textAlign: i >= 2 ? "right" : "left" }]}>
                 {t}
               </Text>
@@ -113,8 +113,12 @@ export default function EstadoCuenta({
                 {l.nombre}
               </Text>
               <Text style={[s.celda, { flex: ANCHOS[1] }]}>{l.planta ?? "—"}</Text>
-              <Text style={[s.celda, { flex: ANCHOS[2], textAlign: "right" }]}>{l.piezas.toLocaleString("es-MX")}</Text>
-              <Text style={[s.celda, { flex: ANCHOS[3], textAlign: "right" }]}>{dinero(l.precio)}</Text>
+              <Text style={[s.celda, { flex: ANCHOS[2], textAlign: "right" }]}>
+                {l.modo === "hora" ? `${l.horas.toFixed(1)} h` : `${l.piezas.toLocaleString("es-MX")} pzas`}
+              </Text>
+              <Text style={[s.celda, { flex: ANCHOS[3], textAlign: "right" }]}>
+                {dinero(l.precio)}/{l.modo === "hora" ? "h" : "pza"}
+              </Text>
               <Text style={[s.celda, { flex: ANCHOS[4], textAlign: "right" }]}>{dinero(l.importe)}</Text>
             </View>
           ))}

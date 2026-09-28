@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { requerirSesion, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { whereInspeccionesVisibles } from "@/lib/inspecciones";
 import { enviarPush } from "@/lib/push";
+import { asegurarJornada } from "@/lib/asistencia";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +44,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
 
     const cantidad = datos.cantidad;
+
+    // capturar implica estar trabajando: si no marcó entrada en esta pieza, se marca sola
+    await asegurarJornada(user.id, params.id).catch((e) => console.error("No se pudo abrir la jornada", e));
 
     if (datos.tipo === "retrabajo") {
       const resumen = await prisma.defectoResumen.findUnique({

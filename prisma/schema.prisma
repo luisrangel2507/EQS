@@ -52,6 +52,7 @@ model Usuario {
   reportes8D           Reporte8D[]
   solicitudesServicio  SolicitudServicio[]   @relation("SolicitudServicioSolicitante")
   solicitudesResueltas SolicitudServicio[]   @relation("SolicitudServicioAtendida")
+  asistencias          RegistroAsistencia[]
   relevosRecibidos     RelevoTurno[]         @relation("RelevoReceptor")
 }
 
@@ -77,6 +78,9 @@ model Inspeccion {
   planta              String?
   meta                Int       @default(0)
   precioPorPieza      Float     @default(0)
+  // "pieza" cobra piezas x precioPorPieza; "hora" cobra horas registradas x precioPorHora
+  modoCobro           String    @default("pieza")
+  precioPorHora       Float     @default(0)
   fechaEntrega        DateTime?
   instrucciones       String?
   instruccionesPdfUrl String?
@@ -108,6 +112,7 @@ model Inspeccion {
   enlaces           EnlaceCompartido[]
   reportes8D        Reporte8D[]
   solicitudServicio SolicitudServicio?
+  asistencias       RegistroAsistencia[]
 
   @@index([cliente])
   @@index([cerrado])
@@ -317,4 +322,24 @@ model SolicitudServicio {
 
   @@index([cliente, creadoEn])
   @@index([estado])
+}
+
+// jornada de un inspector en una inspección: base para cobrar por hora y para nómina
+model RegistroAsistencia {
+  id           String      @id @default(cuid())
+  usuario      Usuario     @relation(fields: [usuarioId], references: [id])
+  usuarioId    String
+  inspeccion   Inspeccion? @relation(fields: [inspeccionId], references: [id], onDelete: SetNull)
+  inspeccionId String?
+  entrada      DateTime    @default(now())
+  salida       DateTime?
+  // true cuando el sistema la cerró solo (jornada olvidada): liderazgo debe revisarla
+  cerradaAuto  Boolean     @default(false)
+  automatica   Boolean     @default(false)
+  nota         String?
+  creadoEn     DateTime    @default(now())
+
+  @@index([usuarioId, entrada])
+  @@index([inspeccionId, entrada])
+  @@index([salida])
 }

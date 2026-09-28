@@ -9,6 +9,7 @@ import type { Rol } from "@prisma/client";
 import { PLANTAS } from "@/lib/constants";
 import ClienteSelect from "@/components/ClienteSelect";
 import SubidaPdf from "@/components/SubidaPdf";
+import CampoCobro from "@/components/CampoCobro";
 
 type Inspeccion = {
   id: string;
@@ -194,6 +195,8 @@ function NuevaInspeccionForm({ onCerrar, onCreada }: { onCerrar: () => void; onC
   const [puntoLimpio, setPuntoLimpio] = useState("");
   const [meta, setMeta] = useState("");
   const [precioPorPieza, setPrecioPorPieza] = useState("");
+  const [modoCobro, setModoCobro] = useState<"pieza" | "hora">("pieza");
+  const [precioPorHora, setPrecioPorHora] = useState("");
   const [fechaEntrega, setFechaEntrega] = useState("");
   const [instrucciones, setInstrucciones] = useState("");
   const [instruccionesPdfUrl, setInstruccionesPdfUrl] = useState("");
@@ -227,6 +230,8 @@ function NuevaInspeccionForm({ onCerrar, onCreada }: { onCerrar: () => void; onC
         puntoLimpio: puntoLimpio || undefined,
         meta: meta ? Number(meta) : undefined,
         precioPorPieza: precioPorPieza ? Number(precioPorPieza) : undefined,
+        modoCobro,
+        precioPorHora: precioPorHora ? Number(precioPorHora) : undefined,
         fechaEntrega: fechaEntrega ? new Date(fechaEntrega).toISOString() : undefined,
         instrucciones: instrucciones || undefined,
         instruccionesPdfUrl: instruccionesPdfUrl || undefined,
@@ -286,17 +291,14 @@ function NuevaInspeccionForm({ onCerrar, onCreada }: { onCerrar: () => void; onC
           <label className="label">Meta de piezas</label>
           <input className="input" type="number" min={0} value={meta} onChange={(e) => setMeta(e.target.value)} />
         </div>
-        <div>
-          <label className="label">Precio por pieza (facturación)</label>
-          <input
-            className="input"
-            type="number"
-            min={0}
-            step="0.01"
-            value={precioPorPieza}
-            onChange={(e) => setPrecioPorPieza(e.target.value)}
+          <CampoCobro
+            modo={modoCobro}
+            onModo={setModoCobro}
+            precioPieza={precioPorPieza}
+            onPrecioPieza={setPrecioPorPieza}
+            precioHora={precioPorHora}
+            onPrecioHora={setPrecioPorHora}
           />
-        </div>
         <div>
           <label className="label">Fecha de entrega</label>
           <input
