@@ -55,6 +55,8 @@ model Usuario {
   asistencias          RegistroAsistencia[]
   certificaciones      Certificacion[]       @relation("CertificacionInspector")
   certificacionesDadas Certificacion[]       @relation("CertificacionOtorgante")
+  plantillasChecklist  PlantillaChecklist[]
+  auditorias           Auditoria[]
   relevosRecibidos     RelevoTurno[]         @relation("RelevoReceptor")
 }
 
@@ -375,4 +377,45 @@ model Certificacion {
 
   @@unique([usuarioId, numeroParte])
   @@index([numeroParte])
+}
+
+// checklist configurable (auditoría de capas, 5S, recibo...); items: [{ texto, requiereFoto }]
+model PlantillaChecklist {
+  id            String      @id @default(cuid())
+  nombre        String
+  tipo          String // capas | 5s | recibo | producto | otro
+  descripcion   String?
+  items         Json        @default("[]")
+  activa        Boolean     @default(true)
+  creadoPor     Usuario     @relation(fields: [creadoPorId], references: [id])
+  creadoPorId   String
+  creadoEn      DateTime    @default(now())
+  actualizadoEn DateTime    @updatedAt
+  auditorias    Auditoria[]
+}
+
+// una auditoría guarda copia de los items: editar la plantilla no altera auditorías pasadas
+model Auditoria {
+  id              String             @id @default(cuid())
+  folio           Int                @unique @default(autoincrement())
+  plantilla       PlantillaChecklist @relation(fields: [plantillaId], references: [id])
+  plantillaId     String
+  nombrePlantilla String
+  tipo            String
+  items           Json
+  // [{ resultado: "ok" | "no" | "na" | null, comentario, fotoUrl }]
+  respuestas      Json
+  planta          String?
+  cliente         String?
+  area            String?
+  auditor         Usuario            @relation(fields: [auditorId], references: [id])
+  auditorId       String
+  puntaje         Float?
+  hallazgos       Int                @default(0)
+  estado          String             @default("borrador") // borrador | completada
+  creadoEn        DateTime           @default(now())
+  completadaEn    DateTime?
+
+  @@index([creadoEn])
+  @@index([cliente])
 }
