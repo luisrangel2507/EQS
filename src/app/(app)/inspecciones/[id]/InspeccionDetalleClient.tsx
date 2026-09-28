@@ -23,6 +23,8 @@ import GaleriaDefectos, { type FotoDefecto } from "@/components/GaleriaDefectos"
 import ClienteSelect from "@/components/ClienteSelect";
 import SelectorInspectores from "@/components/SelectorInspectores";
 import { useModoInmersivo } from "@/components/AppShell";
+import { useIdioma } from "@/components/ui/Idioma";
+import { nombreDefecto } from "@/lib/i18n";
 import { AnimatePresence, motion } from "framer-motion";
 import Modal from "@/components/ui/Modal";
 import NumeroAnimado from "@/components/ui/NumeroAnimado";
@@ -82,6 +84,7 @@ export default function InspeccionDetalleClient({
   sesion: SesionUsuario;
 }) {
   const router = useRouter();
+  const { t, idioma, locale } = useIdioma();
   const { datos: inspeccion, cargando, recargar } = usePolling<Inspeccion>(
     `/api/inspecciones/${id}`,
     6000
@@ -125,6 +128,8 @@ export default function InspeccionDetalleClient({
     .sort((a, b) => b.cantidad - a.cantidad)
     .slice(0, 8)
     .map((d) => ({ tipo: d.tipo, cantidad: d.cantidad }));
+  // el Pareto de la gráfica se muestra traducido; el 8D recibe los nombres originales
+  const paretoVisible = datosPareto.map((d) => ({ ...d, tipo: nombreDefecto(d.tipo, idioma) }));
 
   return (
     <div className="space-y-6">
@@ -134,34 +139,34 @@ export default function InspeccionDetalleClient({
             onClick={() => router.push("/inspecciones")}
             className="mb-1 text-xs font-semibold text-navy-400 hover:text-navy-700"
           >
-            ← Inspecciones
+            ← {t("Inspecciones", "Inspections")}
           </button>
           <h1 className="font-display text-2xl font-bold text-navy-900">{inspeccion.nombre}</h1>
           <p className="text-sm text-navy-500">
-            {inspeccion.numeroParte ?? "Sin número de parte"} · {inspeccion.planta ?? "Sin planta"}
-            {inspeccion.cliente ? ` · Cliente: ${inspeccion.cliente}` : ""}
+            {inspeccion.numeroParte ?? t("Sin número de parte", "No part number")} · {inspeccion.planta ?? t("Sin planta", "No plant")}
+            {inspeccion.cliente ? ` · ${t("Cliente", "Customer")}: ${inspeccion.cliente}` : ""}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span
             className={`badge ${inspeccion.cerrado ? "bg-navy-100 text-navy-500" : "bg-green-100 text-green-800"}`}
           >
-            {inspeccion.cerrado ? "Cerrada" : "Activa"}
+            {inspeccion.cerrado ? t("Cerrada", "Closed") : t("Activa", "Active")}
           </span>
           {inspeccion.cerrado && (
             <a href={`/api/inspecciones/${id}/reporte`} target="_blank" className="btn-secondary">
-              Descargar PDF
+              {t("Descargar PDF", "Download PDF")}
             </a>
           )}
           <a href={`/api/inspecciones/${id}/csv`} className="btn-secondary">
-            Exportar CSV
+            {t("Exportar CSV", "Export CSV")}
           </a>
           <a href={`/inspecciones/${id}/liberacion`} className="btn-secondary">
-            ✅ {sesion.rol === "CLIENTE" ? "Material liberado" : "Liberar material"}
+            ✅ {sesion.rol === "CLIENTE" ? t("Material liberado", "Released material") : t("Liberar material", "Release material")}
           </a>
           {puedeGestionar && (
             <a href={`/inspecciones/${id}/etiqueta`} className="btn-secondary">
-              🏷️ Etiqueta QR
+              🏷️ {t("Etiqueta QR", "QR label")}
             </a>
           )}
           {sesion.rol !== "RESIDENTE" && (
@@ -169,27 +174,27 @@ export default function InspeccionDetalleClient({
           )}
           {puedeGestionar && !inspeccion.cerrado && (
             <button className="btn-secondary" onClick={() => setMostrarEditar(true)}>
-              Editar
+              {t("Editar", "Edit")}
             </button>
           )}
           {puedeGestionar && !inspeccion.cerrado && (
             <button className="btn-accent" onClick={() => setMostrarCierre(true)}>
-              Cerrar inspección
+              {t("Cerrar inspección", "Close inspection")}
             </button>
           )}
         </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        <Metrica etiqueta="Piezas buenas" valor={<NumeroAnimado valor={inspeccion.piezasBuenas} />} />
-        <Metrica etiqueta="Piezas malas" valor={<NumeroAnimado valor={inspeccion.piezasMalas} />} />
-        <Metrica etiqueta="🔧 Recuperadas" valor={<NumeroAnimado valor={inspeccion.piezasRetrabajadas} />} />
+        <Metrica etiqueta={t("Piezas buenas", "Good parts")} valor={<NumeroAnimado valor={inspeccion.piezasBuenas} />} />
+        <Metrica etiqueta={t("Piezas malas", "Rejected parts")} valor={<NumeroAnimado valor={inspeccion.piezasMalas} />} />
+        <Metrica etiqueta={`🔧 ${t("Recuperadas", "Reworked OK")}`} valor={<NumeroAnimado valor={inspeccion.piezasRetrabajadas} />} />
         <Metrica
-          etiqueta="NG final (scrap)"
+          etiqueta={t("NG final (scrap)", "Final NG (scrap)")}
           valor={<NumeroAnimado valor={inspeccion.piezasMalas - inspeccion.piezasRetrabajadas} />}
         />
         <Metrica
-          etiqueta="% Rechazo"
+          etiqueta={t("% Rechazo", "% Reject")}
           valor={<NumeroAnimado valor={rechazo * 100} formato={(n) => `${n.toFixed(1)}%`} />}
           alerta={rechazo >= 0.08}
         />
@@ -212,7 +217,7 @@ export default function InspeccionDetalleClient({
       {(inspeccion.instrucciones || inspeccion.instruccionesPdfUrl) && (
         <div className="card">
           <h2 className="mb-1 font-display font-semibold text-navy-900">
-            Instrucción de trabajo / criterio de aceptación
+            {t("Instrucción de trabajo / criterio de aceptación", "Work instruction / acceptance criteria")}
           </h2>
           {inspeccion.instrucciones && (
             <p className="whitespace-pre-wrap text-sm text-navy-600">{inspeccion.instrucciones}</p>
@@ -224,24 +229,24 @@ export default function InspeccionDetalleClient({
               rel="noreferrer"
               className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-navy underline"
             >
-              Ver PDF de instrucción de trabajo
+              {t("Ver PDF de instrucción de trabajo", "View work instruction PDF")}
             </a>
           )}
         </div>
       )}
 
       <div className="card">
-        <h2 className="mb-3 font-display font-semibold text-navy-900">Pareto de defectos</h2>
+        <h2 className="mb-3 font-display font-semibold text-navy-900">{t("Pareto de defectos", "Defect Pareto")}</h2>
         {datosPareto.length === 0 ? (
-          <p className="text-sm text-navy-400">Todavía no se han registrado defectos.</p>
+          <p className="text-sm text-navy-400">{t("Todavía no se han registrado defectos.", "No defects recorded yet.")}</p>
         ) : (
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={datosPareto} layout="vertical" margin={{ left: 24 }}>
+            <BarChart data={paretoVisible} layout="vertical" margin={{ left: 24 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" allowDecimals={false} />
               <YAxis type="category" dataKey="tipo" width={160} tick={{ fontSize: 12 }} />
               <Tooltip />
-              <Bar dataKey="cantidad" fill="#142B6B" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="cantidad" name={t("Cantidad", "Quantity")} fill="#142B6B" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -259,7 +264,7 @@ export default function InspeccionDetalleClient({
 
       {inspeccion.inspectores.length > 0 && (
         <div className="card">
-          <h2 className="mb-2 font-display font-semibold text-navy-900">Inspectores asignados</h2>
+          <h2 className="mb-2 font-display font-semibold text-navy-900">{t("Inspectores asignados", "Assigned inspectors")}</h2>
           <div className="flex flex-wrap gap-2">
             {inspeccion.inspectores.map((a) => (
               <span key={a.usuario.id} className="badge bg-navy-50 text-navy-700">
@@ -273,8 +278,8 @@ export default function InspeccionDetalleClient({
       {inspeccion.cerrado && (
         <div className="card bg-navy-50">
           <p className="text-sm text-navy-700">
-            Cerrada por <strong>{inspeccion.cerradoPor}</strong> el{" "}
-            {inspeccion.cerradoEn && new Date(inspeccion.cerradoEn).toLocaleString("es-MX")}
+            {t("Cerrada por", "Closed by")} <strong>{inspeccion.cerradoPor}</strong> {t("el", "on")}{" "}
+            {inspeccion.cerradoEn && new Date(inspeccion.cerradoEn).toLocaleString(locale)}
           </p>
         </div>
       )}
@@ -310,6 +315,7 @@ function GaleriaCard({ inspeccionId }: { inspeccionId: string }) {
   const { datos } = usePolling<
     { id: string; fotoUrl: string; defecto: string | null; malas: number; creadoEn: string; usuario?: { nombre: string } }[]
   >(`/api/inspecciones/${inspeccionId}/galeria`, 30000);
+  const { t } = useIdioma();
 
   const fotos: FotoDefecto[] = (datos ?? []).map((f) => ({
     id: f.id,
@@ -323,7 +329,7 @@ function GaleriaCard({ inspeccionId }: { inspeccionId: string }) {
   return (
     <div className="card">
       <h2 className="mb-3 font-display font-semibold text-navy-900">
-        📸 Evidencia de defectos {fotos.length > 0 && <span className="text-navy-400">({fotos.length})</span>}
+        📸 {t("Evidencia de defectos", "Defect evidence")} {fotos.length > 0 && <span className="text-navy-400">({fotos.length})</span>}
       </h2>
       {datos === null ? (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
@@ -637,15 +643,16 @@ function PuntoLimpioMetrica({
   inspeccionId: string;
   onActualizado: () => void;
 }) {
+  const { t } = useIdioma();
   const [editando, setEditando] = useState(false);
   const [valor, setValor] = useState(inspeccion.puntoLimpio ?? "");
   const [guardando, setGuardando] = useState(false);
 
   const estado = inspeccion.puntoLimpioOk
-    ? { texto: "✅ Verificado", color: "text-green-700" }
+    ? { texto: `✅ ${t("Verificado", "Verified")}`, color: "text-green-700" }
     : inspeccion.puntoLimpioFotoUrl
-      ? { texto: "🟡 Pendiente OK", color: "text-amber-600" }
-      : { texto: "— Sin reportar", color: "text-navy-400" };
+      ? { texto: `🟡 ${t("Pendiente OK", "Awaiting OK")}`, color: "text-amber-600" }
+      : { texto: `— ${t("Sin reportar", "Not reported")}`, color: "text-navy-400" };
 
   async function guardar() {
     setGuardando(true);
@@ -663,7 +670,7 @@ function PuntoLimpioMetrica({
 
   return (
     <div className="card">
-      <p className="text-xs font-semibold uppercase tracking-wide text-navy-500">🧼 Punto Limpio</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-navy-500">🧼 {t("Punto Limpio", "Clean Point")}</p>
       {editando ? (
         <div className="mt-1 space-y-2">
           <input
@@ -707,7 +714,7 @@ function PuntoLimpioMetrica({
         </button>
       ) : (
         <p className="mt-1 font-display text-lg font-bold text-navy-900">
-          {inspeccion.puntoLimpio || "Sin identificar"}
+          {inspeccion.puntoLimpio || t("Sin identificar", "Not identified")}
         </p>
       )}
       <p className={`text-xs font-semibold ${estado.color}`}>{estado.texto}</p>
@@ -718,7 +725,7 @@ function PuntoLimpioMetrica({
           rel="noreferrer"
           className="mt-1 inline-block text-xs font-semibold text-navy underline"
         >
-          Ver evidencia
+          {t("Ver evidencia", "View evidence")}
         </a>
       )}
     </div>

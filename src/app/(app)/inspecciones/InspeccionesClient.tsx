@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { SkeletonTarjetas } from "@/components/ui/Skeleton";
+import { useIdioma } from "@/components/ui/Idioma";
 import { consumirParametro } from "@/lib/eventos";
 import type { Rol } from "@prisma/client";
 import { PLANTAS } from "@/lib/constants";
@@ -29,6 +30,7 @@ type Inspeccion = {
 
 export default function InspeccionesClient({ rol }: { rol: Rol }) {
   const esInspector = rol === "INSPECTOR";
+  const { t } = useIdioma();
   const [inspecciones, setInspecciones] = useState<Inspeccion[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarForm, setMostrarForm] = useState(false);
@@ -63,11 +65,11 @@ export default function InspeccionesClient({ rol }: { rol: Rol }) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-2xl font-bold text-navy-900">
-          {esInspector ? "Historial de inspecciones" : "Inspecciones"}
+          {esInspector ? t("Historial de inspecciones", "Inspection history") : t("Inspecciones", "Inspections")}
         </h1>
         {puedeCrear && (
           <button className="btn-primary" onClick={() => setMostrarForm(true)}>
-            + Nueva inspección
+            + {t("Nueva inspección", "New inspection")}
           </button>
         )}
       </div>
@@ -90,7 +92,7 @@ export default function InspeccionesClient({ rol }: { rol: Rol }) {
                 />
               )}
               <span className="relative">
-                {f === "activas" ? "Activas" : f === "cerradas" ? "Cerradas" : "Todas"}
+                {f === "activas" ? t("Activas", "Active") : f === "cerradas" ? t("Cerradas", "Closed") : t("Todas", "All")}
               </span>
             </button>
           ))}
@@ -122,7 +124,7 @@ export default function InspeccionesClient({ rol }: { rol: Rol }) {
       ) : filtradas.length === 0 ? (
         <div className="card flex flex-col items-center gap-2 py-10 text-center">
           <span className="text-4xl">📋</span>
-          <p className="text-sm text-navy-500">No hay inspecciones para mostrar.</p>
+          <p className="text-sm text-navy-500">{t("No hay inspecciones para mostrar.", "No inspections to show.")}</p>
         </div>
       ) : (
         <motion.div layout className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -149,19 +151,23 @@ export default function InspeccionesClient({ rol }: { rol: Rol }) {
                   <span
                     className={`badge ${i.cerrado ? "bg-navy-100 text-navy-500" : "bg-green-100 text-green-800"}`}
                   >
-                    {i.cerrado ? "Cerrada" : "Activa"}
+                    {i.cerrado ? t("Cerrada", "Closed") : t("Activa", "Active")}
                   </span>
                 </div>
                 <p className="text-xs text-navy-500">
-                  {i.numeroParte ?? "Sin número de parte"} · {i.planta ?? "Sin planta"}
+                  {i.numeroParte ?? t("Sin número de parte", "No part number")} · {i.planta ?? t("Sin planta", "No plant")}
                 </p>
-                {i.cliente && <p className="text-xs text-navy-500">Cliente: {i.cliente}</p>}
+                {i.cliente && (
+                  <p className="text-xs text-navy-500">
+                    {t("Cliente", "Customer")}: {i.cliente}
+                  </p>
+                )}
                 <div className="mt-3 flex items-center justify-between text-sm">
                   <span className="text-navy-700">
-                    {total} / {i.meta || "—"} piezas
+                    {total} / {i.meta || "—"} {t("piezas", "parts")}
                   </span>
                   <span className={rechazo >= 0.08 ? "font-semibold text-red-600" : "text-navy-600"}>
-                    {(rechazo * 100).toFixed(1)}% rechazo
+                    {(rechazo * 100).toFixed(1)}% {t("rechazo", "reject")}
                   </span>
                 </div>
                 <div className="mt-2 h-1.5 w-full rounded-full bg-navy-100">

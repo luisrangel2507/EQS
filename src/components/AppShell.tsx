@@ -6,10 +6,11 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import type { Rol } from "@prisma/client";
-import { ROL_ETIQUETAS } from "@/lib/constants";
+import { ROL_ETIQUETAS, ROL_ETIQUETAS_EN } from "@/lib/constants";
 import { NOMBRE_APP } from "@/lib/branding";
 import { motion } from "framer-motion";
 import { BotonTema } from "@/components/ui/Tema";
+import { BotonIdioma, useIdioma } from "@/components/ui/Idioma";
 import ChatPanel from "./ChatPanel";
 import PushToggle from "./PushToggle";
 import EscanerCodigo from "./EscanerCodigo";
@@ -42,27 +43,28 @@ type Props = {
 const LIDERAZGO: Rol[] = ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER"];
 
 // "principal" va siempre visible en escritorio; el resto cae en el menú "Más"
-const ENLACES: { href: string; label: string; icono: string; roles: Rol[]; principal?: boolean }[] = [
-  { href: "/estacion", label: "Mis inspecciones", icono: "🧰", roles: ["INSPECTOR"], principal: true },
-  { href: "/dashboard", label: "Dashboard", icono: "🏠", roles: [...LIDERAZGO, "RESIDENTE", "CLIENTE"], principal: true },
-  { href: "/inspecciones", label: "Inspecciones", icono: "📋", roles: [...LIDERAZGO, "RESIDENTE", "CLIENTE"], principal: true },
-  { href: "/inspecciones", label: "Historial", icono: "📁", roles: ["INSPECTOR"], principal: true },
-  { href: "/solicitudes", label: "Solicitudes", icono: "📥", roles: [...LIDERAZGO, "CLIENTE"], principal: true },
-  { href: "/turnos", label: "Turnos", icono: "🕐", roles: [...LIDERAZGO, "RESIDENTE"], principal: true },
-  { href: "/ranking", label: "Ranking", icono: "🏆", roles: [...LIDERAZGO, "INSPECTOR"], principal: true },
-  { href: "/certificaciones", label: "Certificaciones", icono: "🎓", roles: ["INSPECTOR"], principal: true },
-  { href: "/auditorias", label: "Auditorías", icono: "📋", roles: ["RESIDENTE", "CLIENTE"], principal: true },
-  { href: "/residentes", label: "Residentes", icono: "🏭", roles: LIDERAZGO },
-  { href: "/auditorias", label: "Auditorías", icono: "📋", roles: LIDERAZGO },
-  { href: "/certificaciones", label: "Certificaciones", icono: "🎓", roles: LIDERAZGO },
-  { href: "/asistencia", label: "Asistencia y horas", icono: "🕒", roles: LIDERAZGO },
-  { href: "/facturacion", label: "Facturación", icono: "💰", roles: ["ADMIN", "GERENTE"] },
+const ENLACES: { href: string; label: string; en: string; icono: string; roles: Rol[]; principal?: boolean }[] = [
+  { href: "/estacion", label: "Mis inspecciones", en: "My inspections", icono: "🧰", roles: ["INSPECTOR"], principal: true },
+  { href: "/dashboard", label: "Dashboard", en: "Dashboard", icono: "🏠", roles: [...LIDERAZGO, "RESIDENTE", "CLIENTE"], principal: true },
+  { href: "/inspecciones", label: "Inspecciones", en: "Inspections", icono: "📋", roles: [...LIDERAZGO, "RESIDENTE", "CLIENTE"], principal: true },
+  { href: "/inspecciones", label: "Historial", en: "History", icono: "📁", roles: ["INSPECTOR"], principal: true },
+  { href: "/solicitudes", label: "Solicitudes", en: "Requests", icono: "📥", roles: [...LIDERAZGO, "CLIENTE"], principal: true },
+  { href: "/turnos", label: "Turnos", en: "Shifts", icono: "🕐", roles: [...LIDERAZGO, "RESIDENTE"], principal: true },
+  { href: "/ranking", label: "Ranking", en: "Ranking", icono: "🏆", roles: [...LIDERAZGO, "INSPECTOR"], principal: true },
+  { href: "/certificaciones", label: "Certificaciones", en: "Certifications", icono: "🎓", roles: ["INSPECTOR"], principal: true },
+  { href: "/auditorias", label: "Auditorías", en: "Audits", icono: "📋", roles: ["RESIDENTE", "CLIENTE"], principal: true },
+  { href: "/residentes", label: "Residentes", en: "Residents", icono: "🏭", roles: LIDERAZGO },
+  { href: "/auditorias", label: "Auditorías", en: "Audits", icono: "📋", roles: LIDERAZGO },
+  { href: "/certificaciones", label: "Certificaciones", en: "Certifications", icono: "🎓", roles: LIDERAZGO },
+  { href: "/asistencia", label: "Asistencia y horas", en: "Attendance & hours", icono: "🕒", roles: LIDERAZGO },
+  { href: "/facturacion", label: "Facturación", en: "Billing", icono: "💰", roles: ["ADMIN", "GERENTE"] },
 ];
 
 export default function AppShell({ id, nombre, rol, children }: Props) {
   const pathname = usePathname();
   const router = useRouter();
-  const enlaces = ENLACES.filter((e) => e.roles.includes(rol));
+  const { t } = useIdioma();
+  const enlaces = ENLACES.filter((e) => e.roles.includes(rol)).map((e) => ({ ...e, label: t(e.label, e.en) }));
   const inicio = rol === "INSPECTOR" ? "/estacion" : "/dashboard";
   const esOperativo = rol === "ADMIN" || rol === "SUPERVISOR" || rol === "GERENTE" || rol === "LIDER";
   const [inmersivo, setInmersivo] = useState(false);
@@ -83,7 +85,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
                 onClick={() => router.push(inicio)}
                 className="flex items-center gap-1.5 text-sm font-semibold text-white/90 hover:text-white"
               >
-                ← Regresar
+                ← {t("Regresar", "Back")}
               </button>
             </div>
           ) : (
@@ -132,18 +134,18 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
                       data-tour="ejecutivo"
                       className="flex items-center gap-1.5 rounded-md bg-yellow px-3 py-1.5 text-xs font-bold text-navy-900 transition hover:bg-yellow-400"
                     >
-                      📊 <span className="hidden 2xl:inline">Dashboard Ejecutivo</span>
+                      📊 <span className="hidden 2xl:inline">{t("Dashboard Ejecutivo", "Executive dashboard")}</span>
                     </Link>
                   )}
                   <button
                     type="button"
                     onClick={() => window.dispatchEvent(new Event("eqs-abrir-paleta"))}
                     className="flex h-9 items-center gap-2 rounded-full px-2.5 text-sm text-white/80 transition hover:bg-white/10 hover:text-white xl:border xl:border-white/15 xl:px-3"
-                    aria-label="Buscar (Ctrl K)"
+                    aria-label={t("Buscar (Ctrl K)", "Search (Ctrl K)")}
                     data-tour="buscar"
                   >
                     <span className="text-base">🔍</span>
-                    <span className="hidden xl:inline">Buscar</span>
+                    <span className="hidden xl:inline">{t("Buscar", "Search")}</span>
                     <kbd className="hidden rounded bg-white/10 px-1.5 text-[10px] font-semibold xl:inline">Ctrl K</kbd>
                   </button>
                   {rol !== "CLIENTE" && <BotonEscanear />}
@@ -191,6 +193,7 @@ function MenuMas({
   pathname: string;
 }) {
   const [abierto, setAbierto] = useState(false);
+  const { t } = useIdioma();
   if (enlaces.length === 0) return null;
   const activo = enlaces.some((e) => pathname.startsWith(e.href));
   return (
@@ -203,7 +206,7 @@ function MenuMas({
         }`}
       >
         {activo && <span className="absolute inset-0 rounded-md bg-white/10" />}
-        <span className="relative">Más ▾</span>
+        <span className="relative">{t("Más", "More")} ▾</span>
       </button>
       {abierto && (
         <>
@@ -236,6 +239,7 @@ function MenuMas({
 
 function BotonEscanear() {
   const [abierto, setAbierto] = useState(false);
+  const { t } = useIdioma();
   useEffect(() => {
     const abrir = () => setAbierto(true);
     window.addEventListener(EVENTO_ESCANER, abrir);
@@ -247,9 +251,9 @@ function BotonEscanear() {
         type="button"
         onClick={() => setAbierto(true)}
         className="flex h-9 w-9 items-center justify-center rounded-full text-lg transition hover:bg-white/10"
-        aria-label="Escanear código"
+        aria-label={t("Escanear código", "Scan code")}
         data-tour="escanear"
-        title="Escanear QR o código de barras"
+        title={t("Escanear QR o código de barras", "Scan QR or barcode")}
       >
         📷
       </button>
@@ -269,6 +273,7 @@ type Notificacion = {
 
 function NotificacionesBell({ rol }: { rol: Rol }) {
   const puedeVer = rol !== "INSPECTOR" && rol !== "RESIDENTE";
+  const { t, locale } = useIdioma();
   const [abierto, setAbierto] = useState(false);
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
   const [noLeidas, setNoLeidas] = useState(0);
@@ -309,7 +314,7 @@ function NotificacionesBell({ rol }: { rol: Rol }) {
         type="button"
         onClick={alternar}
         className="relative flex h-9 w-9 items-center justify-center rounded-full text-lg transition hover:bg-white/10"
-        aria-label="Notificaciones"
+        aria-label={t("Notificaciones", "Notifications")}
         data-tour="notificaciones"
       >
         🔔
@@ -330,11 +335,11 @@ function NotificacionesBell({ rol }: { rol: Rol }) {
             className="absolute right-0 top-full z-20 mt-2 max-h-96 w-80 origin-top-right overflow-y-auto rounded-lg border border-navy-100 bg-white py-1 text-navy-900 shadow-lg"
           >
             <p className="border-b border-navy-100 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-navy-500">
-              Notificaciones
+              {t("Notificaciones", "Notifications")}
             </p>
             {notificaciones.length === 0 ? (
               <p className="px-4 py-6 text-center text-sm text-navy-400">
-                Sin notificaciones todavía.
+                {t("Sin notificaciones todavía.", "No notifications yet.")}
               </p>
             ) : (
               notificaciones.map((n) => (
@@ -348,7 +353,7 @@ function NotificacionesBell({ rol }: { rol: Rol }) {
                 >
                   <p className="text-navy-800">{n.mensaje}</p>
                   <p className="mt-0.5 text-xs text-navy-400">
-                    {new Date(n.creadoEn).toLocaleString("es-MX", {
+                    {new Date(n.creadoEn).toLocaleString(locale, {
                       day: "2-digit",
                       month: "short",
                       hour: "2-digit",
@@ -367,6 +372,8 @@ function NotificacionesBell({ rol }: { rol: Rol }) {
 
 function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
   const [abierto, setAbierto] = useState(false);
+  const { t } = useIdioma();
+  const rolTexto = t(ROL_ETIQUETAS[rol], ROL_ETIQUETAS_EN[rol]);
   const iniciales =
     nombre
       .trim()
@@ -393,7 +400,7 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
         type="button"
         onClick={() => setAbierto((a) => !a)}
         className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition hover:bg-white/10"
-        aria-label="Perfil"
+        aria-label={t("Perfil", "Profile")}
         data-tour="perfil"
       >
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow text-sm font-bold text-navy-900">
@@ -401,7 +408,7 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
         </span>
         <span className="hidden text-left sm:block">
           <span className="block text-sm font-medium leading-tight">{nombre}</span>
-          <span className="block text-xs leading-tight text-white/60">{ROL_ETIQUETAS[rol]}</span>
+          <span className="block text-xs leading-tight text-white/60">{rolTexto}</span>
         </span>
         <span className={`text-xs text-white/50 transition ${abierto ? "rotate-180" : ""}`}>▼</span>
       </button>
@@ -417,7 +424,7 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
           >
             <div className="border-b border-navy-100 px-4 py-2 sm:hidden">
               <p className="text-sm font-semibold text-navy-900">{nombre}</p>
-              <p className="text-xs text-navy-500">{ROL_ETIQUETAS[rol]}</p>
+              <p className="text-xs text-navy-500">{rolTexto}</p>
             </div>
             {rol === "ADMIN" && (
               <Link
@@ -425,7 +432,7 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
                 onClick={() => setAbierto(false)}
                 className="block w-full px-4 py-2 text-left text-sm font-semibold text-navy-700 hover:bg-navy-50"
               >
-                👤 Editar usuarios
+                👤 {t("Editar usuarios", "Manage users")}
               </Link>
             )}
             {rol === "ADMIN" && (
@@ -434,7 +441,7 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
                 onClick={() => setAbierto(false)}
                 className="block w-full px-4 py-2 text-left text-sm font-semibold text-navy-700 hover:bg-navy-50"
               >
-                🏢 Empresas cliente
+                🏢 {t("Empresas cliente", "Customer companies")}
               </Link>
             )}
             {rol === "ADMIN" && (
@@ -443,7 +450,7 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
                 onClick={() => setAbierto(false)}
                 className="block w-full px-4 py-2 text-left text-sm font-semibold text-navy-700 hover:bg-navy-50"
               >
-                🩺 Estado del sistema
+                🩺 {t("Estado del sistema", "System status")}
               </Link>
             )}
             {rol !== "INSPECTOR" && rol !== "CLIENTE" && (
@@ -452,9 +459,13 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
                 onClick={() => setAbierto(false)}
                 className="block w-full px-4 py-2 text-left text-sm font-semibold text-navy-700 hover:bg-navy-50"
               >
-                📺 Modo TV (piso)
+                📺 {t("Modo TV (piso)", "TV mode (floor)")}
               </Link>
             )}
+            <div className="flex items-center justify-between px-4 py-2 text-sm font-semibold text-navy-700">
+              🌐 {t("Idioma", "Language")}
+              <BotonIdioma />
+            </div>
             <BotonTema />
             <PushToggle />
             <button
@@ -462,7 +473,7 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
               onClick={salir}
               className="block w-full border-t border-navy-100 px-4 py-2 text-left text-sm font-semibold text-red-600 hover:bg-red-50"
             >
-              Salir
+              {t("Salir", "Sign out")}
             </button>
           </motion.div>
         </>

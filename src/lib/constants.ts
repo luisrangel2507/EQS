@@ -53,6 +53,19 @@ export const DEFECTOS_COMUNES = [
   "Otro",
 ] as const;
 
+export const DEFECTOS_EN: Record<string, string> = {
+  Rebaba: "Burr",
+  "Rayón / marca superficial": "Scratch / surface mark",
+  "Dimensión fuera de tolerancia": "Dimension out of tolerance",
+  "Golpe / abolladura": "Dent / damage",
+  "Falta de pintura / recubrimiento": "Missing paint / coating",
+  "Contaminación / suciedad": "Contamination / dirt",
+  "Ensamble incorrecto": "Wrong assembly",
+  "Pieza incompleta": "Incomplete part",
+  "Rosca dañada": "Damaged thread",
+  Otro: "Other",
+};
+
 // una por día, elegida por fecha para que sea la misma para todos durante el día
 // (para Admin, Supervisor, Líder e Inspector)
 export const FRASES_DEL_DIA = [
@@ -83,6 +96,19 @@ export const FRASES_DEL_DIA_CLIENTE = [
   "Calidad constante, confianza garantizada.",
 ] as const;
 
+export const FRASES_DEL_DIA_CLIENTE_EN = [
+  "Thank you for your trust. Your line is protected.",
+  "Every part that leaves here carries our commitment to you.",
+  "Your quality is our priority, shift after shift.",
+  "We treat every part like the first one.",
+  "Full transparency: that's how we protect your production.",
+  "Your trust is earned one part at a time.",
+  "We're here to protect the quality your brand deserves.",
+  "Every inspection is a promise kept.",
+  "Your line, our responsibility.",
+  "Consistent quality, guaranteed confidence.",
+] as const;
+
 export const ROLES = ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER", "INSPECTOR", "RESIDENTE", "CLIENTE"] as const;
 
 export const ROL_ETIQUETAS: Record<string, string> = {
@@ -93,6 +119,16 @@ export const ROL_ETIQUETAS: Record<string, string> = {
   INSPECTOR: "Inspector",
   RESIDENTE: "Residente",
   CLIENTE: "Cliente",
+};
+
+export const ROL_ETIQUETAS_EN: Record<string, string> = {
+  ADMIN: "Administrator",
+  SUPERVISOR: "Supervisor",
+  GERENTE: "Manager",
+  LIDER: "Team lead",
+  INSPECTOR: "Inspector",
+  RESIDENTE: "Resident",
+  CLIENTE: "Customer",
 };
 
 // "sello" visual por posición: icono + degradado, usado donde se muestra el

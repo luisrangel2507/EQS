@@ -4,6 +4,7 @@ import "./globals.css";
 import Providers from "./providers";
 import { NOMBRE_CORTO, DESCRIPCION_APP } from "@/lib/branding";
 import { SCRIPT_TEMA } from "@/lib/tema";
+import { idiomaServidor } from "@/lib/i18nServidor";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -31,13 +32,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const idioma = idiomaServidor();
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang={idioma} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA }} />
       </head>
       <body className={`${inter.variable} ${manrope.variable} antialiased`}>
-        <Providers>{children}</Providers>
+        <Providers idioma={idioma}>{children}</Providers>
       </body>
     </html>
   );

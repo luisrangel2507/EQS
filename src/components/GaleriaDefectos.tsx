@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useIdioma } from "@/components/ui/Idioma";
+import { nombreDefecto } from "@/lib/i18n";
 
 export type FotoDefecto = {
   id: string;
@@ -13,6 +15,8 @@ export type FotoDefecto = {
 };
 
 export default function GaleriaDefectos({ fotos, vacio }: { fotos: FotoDefecto[]; vacio?: string }) {
+  const { t, idioma, locale } = useIdioma();
+  const def = (d: string) => nombreDefecto(d, idioma);
   const [filtro, setFiltro] = useState<string | null>(null);
   const [abierta, setAbierta] = useState<number | null>(null);
 
@@ -35,22 +39,22 @@ export default function GaleriaDefectos({ fotos, vacio }: { fotos: FotoDefecto[]
   }, [abierta, visibles.length]);
 
   if (fotos.length === 0) {
-    return <p className="text-sm text-navy-400">{vacio ?? "Todavía no hay fotos de evidencia."}</p>;
+    return <p className="text-sm text-navy-400">{vacio ?? t("Todavía no hay fotos de evidencia.", "No evidence photos yet.")}</p>;
   }
 
   return (
     <div>
       {tipos.length > 1 && (
         <div className="mb-3 flex flex-wrap gap-1.5">
-          {[null, ...tipos].map((t) => (
+          {[null, ...tipos].map((tipo) => (
             <button
-              key={t ?? "todas"}
-              onClick={() => setFiltro(t)}
+              key={tipo ?? "todas"}
+              onClick={() => setFiltro(tipo)}
               className={`rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors ${
-                filtro === t ? "border-navy bg-navy text-white" : "border-navy-200 bg-white text-navy-600"
+                filtro === tipo ? "border-navy bg-navy text-white" : "border-navy-200 bg-white text-navy-600"
               }`}
             >
-              {t ?? `Todas (${fotos.length})`}
+              {tipo ? def(tipo) : `${t("Todas", "All")} (${fotos.length})`}
             </button>
           ))}
         </div>
@@ -72,13 +76,13 @@ export default function GaleriaDefectos({ fotos, vacio }: { fotos: FotoDefecto[]
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={f.url}
-                alt={f.defecto ?? "Evidencia"}
+                alt={f.defecto ? def(f.defecto) : t("Evidencia", "Evidence")}
                 loading="lazy"
                 className="h-full w-full object-cover transition duration-300 group-hover:scale-110"
               />
               {f.defecto && (
                 <span className="absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/75 to-transparent px-2 pb-1.5 pt-5 text-left text-[11px] font-semibold text-white">
-                  {f.defecto}
+                  {def(f.defecto)}
                 </span>
               )}
             </motion.button>
@@ -98,20 +102,20 @@ export default function GaleriaDefectos({ fotos, vacio }: { fotos: FotoDefecto[]
             <motion.img
               layoutId={`foto-${actual.id}`}
               src={actual.url}
-              alt={actual.defecto ?? "Evidencia"}
+              alt={actual.defecto ? def(actual.defecto) : t("Evidencia", "Evidence")}
               className="max-h-[78vh] max-w-full rounded-xl object-contain shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             />
             <div className="mt-4 text-center text-white" onClick={(e) => e.stopPropagation()}>
-              <p className="font-display text-lg font-bold">{actual.defecto ?? "Evidencia"}</p>
+              <p className="font-display text-lg font-bold">{actual.defecto ? def(actual.defecto) : t("Evidencia", "Evidence")}</p>
               <p className="text-sm text-white/70">
-                {new Date(actual.creadoEn).toLocaleString("es-MX", {
+                {new Date(actual.creadoEn).toLocaleString(locale, {
                   day: "2-digit",
                   month: "short",
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
-                {actual.cantidad ? ` · ${actual.cantidad} pza${actual.cantidad === 1 ? "" : "s"}` : ""}
+                {actual.cantidad ? ` · ${actual.cantidad} ${t("pza", "pc")}${actual.cantidad === 1 ? "" : "s"}` : ""}
                 {actual.autor ? ` · ${actual.autor}` : ""}
               </p>
               <div className="mt-3 flex justify-center gap-2">
@@ -120,7 +124,7 @@ export default function GaleriaDefectos({ fotos, vacio }: { fotos: FotoDefecto[]
                   onClick={() => setAbierta(abierta - 1)}
                   className="rounded-full bg-white/15 px-4 py-2 text-sm font-semibold disabled:opacity-30"
                 >
-                  ← Anterior
+                  ← {t("Anterior", "Previous")}
                 </button>
                 <span className="self-center text-xs text-white/60">
                   {abierta + 1} / {visibles.length}
@@ -130,7 +134,7 @@ export default function GaleriaDefectos({ fotos, vacio }: { fotos: FotoDefecto[]
                   onClick={() => setAbierta(abierta + 1)}
                   className="rounded-full bg-white/15 px-4 py-2 text-sm font-semibold disabled:opacity-30"
                 >
-                  Siguiente →
+                  {t("Siguiente", "Next")} →
                 </button>
               </div>
             </div>

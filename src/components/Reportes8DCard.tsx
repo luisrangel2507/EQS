@@ -8,6 +8,8 @@ import { usePolling } from "@/lib/usePolling";
 import { DISCIPLINAS, avance8D, type ClaveDisciplina } from "@/lib/ochoD";
 import Modal from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
+import { useIdioma } from "@/components/ui/Idioma";
+import { nombreDefecto } from "@/lib/i18n";
 
 type Reporte = Record<ClaveDisciplina, string | null> & {
   id: string;
@@ -58,6 +60,7 @@ export default function Reportes8DCard({
 }) {
   const router = useRouter();
   const toast = useToast();
+  const { t, idioma, locale } = useIdioma();
   const { datos } = usePolling<Reporte[]>(`/api/inspecciones/${inspeccionId}/8d`, 30000);
   const [eligiendo, setEligiendo] = useState(false);
   const [creando, setCreando] = useState(false);
@@ -74,21 +77,21 @@ export default function Reportes8DCard({
     setCreando(false);
     if (!res.ok) {
       const d = await res.json().catch(() => ({}));
-      toast.error(d.error ?? "No se pudo crear el 8D");
+      toast.error(d.error ?? t("No se pudo crear el 8D", "Could not create the 8D"));
       return;
     }
     const nuevo = await res.json();
-    toast.exito("8D creado con borrador de D1–D3");
+    toast.exito(t("8D creado con borrador de D1–D3", "8D created with a D1–D3 draft"));
     router.push(`/inspecciones/${inspeccionId}/8d/${nuevo.id}`);
   }
 
   return (
     <div className="card">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <h2 className="font-display font-semibold text-navy-900">🛠️ Reportes 8D</h2>
+        <h2 className="font-display font-semibold text-navy-900">🛠️ {t("Reportes 8D", "8D reports")}</h2>
         {puedeCrear && (
           <button className="btn-primary px-3 py-1.5 text-sm" onClick={() => setEligiendo(true)}>
-            + Nuevo 8D
+            + {t("Nuevo 8D", "New 8D")}
           </button>
         )}
       </div>
@@ -96,7 +99,10 @@ export default function Reportes8DCard({
         <div className="skeleton h-14 rounded-lg" />
       ) : datos.length === 0 ? (
         <p className="text-sm text-navy-400">
-          Sin 8D. Ábrelo cuando un defecto requiera contención y acción correctiva formal.
+          {t(
+            "Sin 8D. Ábrelo cuando un defecto requiera contención y acción correctiva formal.",
+            "No 8D yet. Open one when a defect needs formal containment and corrective action."
+          )}
         </p>
       ) : (
         <ul className="space-y-2">
@@ -109,14 +115,14 @@ export default function Reportes8DCard({
                 <MiniAnillo valor={avance8D(r)} total={DISCIPLINAS.length} />
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-navy-900">
-                    8D-{String(r.folio).padStart(4, "0")} · {r.defecto ?? "General"}
+                    8D-{String(r.folio).padStart(4, "0")} · {r.defecto ? nombreDefecto(r.defecto, idioma) : t("General", "General")}
                   </p>
                   <p className="text-xs text-navy-500">
-                    {r.creadoPor.nombre} · {new Date(r.creadoEn).toLocaleDateString("es-MX", { day: "2-digit", month: "short" })}
+                    {r.creadoPor.nombre} · {new Date(r.creadoEn).toLocaleDateString(locale, { day: "2-digit", month: "short" })}
                   </p>
                 </div>
                 <span className={`badge ${r.estado === "cerrado" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}`}>
-                  {r.estado === "cerrado" ? "Cerrado" : "Abierto"}
+                  {r.estado === "cerrado" ? t("Cerrado", "Closed") : t("Abierto", "Open")}
                 </span>
               </Link>
             </motion.li>
@@ -126,8 +132,10 @@ export default function Reportes8DCard({
 
       <Modal abierto={eligiendo} onCerrar={() => setEligiendo(false)} ancho="max-w-sm">
         <div className="space-y-3 rounded-xl bg-white p-5 shadow-lg">
-          <h2 className="font-display text-lg font-bold text-navy-900">¿Para qué problema?</h2>
-          <p className="text-sm text-navy-500">Se llena solo un borrador de D1–D3 con los datos de la inspección.</p>
+          <h2 className="font-display text-lg font-bold text-navy-900">{t("¿Para qué problema?", "For which problem?")}</h2>
+          <p className="text-sm text-navy-500">
+            {t("Se llena solo un borrador de D1–D3 con los datos de la inspección.", "A D1–D3 draft is pre-filled with the inspection data.")}
+          </p>
           <div className="space-y-2">
             {defectos.map((d) => (
               <button
@@ -136,7 +144,7 @@ export default function Reportes8DCard({
                 onClick={() => crear(d.tipo)}
                 className="flex w-full items-center justify-between rounded-lg border border-navy-200 px-3 py-2 text-left text-sm hover:bg-navy-50 disabled:opacity-50"
               >
-                <span className="font-medium text-navy-900">{d.tipo}</span>
+                <span className="font-medium text-navy-900">{nombreDefecto(d.tipo, idioma)}</span>
                 <span className="badge bg-red-50 text-red-700">{d.cantidad} NG</span>
               </button>
             ))}
@@ -145,7 +153,7 @@ export default function Reportes8DCard({
               onClick={() => crear(null)}
               className="w-full rounded-lg border border-dashed border-navy-300 px-3 py-2 text-sm font-semibold text-navy-600 hover:bg-navy-50 disabled:opacity-50"
             >
-              8D general de la inspección
+              {t("8D general de la inspección", "General 8D for the inspection")}
             </button>
           </div>
         </div>

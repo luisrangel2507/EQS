@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requerirSesion, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { whereInspeccionesVisibles } from "@/lib/inspecciones";
 import ReporteCierre from "@/lib/pdf/ReporteCierre";
+import { idiomaServidor } from "@/lib/i18nServidor";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +20,10 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       throw new ErrorPermiso("El reporte de cierre solo está disponible una vez cerrada la inspección", 400);
     }
 
+    const idioma = idiomaServidor();
     const buffer = await renderToBuffer(
       <ReporteCierre
+        idioma={idioma}
         datos={{
           nombre: inspeccion.nombre,
           numeroParte: inspeccion.numeroParte,
@@ -40,7 +43,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       />
     );
 
-    const nombreArchivo = `Reporte_${inspeccion.nombre.replace(/[^a-z0-9]+/gi, "_")}.pdf`;
+    const nombreArchivo = `${idioma === "en" ? "Report" : "Reporte"}_${inspeccion.nombre.replace(/[^a-z0-9]+/gi, "_")}.pdf`;
 
     return new Response(new Uint8Array(buffer), {
       headers: {
