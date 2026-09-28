@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { manejarErrorApi } from "@/lib/permissions";
 import { obtener8DVisible } from "@/lib/ochoDServidor";
+import { idiomaServidor } from "@/lib/i18nServidor";
 import Reporte8DPdf from "@/lib/pdf/Reporte8DPdf";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +11,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   try {
     const { reporte: r } = await obtener8DVisible(params.id);
     const buffer = await renderToBuffer(
-      <Reporte8DPdf
+      <Reporte8DPdf idioma={idiomaServidor()}
         r={{
           ...r,
           creadoEn: r.creadoEn.toISOString(),

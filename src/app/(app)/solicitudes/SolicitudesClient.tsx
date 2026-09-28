@@ -13,6 +13,7 @@ import ClienteSelect from "@/components/ClienteSelect";
 import Modal from "@/components/ui/Modal";
 import { SkeletonTarjetas } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
+import { useIdioma } from "@/components/ui/Idioma";
 
 type Solicitud = {
   id: string;
@@ -35,18 +36,19 @@ type Solicitud = {
 };
 
 const FILTROS = [
-  { valor: "pendiente", etiqueta: "Pendientes" },
-  { valor: "aceptada", etiqueta: "Aceptadas" },
-  { valor: "rechazada", etiqueta: "Rechazadas" },
-  { valor: "todas", etiqueta: "Todas" },
+  { valor: "pendiente", etiqueta: "Pendientes", en: "Pending" },
+  { valor: "aceptada", etiqueta: "Aceptadas", en: "Accepted" },
+  { valor: "rechazada", etiqueta: "Rechazadas", en: "Declined" },
+  { valor: "todas", etiqueta: "Todas", en: "All" },
 ] as const;
 
-const fecha = (iso: string) =>
-  new Date(iso).toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+const fecha = (iso: string, locale: string) =>
+  new Date(iso).toLocaleString(locale, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 
 export default function SolicitudesClient({ rol }: { rol: Rol }) {
   const esCliente = rol === "CLIENTE";
   const puedeResolver = rol === "ADMIN" || rol === "SUPERVISOR";
+  const { t } = useIdioma();
   const { datos, cargando, recargar } = usePolling<Solicitud[]>("/api/solicitudes", 20000);
   const [filtro, setFiltro] = useState<(typeof FILTROS)[number]["valor"]>(esCliente ? "todas" : "pendiente");
   const [nueva, setNueva] = useState(false);
@@ -63,15 +65,18 @@ export default function SolicitudesClient({ rol }: { rol: Rol }) {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-navy-900">📥 Solicitudes de servicio</h1>
+          <h1 className="font-display text-2xl font-bold text-navy-900">📥 {t("Solicitudes de servicio", "Service requests")}</h1>
           <p className="text-sm text-navy-500">
             {esCliente
-              ? "Pide un sorteo, retrabajo o inspección y sigue su avance aquí."
-              : "Lo que piden los clientes. Al aceptar se crea la inspección lista para asignar inspectores."}
+              ? t("Pide un sorteo, retrabajo o inspección y sigue su avance aquí.", "Request a sort, rework or inspection and track it here.")
+              : t(
+                  "Lo que piden los clientes. Al aceptar se crea la inspección lista para asignar inspectores.",
+                  "What customers ask for. Accepting creates the inspection, ready to assign inspectors."
+                )}
           </p>
         </div>
         <motion.button whileTap={{ scale: 0.96 }} className="btn-accent" onClick={() => setNueva(true)}>
-          + Nueva solicitud
+          + {t("Nueva solicitud", "New request")}
         </motion.button>
       </div>
 
@@ -88,7 +93,7 @@ export default function SolicitudesClient({ rol }: { rol: Rol }) {
               <motion.span layoutId="filtro-solicitudes" className="absolute inset-0 rounded-full bg-navy" />
             )}
             <span className="relative">
-              {f.etiqueta}
+              {t(f.etiqueta, f.en)}
               {f.valor === "pendiente" && pendientes > 0 ? ` (${pendientes})` : ""}
             </span>
           </button>
@@ -101,11 +106,13 @@ export default function SolicitudesClient({ rol }: { rol: Rol }) {
         <div className="card flex flex-col items-center gap-3 py-12 text-center">
           <span className="text-5xl">{filtro === "pendiente" ? "🎉" : "📭"}</span>
           <p className="text-sm text-navy-500">
-            {filtro === "pendiente" ? "No hay solicitudes pendientes." : "Todavía no hay solicitudes aquí."}
+            {filtro === "pendiente"
+              ? t("No hay solicitudes pendientes.", "No pending requests.")
+              : t("Todavía no hay solicitudes aquí.", "No requests here yet.")}
           </p>
           {esCliente && (
             <button className="btn-primary" onClick={() => setNueva(true)}>
-              Hacer mi primera solicitud
+              {t("Hacer mi primera solicitud", "Make my first request")}
             </button>
           )}
         </div>
@@ -173,13 +180,20 @@ function Tarjeta({
 }) {
   const router = useRouter();
   const toast = useToast();
+  const { t, locale } = useIdioma();
   const [aceptando, setAceptando] = useState(false);
   const tipo = TIPO_SOLICITUD_INFO[s.tipo] ?? TIPO_SOLICITUD_INFO.otro;
   const urgencia = URGENCIAS.find((u) => u.valor === s.urgencia) ?? URGENCIAS[0];
   const pasos = [
-    { texto: "Enviada", hecho: true },
-    { texto: s.estado === "rechazada" ? "No aceptada" : "Aceptada", hecho: s.estado !== "pendiente", error: s.estado === "rechazada" },
-    ...(s.estado === "rechazada" ? [] : [{ texto: s.inspeccion?.cerrado ? "Cerrada" : "En proceso", hecho: Boolean(s.inspeccion) }]),
+    { texto: t("Enviada", "Sent"), hecho: true },
+    {
+      texto: s.estado === "rechazada" ? t("No aceptada", "Declined") : t("Aceptada", "Accepted"),
+      hecho: s.estado !== "pendiente",
+      error: s.estado === "rechazada",
+    },
+    ...(s.estado === "rechazada"
+      ? []
+      : [{ texto: s.inspeccion?.cerrado ? t("Cerrada", "Closed") : t("En proceso", "In progress"), hecho: Boolean(s.inspeccion) }]),
   ];
 
   async function aceptar() {
@@ -192,10 +206,10 @@ function Tarjeta({
     setAceptando(false);
     const d = await res.json().catch(() => ({}));
     if (!res.ok) {
-      toast.error(d.error ?? "No se pudo aceptar");
+      toast.error(d.error ?? t("No se pudo aceptar", "Could not accept"));
       return;
     }
-    toast.exito(`Solicitud #${s.folio} aceptada. Asigna inspectores y precio.`);
+    toast.exito(t(`Solicitud #${s.folio} aceptada. Asigna inspectores y precio.`, `Request #${s.folio} accepted. Assign inspectors and pricing.`));
     onCambio();
     if (d.inspeccionId) router.push(`/inspecciones/${d.inspeccionId}`);
   }
@@ -212,18 +226,18 @@ function Tarjeta({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-semibold text-navy-400">
-            #{s.folio} · {fecha(s.creadoEn)}
+            #{s.folio} · {fecha(s.creadoEn, locale)}
             {!esCliente && ` · ${s.cliente}`}
           </p>
           <h3 className="mt-0.5 font-display text-lg font-bold text-navy-900">
-            {tipo.icono} {tipo.etiqueta} · {s.numeroParte}
+            {tipo.icono} {t(tipo.etiqueta, tipo.en)} · {s.numeroParte}
           </h3>
           <p className="text-xs text-navy-500">
-            {s.cantidad ? `${s.cantidad.toLocaleString("es-MX")} pzas` : "Cantidad por definir"}
-            {s.planta ? ` · 🏭 ${s.planta}` : ""} · pidió {s.solicitante.nombre}
+            {s.cantidad ? `${s.cantidad.toLocaleString(locale)} ${t("pzas", "pcs")}` : t("Cantidad por definir", "Quantity TBD")}
+            {s.planta ? ` · 🏭 ${s.planta}` : ""} · {t("pidió", "requested by")} {s.solicitante.nombre}
           </p>
         </div>
-        <span className={`badge shrink-0 ${urgencia.clase}`}>{urgencia.etiqueta}</span>
+        <span className={`badge shrink-0 ${urgencia.clase}`}>{t(urgencia.etiqueta, urgencia.en)}</span>
       </div>
 
       <div className="flex gap-3">
@@ -231,7 +245,7 @@ function Tarjeta({
         {s.fotoUrl && (
           <a href={s.fotoUrl} target="_blank" rel="noreferrer" className="shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={s.fotoUrl} alt="Foto de la solicitud" className="h-20 w-20 rounded-lg object-cover" />
+            <img src={s.fotoUrl} alt={t("Foto de la solicitud", "Request photo")} className="h-20 w-20 rounded-lg object-cover" />
           </a>
         )}
       </div>
@@ -258,33 +272,35 @@ function Tarjeta({
             s.estado === "rechazada" ? "bg-red-50 text-red-800" : "bg-navy-50 text-navy-700"
           }`}
         >
-          <strong>{s.atendidaPor?.nombre ?? "Respuesta"}:</strong> {s.respuesta}
+          <strong>{s.atendidaPor?.nombre ?? t("Respuesta", "Response")}:</strong> {s.respuesta}
         </p>
       )}
 
       <div className="mt-auto flex flex-wrap items-center gap-2">
         {s.inspeccion && (
           <Link href={`/inspecciones/${s.inspeccion.id}`} className="btn-primary px-3 py-1.5 text-sm">
-            {esCliente ? "📊 Ver avance en vivo" : "Abrir inspección"}
+            {esCliente ? `📊 ${t("Ver avance en vivo", "View live progress")}` : t("Abrir inspección", "Open inspection")}
           </Link>
         )}
         {s.inspeccion && (
           <span className="text-xs text-navy-500">
-            {(s.inspeccion.piezasBuenas + s.inspeccion.piezasMalas).toLocaleString("es-MX")} pzas inspeccionadas
+            {(s.inspeccion.piezasBuenas + s.inspeccion.piezasMalas).toLocaleString(locale)} {t("pzas inspeccionadas", "pcs inspected")}
           </span>
         )}
         {s.estado === "pendiente" && puedeResolver && (
           <>
             <button className="btn-accent px-3 py-1.5 text-sm" onClick={aceptar} disabled={aceptando}>
-              {aceptando ? "Creando inspección…" : "✅ Aceptar"}
+              {aceptando ? t("Creando inspección…", "Creating inspection…") : `✅ ${t("Aceptar", "Accept")}`}
             </button>
             <button className="btn-secondary px-3 py-1.5 text-sm" onClick={onRechazar}>
-              Rechazar
+              {t("Rechazar", "Decline")}
             </button>
           </>
         )}
         {s.estado === "pendiente" && !puedeResolver && (
-          <span className="text-xs font-semibold text-amber-700">⏳ Esperando respuesta de supervisión</span>
+          <span className="text-xs font-semibold text-amber-700">
+            ⏳ {t("Esperando respuesta de supervisión", "Waiting for a supervisor’s response")}
+          </span>
         )}
       </div>
     </motion.div>
@@ -293,6 +309,7 @@ function Tarjeta({
 
 function NuevaSolicitud({ esCliente, onCerrar, onCreada }: { esCliente: boolean; onCerrar: () => void; onCreada: () => void }) {
   const toast = useToast();
+  const { t } = useIdioma();
   const [cliente, setCliente] = useState("");
   const [tipo, setTipo] = useState<string>("sorteo");
   const [numeroParte, setNumeroParte] = useState("");
@@ -315,7 +332,7 @@ function NuevaSolicitud({ esCliente, onCerrar, onCreada }: { esCliente: boolean;
         form.append("foto", await comprimirImagen(foto));
         const r = await fetch("/api/upload", { method: "POST", body: form });
         const d = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(d.error ?? "No se pudo subir la foto");
+        if (!r.ok) throw new Error(d.error ?? t("No se pudo subir la foto", "Could not upload the photo"));
         fotoUrl = d.url;
       }
       const res = await fetch("/api/solicitudes", {
@@ -333,11 +350,11 @@ function NuevaSolicitud({ esCliente, onCerrar, onCreada }: { esCliente: boolean;
         }),
       });
       const d = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(d.error ?? "No se pudo enviar la solicitud");
-      toast.exito(`Solicitud #${d.folio} enviada. Te avisamos cuando la revisen.`);
+      if (!res.ok) throw new Error(d.error ?? t("No se pudo enviar la solicitud", "Could not send the request"));
+      toast.exito(t(`Solicitud #${d.folio} enviada. Te avisamos cuando la revisen.`, `Request #${d.folio} sent. We’ll let you know when it’s reviewed.`));
       onCreada();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sin conexión, intenta de nuevo");
+      setError(err instanceof Error ? err.message : t("Sin conexión, intenta de nuevo", "No connection, try again"));
     } finally {
       setEnviando(false);
     }
@@ -346,32 +363,32 @@ function NuevaSolicitud({ esCliente, onCerrar, onCreada }: { esCliente: boolean;
   return (
     <form onSubmit={enviar} className="space-y-4 rounded-2xl bg-white p-5 shadow-2xl">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-lg font-bold text-navy-900">Nueva solicitud</h2>
-        <button type="button" onClick={onCerrar} className="rounded-md p-1 text-navy-400 hover:bg-navy-50" aria-label="Cerrar">
+        <h2 className="font-display text-lg font-bold text-navy-900">{t("Nueva solicitud", "New request")}</h2>
+        <button type="button" onClick={onCerrar} className="rounded-md p-1 text-navy-400 hover:bg-navy-50" aria-label={t("Cerrar", "Close")}>
           ✕
         </button>
       </div>
 
       {!esCliente && (
         <div>
-          <label className="label">Cliente</label>
+          <label className="label">{t("Cliente", "Customer")}</label>
           <ClienteSelect value={cliente} onChange={setCliente} required />
         </div>
       )}
 
       <div>
-        <label className="label">¿Qué necesitas?</label>
+        <label className="label">{t("¿Qué necesitas?", "What do you need?")}</label>
         <div className="grid grid-cols-2 gap-2">
-          {TIPOS_SOLICITUD.map((t) => (
+          {TIPOS_SOLICITUD.map((tp) => (
             <button
-              key={t}
+              key={tp}
               type="button"
-              onClick={() => setTipo(t)}
+              onClick={() => setTipo(tp)}
               className={`rounded-xl border px-3 py-2.5 text-left text-sm font-semibold transition ${
-                tipo === t ? "border-navy bg-navy text-white" : "border-navy-200 text-navy-700 hover:bg-navy-50"
+                tipo === tp ? "border-navy bg-navy text-white" : "border-navy-200 text-navy-700 hover:bg-navy-50"
               }`}
             >
-              {TIPO_SOLICITUD_INFO[t].icono} {TIPO_SOLICITUD_INFO[t].etiqueta}
+              {TIPO_SOLICITUD_INFO[tp].icono} {t(TIPO_SOLICITUD_INFO[tp].etiqueta, TIPO_SOLICITUD_INFO[tp].en)}
             </button>
           ))}
         </div>
@@ -379,17 +396,17 @@ function NuevaSolicitud({ esCliente, onCerrar, onCreada }: { esCliente: boolean;
 
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="sm:col-span-1">
-          <label className="label">Número de parte</label>
+          <label className="label">{t("Número de parte", "Part number")}</label>
           <input className="input" required value={numeroParte} onChange={(e) => setNumeroParte(e.target.value)} />
         </div>
         <div>
-          <label className="label">Cantidad aprox.</label>
+          <label className="label">{t("Cantidad aprox.", "Approx. quantity")}</label>
           <input className="input" type="number" min={1} value={cantidad} onChange={(e) => setCantidad(e.target.value)} />
         </div>
         <div>
-          <label className="label">Planta</label>
+          <label className="label">{t("Planta", "Plant")}</label>
           <select className="input" value={planta} onChange={(e) => setPlanta(e.target.value)}>
-            <option value="">Por definir</option>
+            <option value="">{t("Por definir", "TBD")}</option>
             {PLANTAS.map((p) => (
               <option key={p} value={p}>
                 {p}
@@ -400,7 +417,7 @@ function NuevaSolicitud({ esCliente, onCerrar, onCreada }: { esCliente: boolean;
       </div>
 
       <div>
-        <label className="label">Urgencia</label>
+        <label className="label">{t("Urgencia", "Urgency")}</label>
         <div className="flex flex-wrap gap-2">
           {URGENCIAS.map((u) => (
             <button
@@ -411,27 +428,30 @@ function NuevaSolicitud({ esCliente, onCerrar, onCreada }: { esCliente: boolean;
                 urgencia === u.valor ? `${u.clase} border-transparent ring-2 ring-navy` : "border-navy-200 text-navy-600"
               }`}
             >
-              {u.etiqueta}
+              {t(u.etiqueta, u.en)}
             </button>
           ))}
         </div>
       </div>
 
       <div>
-        <label className="label">Describe el problema o criterio</label>
+        <label className="label">{t("Describe el problema o criterio", "Describe the problem or criteria")}</label>
         <textarea
           className="input"
           rows={4}
           required
           minLength={5}
-          placeholder="Ej. Rebaba en el barreno central, sortear todo el lote 4521 que está en su almacén…"
+          placeholder={t(
+            "Ej. Rebaba en el barreno central, sortear todo el lote 4521 que está en su almacén…",
+            "E.g. Burr on the center hole, sort all of lot 4521 in your warehouse…"
+          )}
           value={descripcion}
           onChange={(e) => setDescripcion(e.target.value)}
         />
       </div>
 
       <div>
-        <label className="label">Foto del problema (opcional)</label>
+        <label className="label">{t("Foto del problema (opcional)", "Photo of the problem (optional)")}</label>
         <input className="input text-xs" type="file" accept="image/*" onChange={(e) => setFoto(e.target.files?.[0] ?? null)} />
       </div>
 
@@ -439,10 +459,10 @@ function NuevaSolicitud({ esCliente, onCerrar, onCreada }: { esCliente: boolean;
 
       <div className="flex justify-end gap-2">
         <button type="button" className="btn-secondary" onClick={onCerrar}>
-          Cancelar
+          {t("Cancelar", "Cancel")}
         </button>
         <button type="submit" className="btn-accent" disabled={enviando || (!esCliente && !cliente)}>
-          {enviando ? "Enviando…" : "📨 Enviar solicitud"}
+          {enviando ? t("Enviando…", "Sending…") : `📨 ${t("Enviar solicitud", "Send request")}`}
         </button>
       </div>
     </form>

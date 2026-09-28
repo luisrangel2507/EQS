@@ -10,6 +10,7 @@ import { comprimirImagen } from "@/lib/imagen";
 import { vibrar } from "@/lib/feedback";
 import { TIPOS_AUDITORIA, type ItemChecklist, type Respuesta } from "@/lib/auditorias";
 import { AnilloPuntaje } from "../AuditoriasClient";
+import { useIdioma } from "@/components/ui/Idioma";
 
 type Auditoria = {
   id: string;
@@ -31,17 +32,18 @@ type Auditoria = {
 };
 
 const OPCIONES = [
-  { valor: "ok", etiqueta: "Cumple", icono: "✅", activo: "border-emerald-500 bg-emerald-500 text-white" },
-  { valor: "no", etiqueta: "No cumple", icono: "❌", activo: "border-red-500 bg-red-500 text-white" },
-  { valor: "na", etiqueta: "N/A", icono: "➖", activo: "border-navy-400 bg-navy-400 text-white" },
+  { valor: "ok", etiqueta: "Cumple", en: "Pass", icono: "✅", activo: "border-emerald-500 bg-emerald-500 text-white" },
+  { valor: "no", etiqueta: "No cumple", en: "Fail", icono: "❌", activo: "border-red-500 bg-red-500 text-white" },
+  { valor: "na", etiqueta: "N/A", en: "N/A", icono: "➖", activo: "border-navy-400 bg-navy-400 text-white" },
 ] as const;
 
-const fecha = (iso: string) =>
-  new Date(iso).toLocaleString("es-MX", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+const fecha = (iso: string, locale: string) =>
+  new Date(iso).toLocaleString(locale, { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
 export default function AuditoriaClient({ id }: { id: string }) {
   const toast = useToast();
   const router = useRouter();
+  const { t, locale } = useIdioma();
   const [auditoria, setAuditoria] = useState<Auditoria | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [finalizando, setFinalizando] = useState(false);
@@ -69,7 +71,7 @@ export default function AuditoriaClient({ id }: { id: string }) {
       <div className="card mx-auto max-w-md text-center">
         <p className="text-navy-600">{error}</p>
         <Link href="/auditorias" className="btn-secondary mt-4 inline-flex">
-          ← Auditorías
+          ← {t("Auditorías", "Audits")}
         </Link>
       </div>
     );
@@ -94,7 +96,7 @@ export default function AuditoriaClient({ id }: { id: string }) {
     }).catch(() => null);
     if (!res?.ok) {
       const d = await res?.json().catch(() => ({}));
-      toast.error(d?.error ?? "Sin conexión; no se guardó el punto");
+      toast.error(d?.error ?? t("Sin conexión; no se guardó el punto", "No connection; the item was not saved"));
     }
   }
 
@@ -109,31 +111,35 @@ export default function AuditoriaClient({ id }: { id: string }) {
     const d = await res?.json().catch(() => ({}));
     if (!res?.ok) {
       vibrar("error");
-      toast.error(d?.error ?? "No se pudo finalizar");
+      toast.error(d?.error ?? t("No se pudo finalizar", "Could not finish"));
       return;
     }
     vibrar("exito");
-    toast.exito(d.hallazgos ? `Auditoría cerrada con ${d.hallazgos} hallazgo(s)` : "Auditoría cerrada sin hallazgos 🎉");
+    toast.exito(
+      d.hallazgos
+        ? t(`Auditoría cerrada con ${d.hallazgos} hallazgo(s)`, `Audit closed with ${d.hallazgos} finding(s)`)
+        : t("Auditoría cerrada sin hallazgos 🎉", "Audit closed with no findings 🎉")
+    );
     setAuditoria((a) => (a ? { ...a, ...d, items: a.items, respuestas: a.respuestas, puedeEditar: false } : a));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   async function borrar() {
-    if (!confirm("¿Borrar esta auditoría? No se puede deshacer.")) return;
+    if (!confirm(t("¿Borrar esta auditoría? No se puede deshacer.", "Delete this audit? This cannot be undone."))) return;
     const res = await fetch(`/api/auditorias/${id}`, { method: "DELETE" });
     if (!res.ok) {
       const d = await res.json().catch(() => ({}));
-      toast.error(d.error ?? "No se pudo borrar");
+      toast.error(d.error ?? t("No se pudo borrar", "Could not delete"));
       return;
     }
-    toast.info("Auditoría borrada");
+    toast.info(t("Auditoría borrada", "Audit deleted"));
     router.push("/auditorias");
   }
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
       <Link href="/auditorias" className="text-sm font-semibold text-navy-500 hover:text-navy-900">
-        ← Auditorías
+        ← {t("Auditorías", "Audits")}
       </Link>
 
       <div className="card flex flex-wrap items-center gap-4">
@@ -144,14 +150,16 @@ export default function AuditoriaClient({ id }: { id: string }) {
         )}
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold uppercase tracking-wide text-navy-400">
-            Folio A-{String(auditoria.folio).padStart(4, "0")} · {tipo.etiqueta}
+            Folio A-{String(auditoria.folio).padStart(4, "0")} · {t(tipo.etiqueta, tipo.en)}
           </p>
           <h1 className="font-display text-xl font-bold text-navy-900">{auditoria.nombrePlantilla}</h1>
           <p className="text-sm text-navy-500">
-            {[auditoria.planta, auditoria.area, auditoria.cliente].filter(Boolean).join(" · ") || "Sin planta"} · {auditoria.auditor.nombre}
+            {[auditoria.planta, auditoria.area, auditoria.cliente].filter(Boolean).join(" · ") || t("Sin planta", "No plant")} · {auditoria.auditor.nombre}
           </p>
           <p className="text-xs text-navy-400">
-            {auditoria.completadaEn ? `Cerrada ${fecha(auditoria.completadaEn)}` : `Iniciada ${fecha(auditoria.createdAt)}`}
+            {auditoria.completadaEn
+              ? `${t("Cerrada", "Closed")} ${fecha(auditoria.completadaEn, locale)}`
+              : `${t("Iniciada", "Started")} ${fecha(auditoria.createdAt, locale)}`}
           </p>
         </div>
         <div className="flex gap-2">
@@ -162,7 +170,7 @@ export default function AuditoriaClient({ id }: { id: string }) {
           )}
           {editable && (
             <button className="btn-secondary text-red-600" onClick={borrar}>
-              Borrar
+              {t("Borrar", "Delete")}
             </button>
           )}
         </div>
@@ -172,7 +180,7 @@ export default function AuditoriaClient({ id }: { id: string }) {
         <div className="sticky top-16 z-10 rounded-xl border border-navy-100 bg-white/90 px-4 py-2.5 shadow-sm backdrop-blur">
           <div className="mb-1.5 flex justify-between text-xs font-semibold text-navy-600">
             <span>
-              {contestadas} de {total} puntos
+              {contestadas} {t("de", "of")} {total} {t("puntos", "items")}
             </span>
             <span>{total ? Math.round((contestadas / total) * 100) : 0}%</span>
           </div>
@@ -189,8 +197,8 @@ export default function AuditoriaClient({ id }: { id: string }) {
       {auditoria.estado === "completada" && (
         <div className="grid grid-cols-3 gap-3 text-center">
           {[
-            { etiqueta: "Cumple", valor: auditoria.respuestas.filter((r) => r.resultado === "ok").length, color: "text-emerald-600" },
-            { etiqueta: "Hallazgos", valor: auditoria.hallazgos, color: auditoria.hallazgos ? "text-red-600" : "text-navy-900" },
+            { etiqueta: t("Cumple", "Pass"), valor: auditoria.respuestas.filter((r) => r.resultado === "ok").length, color: "text-emerald-600" },
+            { etiqueta: t("Hallazgos", "Findings"), valor: auditoria.hallazgos, color: auditoria.hallazgos ? "text-red-600" : "text-navy-900" },
             { etiqueta: "N/A", valor: auditoria.respuestas.filter((r) => r.resultado === "na").length, color: "text-navy-500" },
           ].map((k) => (
             <div key={k.etiqueta} className="card py-3">
@@ -218,7 +226,11 @@ export default function AuditoriaClient({ id }: { id: string }) {
       {editable && (
         <div className="flex justify-end pb-8">
           <button className="btn-primary px-6 py-3 text-base" onClick={finalizar} disabled={finalizando}>
-            {finalizando ? "Cerrando…" : contestadas < total ? `Finalizar (faltan ${total - contestadas})` : "✔ Finalizar auditoría"}
+            {finalizando
+              ? t("Cerrando…", "Closing…")
+              : contestadas < total
+                ? t(`Finalizar (faltan ${total - contestadas})`, `Finish (${total - contestadas} left)`)
+                : `✔ ${t("Finalizar auditoría", "Finish audit")}`}
           </button>
         </div>
       )}
@@ -242,6 +254,7 @@ function PuntoChecklist({
   onGuardar: (r: Respuesta) => void;
 }) {
   const toast = useToast();
+  const { t } = useIdioma();
   const [subiendo, setSubiendo] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const esNo = respuesta.resultado === "no";
@@ -254,7 +267,7 @@ function PuntoChecklist({
     setSubiendo(false);
     const d = await res?.json().catch(() => ({}));
     if (!res?.ok) {
-      toast.error(d?.error ?? "No se pudo subir la foto");
+      toast.error(d?.error ?? t("No se pudo subir la foto", "Could not upload the photo"));
       return;
     }
     onGuardar({ ...respuesta, fotoUrl: d.url });
@@ -283,7 +296,7 @@ function PuntoChecklist({
         <div className="min-w-0 flex-1">
           <p className="font-medium text-navy-900">
             {item.texto}
-            {item.requiereFoto && <span className="ml-1.5 text-xs text-navy-400">📷 foto si no cumple</span>}
+            {item.requiereFoto && <span className="ml-1.5 text-xs text-navy-400">📷 {t("foto si no cumple", "photo if it fails")}</span>}
           </p>
 
           {editable ? (
@@ -307,17 +320,17 @@ function PuntoChecklist({
                     }`}
                   >
                     <span className="mr-1">{o.icono}</span>
-                    {o.etiqueta}
+                    {t(o.etiqueta, o.en)}
                   </motion.button>
                 );
               })}
             </div>
           ) : (
             <p className="mt-1 text-sm font-semibold">
-              {respuesta.resultado === "ok" && <span className="text-emerald-600">✅ Cumple</span>}
-              {esNo && <span className="text-red-600">❌ No cumple</span>}
-              {respuesta.resultado === "na" && <span className="text-navy-400">➖ No aplica</span>}
-              {!respuesta.resultado && <span className="text-navy-300">Sin evaluar</span>}
+              {respuesta.resultado === "ok" && <span className="text-emerald-600">✅ {t("Cumple", "Pass")}</span>}
+              {esNo && <span className="text-red-600">❌ {t("No cumple", "Fail")}</span>}
+              {respuesta.resultado === "na" && <span className="text-navy-400">➖ {t("No aplica", "Not applicable")}</span>}
+              {!respuesta.resultado && <span className="text-navy-300">{t("Sin evaluar", "Not evaluated")}</span>}
             </p>
           )}
 
@@ -333,7 +346,7 @@ function PuntoChecklist({
                   {editable ? (
                     <textarea
                       className="input min-h-[70px] bg-white"
-                      placeholder="Describe el hallazgo (qué se encontró y dónde)"
+                      placeholder={t("Describe el hallazgo (qué se encontró y dónde)", "Describe the finding (what was found and where)")}
                       value={respuesta.comentario ?? ""}
                       onChange={(e) => onCambiarLocal({ ...respuesta, comentario: e.target.value })}
                       onBlur={(e) => onGuardar({ ...respuesta, comentario: e.target.value.trim() || null })}
@@ -345,7 +358,7 @@ function PuntoChecklist({
                     {respuesta.fotoUrl && (
                       <a href={respuesta.fotoUrl} target="_blank" rel="noreferrer">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={respuesta.fotoUrl} alt={`Hallazgo punto ${indice + 1}`} className="h-24 w-24 rounded-lg object-cover" />
+                        <img src={respuesta.fotoUrl} alt={`${t("Hallazgo punto", "Finding item")} ${indice + 1}`} className="h-24 w-24 rounded-lg object-cover" />
                       </a>
                     )}
                     {editable && (
@@ -368,7 +381,11 @@ function PuntoChecklist({
                           disabled={subiendo}
                           onClick={() => input.current?.click()}
                         >
-                          {subiendo ? "Subiendo…" : respuesta.fotoUrl ? "📷 Cambiar foto" : `📷 Foto${item.requiereFoto ? " (obligatoria)" : ""}`}
+                          {subiendo
+                            ? t("Subiendo…", "Uploading…")
+                            : respuesta.fotoUrl
+                              ? `📷 ${t("Cambiar foto", "Change photo")}`
+                              : `📷 ${t("Foto", "Photo")}${item.requiereFoto ? ` ${t("(obligatoria)", "(required)")}` : ""}`}
                         </button>
                         {respuesta.fotoUrl && (
                           <button
@@ -376,7 +393,7 @@ function PuntoChecklist({
                             className="text-xs font-semibold text-navy-500 hover:text-red-600"
                             onClick={() => onGuardar({ ...respuesta, fotoUrl: null })}
                           >
-                            Quitar
+                            {t("Quitar", "Remove")}
                           </button>
                         )}
                       </>

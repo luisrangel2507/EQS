@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/Toast";
 import Modal from "@/components/ui/Modal";
 import { vibrar } from "@/lib/feedback";
 import { NOMBRE_EMPRESA, NOMBRE_LEGAL } from "@/lib/branding";
+import { useIdioma } from "@/components/ui/Idioma";
 
 type Etiqueta = {
   id: string;
@@ -46,11 +47,12 @@ type Datos = {
   puedeImprimir: boolean;
 };
 
-const fechaCorta = (iso: string) =>
-  new Date(iso).toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+const fechaCorta = (iso: string, locale: string) =>
+  new Date(iso).toLocaleString(locale, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 const miles = (n: number) => n.toLocaleString("es-MX");
 
 export default function LiberacionClient({ id, puedeAnular }: { id: string; puedeAnular: boolean }) {
+  const { t } = useIdioma();
   const { datos, cargando, recargar } = usePolling<Datos>(`/api/inspecciones/${id}/etiquetas`, 20000);
   const [aImprimir, setAImprimir] = useState<Etiqueta[] | null>(null);
   // cambia en cada impresión para remontar la hoja y volver a lanzar el diálogo de impresión
@@ -78,17 +80,26 @@ export default function LiberacionClient({ id, puedeAnular }: { id: string; pued
           <Link href={`/inspecciones/${id}`} className="text-xs font-semibold text-navy-400 hover:text-navy-700">
             ← {inspeccion.numeroParte ?? inspeccion.nombre}
           </Link>
-          <h1 className="font-display text-2xl font-bold text-navy-900">✅ Liberar material</h1>
+          <h1 className="font-display text-2xl font-bold text-navy-900">
+            ✅ {datos.puedeImprimir ? t("Liberar material", "Release material") : t("Material liberado", "Released material")}
+          </h1>
           <p className="text-sm text-navy-500">
-            Imprime una etiqueta por contenedor. Su QR abre una página pública donde tu cliente (o su cliente) verifica qué se
-            inspeccionó, cuándo y por quién.
+            {datos.puedeImprimir
+              ? t(
+                  "Imprime una etiqueta por contenedor. Su QR abre una página pública donde tu cliente (o su cliente) verifica qué se inspeccionó, cuándo y por quién.",
+                  "Print one label per container. Its QR opens a public page where your customer (or theirs) verifies what was inspected, when and by whom."
+                )
+              : t(
+                  "Cada contenedor liberado lleva una etiqueta con QR para verificar qué se inspeccionó, cuándo y por quién.",
+                  "Every released container carries a QR label to verify what was inspected, when and by whom."
+                )}
           </p>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <Kpi etiqueta="Buenas + recuperadas" valor={datos.liberables} />
-          <Kpi etiqueta="Ya etiquetadas" valor={datos.etiquetadas} indice={1} />
-          <Kpi etiqueta="Por liberar" valor={datos.disponibles} indice={2} />
+          <Kpi etiqueta={t("Buenas + recuperadas", "Good + reworked")} valor={datos.liberables} />
+          <Kpi etiqueta={t("Ya etiquetadas", "Labeled")} valor={datos.etiquetadas} indice={1} />
+          <Kpi etiqueta={t("Por liberar", "To release")} valor={datos.disponibles} indice={2} />
         </div>
 
         {datos.puedeImprimir && (
@@ -104,9 +115,13 @@ export default function LiberacionClient({ id, puedeAnular }: { id: string; pued
         )}
 
         <div className="card p-0">
-          <h2 className="border-b border-navy-100 px-5 py-3 font-display font-semibold text-navy-900">Historial de liberaciones</h2>
+          <h2 className="border-b border-navy-100 px-5 py-3 font-display font-semibold text-navy-900">
+            {t("Historial de liberaciones", "Release history")}
+          </h2>
           {tandas.length === 0 ? (
-            <p className="px-5 py-8 text-center text-sm text-navy-400">Aún no se ha liberado material de esta inspección.</p>
+            <p className="px-5 py-8 text-center text-sm text-navy-400">
+              {t("Aún no se ha liberado material de esta inspección.", "No material has been released for this inspection yet.")}
+            </p>
           ) : (
             <ul className="divide-y divide-navy-100">
               {tandas.map((ets) => (
@@ -155,6 +170,7 @@ function FormularioLiberacion({
   onGenerado: (e: Etiqueta[]) => void;
 }) {
   const toast = useToast();
+  const { t } = useIdioma();
   const [piezas, setPiezas] = useState(String(disponibles || ""));
   const [porContenedor, setPorContenedor] = useState("");
   const [lote, setLote] = useState(loteSugerido ?? "");
@@ -178,7 +194,10 @@ function FormularioLiberacion({
     return (
       <div className="card flex items-center gap-3 text-sm text-navy-500">
         <span className="text-2xl">📦</span>
-        Todas las piezas buenas ya tienen etiqueta. Cuando se capturen más, podrás liberarlas aquí.
+        {t(
+          "Todas las piezas buenas ya tienen etiqueta. Cuando se capturen más, podrás liberarlas aquí.",
+          "All good parts are already labeled. When more are logged, you can release them here."
+        )}
       </div>
     );
   }
@@ -195,11 +214,11 @@ function FormularioLiberacion({
     const d = await res?.json().catch(() => ({}));
     if (!res?.ok) {
       vibrar("error");
-      toast.error(d?.error ?? "Sin conexión; intenta de nuevo");
+      toast.error(d?.error ?? t("Sin conexión; intenta de nuevo", "No connection; try again"));
       return;
     }
     vibrar("exito");
-    toast.exito(`${d.etiquetas.length} etiqueta(s) listas para imprimir`);
+    toast.exito(t(`${d.etiquetas.length} etiqueta(s) listas para imprimir`, `${d.etiquetas.length} label(s) ready to print`));
     setPorContenedor("");
     onGenerado(d.etiquetas);
   }
@@ -208,7 +227,7 @@ function FormularioLiberacion({
     <form onSubmit={generar} className="card space-y-4">
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
-          <label className="label">Piezas a liberar</label>
+          <label className="label">{t("Piezas a liberar", "Parts to release")}</label>
           <input
             className="input"
             type="number"
@@ -218,10 +237,12 @@ function FormularioLiberacion({
             value={piezas}
             onChange={(e) => setPiezas(e.target.value)}
           />
-          <p className="mt-1 text-xs text-navy-400">Máximo {miles(disponibles)}</p>
+          <p className="mt-1 text-xs text-navy-400">
+            {t("Máximo", "Max")} {miles(disponibles)}
+          </p>
         </div>
         <div>
-          <label className="label">Piezas por contenedor</label>
+          <label className="label">{t("Piezas por contenedor", "Parts per container")}</label>
           <input
             className="input"
             type="number"
@@ -229,11 +250,11 @@ function FormularioLiberacion({
             required
             value={porContenedor}
             onChange={(e) => setPorContenedor(e.target.value)}
-            placeholder="Ej. 250"
+            placeholder={t("Ej. 250", "E.g. 250")}
           />
         </div>
         <div>
-          <label className="label">Lote (opcional)</label>
+          <label className="label">{t("Lote (opcional)", "Lot (optional)")}</label>
           <input className="input" value={lote} onChange={(e) => setLote(e.target.value)} placeholder="Ej. L-2409-A" />
         </div>
       </div>
@@ -241,21 +262,25 @@ function FormularioLiberacion({
         <p className="text-sm text-navy-600">
           {total > 0 ? (
             <>
-              Se imprimirán <b>{total}</b> etiqueta{total === 1 ? "" : "s"}
+              {t("Se imprimirán", "Will print")} <b>{total}</b> {t("etiqueta", "label")}
+              {total === 1 ? "" : "s"}
               {total > 1 && ultimo !== c ? (
                 <>
-                  : {total - 1} × {miles(c)} pzs + 1 × {miles(ultimo)} pzs
+                  : {total - 1} × {miles(c)} {t("pzs", "pcs")} + 1 × {miles(ultimo)} {t("pzs", "pcs")}
                 </>
               ) : (
-                <> de {miles(c)} pzs</>
+                <>
+                  {" "}
+                  {t("de", "of")} {miles(c)} {t("pzs", "pcs")}
+                </>
               )}
             </>
           ) : (
-            "Indica cuántas piezas lleva cada contenedor."
+            t("Indica cuántas piezas lleva cada contenedor.", "Enter how many parts go in each container.")
           )}
         </p>
         <button className="btn-primary" disabled={enviando || !total || p > disponibles}>
-          {enviando ? "Generando…" : "🏷️ Generar e imprimir"}
+          {enviando ? t("Generando…", "Generating…") : `🏷️ ${t("Generar e imprimir", "Generate & print")}`}
         </button>
       </div>
     </form>
@@ -273,6 +298,7 @@ function Tanda({
   onImprimir: () => void;
   onAnular: (e: Etiqueta) => void;
 }) {
+  const { t, locale } = useIdioma();
   const [abierta, setAbierta] = useState(false);
   const primera = etiquetas[0];
   const vigentes = etiquetas.filter((e) => !e.anulada);
@@ -288,20 +314,29 @@ function Tanda({
           </motion.span>
           <span className="min-w-0">
             <span className="block font-semibold text-navy-900">
-              {etiquetas.length} contenedor{etiquetas.length === 1 ? "" : "es"} · {miles(piezas)} pzs
-              {primera.lote && <span className="font-normal text-navy-500"> · Lote {primera.lote}</span>}
+              {etiquetas.length} {etiquetas.length === 1 ? t("contenedor", "container") : t("contenedores", "containers")} ·{" "}
+              {miles(piezas)} {t("pzs", "pcs")}
+              {primera.lote && (
+                <span className="font-normal text-navy-500">
+                  {" "}
+                  · {t("Lote", "Lot")} {primera.lote}
+                </span>
+              )}
             </span>
             <span className="text-xs text-navy-400">
-              {fechaCorta(primera.creadoEn)} · {primera.creadaPor.nombre} · 👁 {escaneos} escaneo{escaneos === 1 ? "" : "s"}
+              {fechaCorta(primera.creadoEn, locale)} · {primera.creadaPor.nombre} · 👁 {escaneos} {t("escaneo", "scan")}
+              {escaneos === 1 ? "" : "s"}
               {vigentes.length < etiquetas.length && (
-                <span className="ml-1 font-semibold text-red-600">· {etiquetas.length - vigentes.length} anulada(s)</span>
+                <span className="ml-1 font-semibold text-red-600">
+                  · {etiquetas.length - vigentes.length} {t("anulada(s)", "voided")}
+                </span>
               )}
             </span>
           </span>
         </button>
         {vigentes.length > 0 && (
           <button className="btn-secondary text-sm" onClick={onImprimir}>
-            🖨️ Reimprimir
+            🖨️ {t("Reimprimir", "Reprint")}
           </button>
         )}
       </div>
@@ -320,19 +355,21 @@ function Tanda({
                         {e.codigo}
                       </a>
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums">{miles(e.cantidad)} pzs</td>
+                    <td className="px-3 py-2 text-right tabular-nums">
+                      {miles(e.cantidad)} {t("pzs", "pcs")}
+                    </td>
                     <td className="px-3 py-2 text-xs text-navy-400">
-                      {e.escaneos ? `👁 ${e.escaneos} · ${fechaCorta(e.ultimoEscaneo!)}` : "Sin escanear"}
+                      {e.escaneos ? `👁 ${e.escaneos} · ${fechaCorta(e.ultimoEscaneo!, locale)}` : t("Sin escanear", "Not scanned")}
                     </td>
                     <td className="px-5 py-2 text-right">
                       {e.anulada ? (
                         <span className="badge bg-red-100 text-red-700" title={e.motivoAnulacion ?? ""}>
-                          Anulada
+                          {t("Anulada", "Voided")}
                         </span>
                       ) : (
                         puedeAnular && (
                           <button className="text-xs font-semibold text-navy-400 hover:text-red-600" onClick={() => onAnular(e)}>
-                            Anular
+                            {t("Anular", "Void")}
                           </button>
                         )
                       )}
@@ -460,7 +497,10 @@ function HojaEtiquetas({
             className="break-inside-avoid overflow-hidden rounded-xl border-2 border-navy-900 bg-white text-navy-900 [-webkit-print-color-adjust:exact] [print-color-adjust:exact]"
           >
             <div className="flex items-center justify-between bg-emerald-600 px-3 py-1.5 text-white">
-              <span className="font-display text-lg font-extrabold tracking-wide">✓ MATERIAL LIBERADO</span>
+              <span className="font-display text-lg font-extrabold leading-tight tracking-wide">
+                ✓ MATERIAL LIBERADO
+                <span className="block text-[10px] font-bold tracking-widest text-white/80">RELEASED MATERIAL</span>
+              </span>
               <span className="text-xs font-bold">{NOMBRE_EMPRESA}</span>
             </div>
             <div className="flex gap-3 p-3">
@@ -474,18 +514,18 @@ function HojaEtiquetas({
                 <p className="font-mono text-sm font-bold tracking-widest">{e.codigo}</p>
               </div>
               <div className="min-w-0 flex-1 space-y-0.5 text-xs">
-                <p className="text-[10px] font-semibold uppercase text-navy-500">No. de parte</p>
+                <p className="text-[10px] font-semibold uppercase text-navy-500">No. de parte / Part No.</p>
                 <p className="font-display text-xl font-extrabold leading-tight">{inspeccion.numeroParte ?? inspeccion.nombre}</p>
                 {inspeccion.numeroParte && <p className="truncate">{inspeccion.nombre}</p>}
-                {inspeccion.cliente && <p>Cliente: {inspeccion.cliente}</p>}
-                {e.lote && <p>Lote: {e.lote}</p>}
+                {inspeccion.cliente && <p>Cliente / Customer: {inspeccion.cliente}</p>}
+                {e.lote && <p>Lote / Lot: {e.lote}</p>}
                 <div className="flex items-end justify-between pt-1">
                   <div>
-                    <p className="text-[10px] font-semibold uppercase text-navy-500">Cantidad</p>
+                    <p className="text-[10px] font-semibold uppercase text-navy-500">Cantidad / Qty</p>
                     <p className="font-display text-2xl font-extrabold leading-none">{miles(e.cantidad)}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[10px] font-semibold uppercase text-navy-500">Contenedor</p>
+                    <p className="text-[10px] font-semibold uppercase text-navy-500">Contenedor / Box</p>
                     <p className="font-display text-lg font-bold leading-none">
                       {e.contenedor} / {e.totalContenedores}
                     </p>

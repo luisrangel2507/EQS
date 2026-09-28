@@ -8,6 +8,8 @@ import { MiniAnillo } from "@/components/Reportes8DCard";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import { vibrar } from "@/lib/feedback";
+import { useIdioma } from "@/components/ui/Idioma";
+import { nombreDefecto } from "@/lib/i18n";
 
 type Reporte = Record<ClaveDisciplina, string | null> & {
   id: string;
@@ -24,6 +26,7 @@ type EstadoGuardado = "guardado" | "pendiente" | "guardando" | "error";
 
 export default function Editor8DClient({ inspeccionId, reporteId }: { inspeccionId: string; reporteId: string }) {
   const toast = useToast();
+  const { t, idioma, locale } = useIdioma();
   const [reporte, setReporte] = useState<Reporte | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activo, setActivo] = useState<ClaveDisciplina>("d1Equipo");
@@ -35,10 +38,10 @@ export default function Editor8DClient({ inspeccionId, reporteId }: { inspeccion
     fetch(`/api/8d/${reporteId}`)
       .then(async (r) => {
         const d = await r.json();
-        if (!r.ok) throw new Error(d.error ?? "No se pudo cargar el 8D");
+        if (!r.ok) throw new Error(d.error ?? "");
         setReporte(d);
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(e.message || "sin-detalle"));
   }, [reporteId]);
 
   const guardar = useCallback(async () => {
@@ -99,7 +102,12 @@ export default function Editor8DClient({ inspeccionId, reporteId }: { inspeccion
     }
   }
 
-  if (error) return <div className="card text-sm text-red-600">{error}</div>;
+  if (error)
+    return (
+      <div className="card text-sm text-red-600">
+        {error === "sin-detalle" ? t("No se pudo cargar el 8D", "Could not load the 8D") : error}
+      </div>
+    );
   if (!reporte) {
     return (
       <div className="space-y-4">
@@ -127,11 +135,11 @@ export default function Editor8DClient({ inspeccionId, reporteId }: { inspeccion
             ← {reporte.inspeccion.numeroParte ?? reporte.inspeccion.nombre}
           </Link>
           <h1 className="font-display text-2xl font-bold text-navy-900">
-            8D-{String(reporte.folio).padStart(4, "0")} · {reporte.defecto ?? "General"}
+            8D-{String(reporte.folio).padStart(4, "0")} · {reporte.defecto ? nombreDefecto(reporte.defecto, idioma) : "General"}
           </h1>
           <p className="text-sm text-navy-500">
             {reporte.inspeccion.cliente ? `${reporte.inspeccion.cliente} · ` : ""}
-            Responsable: {reporte.creadoPor.nombre}
+            {t("Responsable", "Owner")}: {reporte.creadoPor.nombre}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -166,10 +174,10 @@ export default function Editor8DClient({ inspeccionId, reporteId }: { inspeccion
             exit={{ opacity: 0 }}
             className="rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-4 text-white shadow-lg"
           >
-            <p className="font-display text-lg font-bold">🏆 8D cerrado</p>
+            <p className="font-display text-lg font-bold">🏆 {t("8D cerrado", "8D closed")}</p>
             <p className="text-sm text-white/85">
-              {reporte.cerradoEn ? `El ${new Date(reporte.cerradoEn).toLocaleDateString("es-MX")}. ` : ""}
-              Queda en solo lectura; reábrelo si hay que ajustar algo.
+              {reporte.cerradoEn ? `${t("El", "On")} ${new Date(reporte.cerradoEn).toLocaleDateString(locale)}. ` : ""}
+              {t("Queda en solo lectura; reábrelo si hay que ajustar algo.", "It is now read-only; reopen it to make changes.")}
             </p>
           </motion.div>
         )}
@@ -180,7 +188,9 @@ export default function Editor8DClient({ inspeccionId, reporteId }: { inspeccion
           <div className="mb-2 flex items-center gap-3 px-2">
             <MiniAnillo valor={completas} total={DISCIPLINAS.length} />
             <p className="text-sm font-semibold text-navy-700">
-              {completas === DISCIPLINAS.length ? "Listo para cerrar" : `${DISCIPLINAS.length - completas} por completar`}
+              {completas === DISCIPLINAS.length
+                ? t("Listo para cerrar", "Ready to close")
+                : t(`${DISCIPLINAS.length - completas} por completar`, `${DISCIPLINAS.length - completas} to complete`)}
             </p>
           </div>
           {DISCIPLINAS.map((d) => {
@@ -206,7 +216,7 @@ export default function Editor8DClient({ inspeccionId, reporteId }: { inspeccion
                 >
                   {lleno ? "✓" : d.codigo}
                 </span>
-                <span className="relative truncate font-medium">{d.titulo}</span>
+                <span className="relative truncate font-medium">{t(d.titulo, d.en)}</span>
               </button>
             );
           })}
@@ -225,9 +235,9 @@ export default function Editor8DClient({ inspeccionId, reporteId }: { inspeccion
             >
               <div className="mb-2 flex items-baseline gap-2">
                 <span className="rounded-md bg-navy px-2 py-0.5 font-display text-xs font-bold text-white">{d.codigo}</span>
-                <h2 className="font-display font-semibold text-navy-900">{d.titulo}</h2>
+                <h2 className="font-display font-semibold text-navy-900">{t(d.titulo, d.en)}</h2>
               </div>
-              <p className="mb-2 text-xs text-navy-400">{d.ayuda}</p>
+              {editable && <p className="mb-2 text-xs text-navy-400">{d.ayuda}</p>}
               {editable ? (
                 <textarea
                   className="input min-h-[96px]"
@@ -239,7 +249,7 @@ export default function Editor8DClient({ inspeccionId, reporteId }: { inspeccion
                 />
               ) : (
                 <p className="whitespace-pre-wrap text-sm text-navy-700">
-                  {reporte[d.clave]?.trim() || <span className="text-navy-400">Pendiente</span>}
+                  {reporte[d.clave]?.trim() || <span className="text-navy-400">{t("Pendiente", "Pending")}</span>}
                 </p>
               )}
             </motion.section>

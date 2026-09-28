@@ -7,6 +7,7 @@ import type { Rol } from "@prisma/client";
 import { motion } from "framer-motion";
 import { usePolling } from "@/lib/usePolling";
 import { PLANTAS } from "@/lib/constants";
+import { useIdioma } from "@/components/ui/Idioma";
 import { TIPOS_AUDITORIA, type ItemChecklist } from "@/lib/auditorias";
 import { consumirParametro } from "@/lib/eventos";
 import ClienteSelect from "@/components/ClienteSelect";
@@ -79,6 +80,7 @@ export function AnilloPuntaje({ puntaje, tamano = 52 }: { puntaje: number | null
 export default function AuditoriasClient({ rol }: { rol: Rol }) {
   const puedeAuditar = LIDERAZGO.includes(rol) || rol === "RESIDENTE";
   const puedePlantillas = rol === "ADMIN" || rol === "SUPERVISOR";
+  const { t, locale } = useIdioma();
   const [pestana, setPestana] = useState<"auditorias" | "plantillas">("auditorias");
   const { datos: auditorias, cargando, recargar } = usePolling<Auditoria[]>("/api/auditorias", 30000);
   const { datos: plantillas, recargar: recargarPlantillas } = usePolling<Plantilla[]>(
@@ -99,12 +101,12 @@ export default function AuditoriasClient({ rol }: { rol: Rol }) {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-navy-900">📋 Auditorías</h1>
+          <h1 className="font-display text-2xl font-bold text-navy-900">📋 {t("Auditorías", "Audits")}</h1>
           <p className="text-sm text-navy-500">
             {rol === "CLIENTE"
-              ? "Auditorías realizadas a tus procesos de sorteo."
-              : "Auditorías de capas, 5S y recibo con evidencia fotográfica."}
-            {promedio !== null && ` Cumplimiento promedio: ${promedio.toFixed(0)}%.`}
+              ? t("Auditorías realizadas a tus procesos de sorteo.", "Audits performed on your sorting processes.")
+              : t("Auditorías de capas, 5S y recibo con evidencia fotográfica.", "Layered, 5S and receiving audits with photo evidence.")}
+            {promedio !== null && ` ${t("Cumplimiento promedio", "Average compliance")}: ${promedio.toFixed(0)}%.`}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -117,19 +119,19 @@ export default function AuditoriasClient({ rol }: { rol: Rol }) {
                   className={`relative rounded-full px-3.5 py-1.5 text-sm font-semibold ${pestana === p ? "text-white" : "text-navy-500"}`}
                 >
                   {pestana === p && <motion.span layoutId="pestana-aud" className="absolute inset-0 rounded-full bg-navy" />}
-                  <span className="relative">{p === "auditorias" ? "Auditorías" : "Plantillas"}</span>
+                  <span className="relative">{p === "auditorias" ? t("Auditorías", "Audits") : t("Plantillas", "Templates")}</span>
                 </button>
               ))}
             </div>
           )}
           {puedeAuditar && pestana === "auditorias" && (
             <button className="btn-accent" onClick={() => setNueva(true)}>
-              + Nueva auditoría
+              + {t("Nueva auditoría", "New audit")}
             </button>
           )}
           {puedePlantillas && pestana === "plantillas" && (
             <button className="btn-accent" onClick={() => setEditando("nueva")}>
-              + Plantilla
+              + {t("Plantilla", "Template")}
             </button>
           )}
         </div>
@@ -141,10 +143,10 @@ export default function AuditoriasClient({ rol }: { rol: Rol }) {
         ) : !auditorias?.length ? (
           <div className="card flex flex-col items-center gap-3 py-12 text-center">
             <span className="text-5xl">📋</span>
-            <p className="text-sm text-navy-500">Todavía no hay auditorías.</p>
+            <p className="text-sm text-navy-500">{t("Todavía no hay auditorías.", "No audits yet.")}</p>
             {puedeAuditar && (
               <button className="btn-primary" onClick={() => setNueva(true)}>
-                Hacer la primera
+                {t("Hacer la primera", "Do the first one")}
               </button>
             )}
           </div>
@@ -162,7 +164,7 @@ export default function AuditoriasClient({ rol }: { rol: Rol }) {
                       {TIPOS_AUDITORIA[a.tipo]?.icono} {a.nombrePlantilla}
                     </p>
                     <p className="truncate text-xs text-navy-500">
-                      A-{String(a.folio).padStart(4, "0")} · {new Date(a.creadoEn).toLocaleDateString("es-MX", { day: "2-digit", month: "short" })} ·{" "}
+                      A-{String(a.folio).padStart(4, "0")} · {new Date(a.creadoEn).toLocaleDateString(locale, { day: "2-digit", month: "short" })} ·{" "}
                       {a.auditor.nombre}
                     </p>
                     <p className="truncate text-xs text-navy-400">
@@ -170,11 +172,14 @@ export default function AuditoriasClient({ rol }: { rol: Rol }) {
                     </p>
                   </div>
                   {a.estado === "borrador" ? (
-                    <span className="badge bg-amber-100 text-amber-800">En curso</span>
+                    <span className="badge bg-amber-100 text-amber-800">{t("En curso", "In progress")}</span>
                   ) : a.hallazgos > 0 ? (
-                    <span className="badge bg-red-100 text-red-800">{a.hallazgos} hallazgo{a.hallazgos === 1 ? "" : "s"}</span>
+                    <span className="badge bg-red-100 text-red-800">
+                      {a.hallazgos} {t("hallazgo", "finding")}
+                      {a.hallazgos === 1 ? "" : "s"}
+                    </span>
                   ) : (
-                    <span className="badge bg-green-100 text-green-800">Sin hallazgos</span>
+                    <span className="badge bg-green-100 text-green-800">{t("Sin hallazgos", "No findings")}</span>
                   )}
                 </Link>
               </motion.div>

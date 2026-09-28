@@ -7,6 +7,7 @@ import type { Rol } from "@prisma/client";
 import { AnimatePresence, motion } from "framer-motion";
 import { alternarTema } from "@/components/ui/Tema";
 import { EVENTO_ESCANER } from "@/lib/eventos";
+import { useIdioma } from "@/components/ui/Idioma";
 
 type Comando = {
   id: string;
@@ -27,6 +28,8 @@ type InspeccionLigera = {
   cerrado: boolean;
 };
 
+const GRUPOS_EN: Record<Comando["grupo"], string> = { "Ir a": "Go to", Acciones: "Actions", Inspecciones: "Inspections" };
+
 const LIDERAZGO: Rol[] = ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER"];
 
 const normalizar = (t: string) =>
@@ -45,6 +48,7 @@ function coincide(texto: string, consulta: string) {
 
 export default function PaletaComandos({ rol }: { rol: Rol }) {
   const router = useRouter();
+  const { t } = useIdioma();
   const [abierta, setAbierta] = useState(false);
   const [consulta, setConsulta] = useState("");
   const [activo, setActivo] = useState(0);
@@ -83,47 +87,47 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
   const comandos = useMemo<Comando[]>(() => {
     const ir = (href: string) => () => router.push(href);
     const lista: (Comando | false)[] = [
-      rol === "INSPECTOR" && { id: "estacion", grupo: "Ir a", icono: "🧰", titulo: "Mis inspecciones", ejecutar: ir("/estacion") },
-      rol !== "INSPECTOR" && { id: "dashboard", grupo: "Ir a", icono: "🏠", titulo: "Dashboard", ejecutar: ir("/dashboard") },
-      LIDERAZGO.includes(rol) && { id: "ejecutivo", grupo: "Ir a", icono: "📊", titulo: "Dashboard Ejecutivo", ejecutar: ir("/dashboard/ejecutivo") },
-      { id: "inspecciones", grupo: "Ir a", icono: "📋", titulo: rol === "INSPECTOR" ? "Historial" : "Inspecciones", ejecutar: ir("/inspecciones") },
-      LIDERAZGO.includes(rol) && { id: "residentes", grupo: "Ir a", icono: "🏭", titulo: "Residentes", ejecutar: ir("/residentes") },
-      (LIDERAZGO.includes(rol) || rol === "CLIENTE") && { id: "solicitudes", grupo: "Ir a", icono: "📥", titulo: "Solicitudes de servicio", ejecutar: ir("/solicitudes") },
-      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "turnos", grupo: "Ir a", icono: "🕐", titulo: "Turnos", ejecutar: ir("/turnos") },
-      (LIDERAZGO.includes(rol) || rol === "INSPECTOR") && { id: "ranking", grupo: "Ir a", icono: "🏆", titulo: "Ranking", ejecutar: ir("/ranking") },
-      (LIDERAZGO.includes(rol) || rol === "INSPECTOR") && { id: "certificaciones", grupo: "Ir a", icono: "🎓", titulo: rol === "INSPECTOR" ? "Mis certificaciones" : "Certificaciones y matriz de habilidades", ejecutar: ir("/certificaciones") },
-      rol !== "INSPECTOR" && { id: "auditorias", grupo: "Ir a", icono: "📋", titulo: "Auditorías y checklists", ejecutar: ir("/auditorias") },
-      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "nueva-auditoria", grupo: "Acciones", icono: "✅", titulo: "Nueva auditoría", ejecutar: ir("/auditorias?nueva=1") },
-      LIDERAZGO.includes(rol) && { id: "asistencia", grupo: "Ir a", icono: "🕒", titulo: "Asistencia y horas", ejecutar: ir("/asistencia") },
-      (rol === "ADMIN" || rol === "GERENTE") && { id: "facturacion", grupo: "Ir a", icono: "💰", titulo: "Facturación", ejecutar: ir("/facturacion") },
-      rol === "ADMIN" && { id: "usuarios", grupo: "Ir a", icono: "👤", titulo: "Usuarios", ejecutar: ir("/usuarios") },
-      rol === "ADMIN" && { id: "empresas", grupo: "Ir a", icono: "🏢", titulo: "Empresas cliente", ejecutar: ir("/empresas") },
-      rol === "ADMIN" && { id: "salud", grupo: "Ir a", icono: "🩺", titulo: "Estado del sistema", detalle: "Base de datos y almacenamiento de fotos", ejecutar: ir("/salud") },
-      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "tv", grupo: "Ir a", icono: "📺", titulo: "Modo TV (piso)", ejecutar: ir("/tv") },
+      rol === "INSPECTOR" && { id: "estacion", grupo: "Ir a", icono: "🧰", titulo: t("Mis inspecciones", "My inspections"), ejecutar: ir("/estacion") },
+      rol !== "INSPECTOR" && { id: "dashboard", grupo: "Ir a", icono: "🏠", titulo: t("Dashboard", "Dashboard"), ejecutar: ir("/dashboard") },
+      LIDERAZGO.includes(rol) && { id: "ejecutivo", grupo: "Ir a", icono: "📊", titulo: t("Dashboard Ejecutivo", "Executive dashboard"), ejecutar: ir("/dashboard/ejecutivo") },
+      { id: "inspecciones", grupo: "Ir a", icono: "📋", titulo: rol === "INSPECTOR" ? t("Historial", "History") : t("Inspecciones", "Inspections"), ejecutar: ir("/inspecciones") },
+      LIDERAZGO.includes(rol) && { id: "residentes", grupo: "Ir a", icono: "🏭", titulo: t("Residentes", "Residents"), ejecutar: ir("/residentes") },
+      (LIDERAZGO.includes(rol) || rol === "CLIENTE") && { id: "solicitudes", grupo: "Ir a", icono: "📥", titulo: t("Solicitudes de servicio", "Service requests"), ejecutar: ir("/solicitudes") },
+      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "turnos", grupo: "Ir a", icono: "🕐", titulo: t("Turnos", "Shifts"), ejecutar: ir("/turnos") },
+      (LIDERAZGO.includes(rol) || rol === "INSPECTOR") && { id: "ranking", grupo: "Ir a", icono: "🏆", titulo: t("Ranking", "Ranking"), ejecutar: ir("/ranking") },
+      (LIDERAZGO.includes(rol) || rol === "INSPECTOR") && { id: "certificaciones", grupo: "Ir a", icono: "🎓", titulo: rol === "INSPECTOR" ? t("Mis certificaciones", "My certifications") : t("Certificaciones y matriz de habilidades", "Certifications & skills matrix"), ejecutar: ir("/certificaciones") },
+      rol !== "INSPECTOR" && { id: "auditorias", grupo: "Ir a", icono: "📋", titulo: t("Auditorías y checklists", "Audits & checklists"), ejecutar: ir("/auditorias") },
+      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "nueva-auditoria", grupo: "Acciones", icono: "✅", titulo: t("Nueva auditoría", "New audit"), ejecutar: ir("/auditorias?nueva=1") },
+      LIDERAZGO.includes(rol) && { id: "asistencia", grupo: "Ir a", icono: "🕒", titulo: t("Asistencia y horas", "Attendance & hours"), ejecutar: ir("/asistencia") },
+      (rol === "ADMIN" || rol === "GERENTE") && { id: "facturacion", grupo: "Ir a", icono: "💰", titulo: t("Facturación", "Billing"), ejecutar: ir("/facturacion") },
+      rol === "ADMIN" && { id: "usuarios", grupo: "Ir a", icono: "👤", titulo: t("Usuarios", "Users"), ejecutar: ir("/usuarios") },
+      rol === "ADMIN" && { id: "empresas", grupo: "Ir a", icono: "🏢", titulo: t("Empresas cliente", "Customer companies"), ejecutar: ir("/empresas") },
+      rol === "ADMIN" && { id: "salud", grupo: "Ir a", icono: "🩺", titulo: t("Estado del sistema", "System status"), detalle: t("Base de datos y almacenamiento de fotos", "Database and photo storage"), ejecutar: ir("/salud") },
+      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "tv", grupo: "Ir a", icono: "📺", titulo: t("Modo TV (piso)", "TV mode (floor)"), ejecutar: ir("/tv") },
       rol !== "CLIENTE" && {
         id: "escanear",
         grupo: "Acciones",
         icono: "📷",
-        titulo: "Escanear código",
-        detalle: "QR de etiqueta, número de parte o lote",
+        titulo: t("Escanear código", "Scan code"),
+        detalle: t("QR de etiqueta, número de parte o lote", "Label QR, part number or lot"),
         ejecutar: () => window.dispatchEvent(new Event(EVENTO_ESCANER)),
       },
-      (rol === "ADMIN" || rol === "SUPERVISOR") && { id: "nueva", grupo: "Acciones", icono: "➕", titulo: "Nueva inspección", ejecutar: ir("/inspecciones?nueva=1") },
-      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "entregar", grupo: "Acciones", icono: "📝", titulo: "Entregar turno", ejecutar: ir("/turnos?entregar=1") },
-      rol === "ADMIN" && { id: "alta-cliente", grupo: "Acciones", icono: "🤝", titulo: "Dar de alta un cliente", ejecutar: ir("/empresas?alta=1") },
-      (LIDERAZGO.includes(rol) || rol === "CLIENTE") && { id: "nueva-solicitud", grupo: "Acciones", icono: "📨", titulo: "Nueva solicitud de servicio", ejecutar: ir("/solicitudes?nueva=1") },
-      { id: "tema", grupo: "Acciones", icono: "🌗", titulo: "Cambiar modo claro / oscuro", ejecutar: alternarTema },
-      { id: "tour", grupo: "Acciones", icono: "🎓", titulo: "Ver el recorrido de bienvenida", ejecutar: () => window.dispatchEvent(new Event("eqs-iniciar-tour")) },
+      (rol === "ADMIN" || rol === "SUPERVISOR") && { id: "nueva", grupo: "Acciones", icono: "➕", titulo: t("Nueva inspección", "New inspection"), ejecutar: ir("/inspecciones?nueva=1") },
+      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "entregar", grupo: "Acciones", icono: "📝", titulo: t("Entregar turno", "Hand over shift"), ejecutar: ir("/turnos?entregar=1") },
+      rol === "ADMIN" && { id: "alta-cliente", grupo: "Acciones", icono: "🤝", titulo: t("Dar de alta un cliente", "Onboard a customer"), ejecutar: ir("/empresas?alta=1") },
+      (LIDERAZGO.includes(rol) || rol === "CLIENTE") && { id: "nueva-solicitud", grupo: "Acciones", icono: "📨", titulo: t("Nueva solicitud de servicio", "New service request"), ejecutar: ir("/solicitudes?nueva=1") },
+      { id: "tema", grupo: "Acciones", icono: "🌗", titulo: t("Cambiar modo claro / oscuro", "Toggle light / dark mode"), ejecutar: alternarTema },
+      { id: "tour", grupo: "Acciones", icono: "🎓", titulo: t("Ver el recorrido de bienvenida", "Replay the welcome tour"), ejecutar: () => window.dispatchEvent(new Event("eqs-iniciar-tour")) },
       {
         id: "salir",
         grupo: "Acciones",
         icono: "🚪",
-        titulo: "Cerrar sesión",
+        titulo: t("Cerrar sesión", "Sign out"),
         ejecutar: () => signOut({ callbackUrl: `${window.location.origin}/login` }),
       },
     ];
     return lista.filter(Boolean) as Comando[];
-  }, [rol, router]);
+  }, [rol, router, t]);
 
   const resultados = useMemo(() => {
     const fijos = consulta ? comandos.filter((c) => coincide(`${c.titulo} ${c.detalle ?? ""}`, consulta)) : comandos;
@@ -137,12 +141,12 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
             grupo: "Inspecciones" as const,
             icono: i.cerrado ? "📁" : "🟢",
             titulo: i.numeroParte ?? i.nombre,
-            detalle: [i.numeroParte ? i.nombre : null, i.cliente, i.cerrado ? "Cerrada" : "Activa"].filter(Boolean).join(" · "),
+            detalle: [i.numeroParte ? i.nombre : null, i.cliente, i.cerrado ? t("Cerrada", "Closed") : t("Activa", "Active")].filter(Boolean).join(" · "),
             ejecutar: () => router.push(`/inspecciones/${i.id}`),
           }))
       : [];
     return [...deInspecciones, ...fijos];
-  }, [comandos, consulta, inspecciones, router]);
+  }, [comandos, consulta, inspecciones, router, t]);
 
   useEffect(() => {
     setActivo(0);
@@ -187,7 +191,7 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
         >
           <motion.div
             role="dialog"
-            aria-label="Paleta de comandos"
+            aria-label={t("Paleta de comandos", "Command palette")}
             className="w-full max-w-xl overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-2xl"
             initial={{ opacity: 0, y: -12, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -203,7 +207,7 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
                 value={consulta}
                 onChange={(e) => setConsulta(e.target.value)}
                 onKeyDown={teclas}
-                placeholder="Busca una pieza, cliente, página o acción…"
+                placeholder={t("Busca una pieza, cliente, página o acción…", "Search a part, customer, page or action…")}
                 className="h-14 flex-1 bg-transparent text-base text-navy-900 outline-none placeholder:text-navy-400"
               />
               <kbd className="rounded border border-navy-200 px-1.5 py-0.5 text-[10px] font-semibold text-navy-400">Esc</kbd>
@@ -211,7 +215,7 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
             <ul ref={listaRef} className="max-h-[55vh] overflow-y-auto p-2">
               {resultados.length === 0 && (
                 <li className="px-3 py-8 text-center text-sm text-navy-400">
-                  {inspecciones === null ? "Buscando…" : `Nada coincide con "${consulta}"`}
+                  {inspecciones === null ? t("Buscando…", "Searching…") : t(`Nada coincide con "${consulta}"`, `Nothing matches "${consulta}"`)}
                 </li>
               )}
               {resultados.map((c, i) => {
@@ -220,7 +224,9 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
                 return (
                   <li key={c.id}>
                     {encabezado && (
-                      <p className="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-navy-400">{encabezado}</p>
+                      <p className="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-navy-400">
+                        {t(encabezado, GRUPOS_EN[encabezado])}
+                      </p>
                     )}
                     <button
                       data-indice={i}
@@ -249,8 +255,8 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
               })}
             </ul>
             <div className="flex items-center gap-4 border-t border-navy-100 px-4 py-2 text-[11px] text-navy-400">
-              <span>↑↓ moverse</span>
-              <span>↵ abrir</span>
+              <span>↑↓ {t("moverse", "move")}</span>
+              <span>↵ {t("abrir", "open")}</span>
               <span className="ml-auto">Ctrl K</span>
             </div>
           </motion.div>

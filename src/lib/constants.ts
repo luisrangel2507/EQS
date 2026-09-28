@@ -145,15 +145,15 @@ export const ROL_SELLO: Record<string, { icono: string; clase: string }> = {
 
 export const TIPOS_SOLICITUD = ["sorteo", "retrabajo", "inspeccion_recibo", "otro"] as const;
 
-export const TIPO_SOLICITUD_INFO: Record<string, { etiqueta: string; icono: string }> = {
-  sorteo: { etiqueta: "Sorteo", icono: "🔍" },
-  retrabajo: { etiqueta: "Retrabajo", icono: "🔧" },
-  inspeccion_recibo: { etiqueta: "Inspección de recibo", icono: "📦" },
-  otro: { etiqueta: "Otro servicio", icono: "📝" },
+export const TIPO_SOLICITUD_INFO: Record<string, { etiqueta: string; en: string; icono: string }> = {
+  sorteo: { etiqueta: "Sorteo", en: "Sorting", icono: "🔍" },
+  retrabajo: { etiqueta: "Retrabajo", en: "Rework", icono: "🔧" },
+  inspeccion_recibo: { etiqueta: "Inspección de recibo", en: "Receiving inspection", icono: "📦" },
+  otro: { etiqueta: "Otro servicio", en: "Other service", icono: "📝" },
 };
 
 export const URGENCIAS = [
-  { valor: "normal", etiqueta: "Normal", clase: "bg-navy-100 text-navy-700" },
-  { valor: "urgente", etiqueta: "⚡ Urgente", clase: "bg-amber-100 text-amber-800" },
-  { valor: "critica", etiqueta: "🚨 Crítica", clase: "bg-red-100 text-red-800" },
+  { valor: "normal", etiqueta: "Normal", en: "Normal", clase: "bg-navy-100 text-navy-700" },
+  { valor: "urgente", etiqueta: "⚡ Urgente", en: "⚡ Urgent", clase: "bg-amber-100 text-amber-800" },
+  { valor: "critica", etiqueta: "🚨 Crítica", en: "🚨 Critical", clase: "bg-red-100 text-red-800" },
 ] as const;

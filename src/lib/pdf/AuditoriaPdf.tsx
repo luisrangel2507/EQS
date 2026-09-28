@@ -1,5 +1,7 @@
 import { Document, Image, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import { NOMBRE_EMPRESA, NOMBRE_LEGAL, PIE_PDF } from "@/lib/branding";
+import { NOMBRE_EMPRESA, NOMBRE_LEGAL, PIE_PDF, PIE_PDF_EN } from "@/lib/branding";
+import { crearT, LOCALES, type Idioma } from "@/lib/i18n";
+import { ZONA_HORARIA } from "@/lib/turnos";
 import type { ItemChecklist, Respuesta } from "@/lib/auditorias";
 
 const NAVY = "#142B6B";
@@ -43,10 +45,10 @@ const s = StyleSheet.create({
   },
 });
 
-const RESULTADO: Record<string, { texto: string; color: string }> = {
-  ok: { texto: "Cumple", color: "#047857" },
-  no: { texto: "No cumple", color: "#B91C1C" },
-  na: { texto: "N/A", color: "#6B7280" },
+const RESULTADO: Record<string, { texto: string; en: string; color: string }> = {
+  ok: { texto: "Cumple", en: "Pass", color: "#047857" },
+  no: { texto: "No cumple", en: "Fail", color: "#B91C1C" },
+  na: { texto: "N/A", en: "N/A", color: "#6B7280" },
 };
 
 export type DatosAuditoriaPdf = {
@@ -64,9 +66,11 @@ export type DatosAuditoriaPdf = {
   fotos: Record<number, string>; // índice → ruta de archivo en disco
 };
 
-export default function AuditoriaPdf({ a }: { a: DatosAuditoriaPdf }) {
+export default function AuditoriaPdf({ a, idioma = "es" }: { a: DatosAuditoriaPdf; idioma?: Idioma }) {
+  const t = crearT(idioma);
+  const fechaHora = (iso: string) => new Date(iso).toLocaleString(LOCALES[idioma], { timeZone: ZONA_HORARIA });
   return (
-    <Document title={`Auditoría ${a.folio}`}>
+    <Document title={`${t("Auditoría", "Audit")} ${a.folio}`}>
       <Page size="A4" style={s.page}>
         <View style={s.header} fixed>
           <Text style={s.logo}>{NOMBRE_EMPRESA}</Text>
@@ -81,19 +85,25 @@ export default function AuditoriaPdf({ a }: { a: DatosAuditoriaPdf }) {
         <View style={s.resumen}>
           <View style={s.caja}>
             <Text style={s.valor}>{a.puntaje !== null ? `${a.puntaje.toFixed(0)}%` : "—"}</Text>
-            <Text style={s.etiqueta}>Cumplimiento</Text>
+            <Text style={s.etiqueta}>{t("Cumplimiento", "Compliance")}</Text>
           </View>
           <View style={s.caja}>
             <Text style={s.valor}>{a.hallazgos}</Text>
-            <Text style={s.etiqueta}>Hallazgos</Text>
+            <Text style={s.etiqueta}>{t("Hallazgos", "Findings")}</Text>
           </View>
           <View style={[s.caja, { flex: 2, alignItems: "flex-start" }]}>
-            <Text style={{ fontSize: 9 }}>Auditor: {a.auditor}</Text>
             <Text style={{ fontSize: 9 }}>
-              Fecha: {a.completadaEn ? new Date(a.completadaEn).toLocaleString("es-MX") : "En curso"}
+              {t("Auditor", "Auditor")}: {a.auditor}
             </Text>
             <Text style={{ fontSize: 9 }}>
-              {[a.planta && `Planta: ${a.planta}`, a.cliente && `Cliente: ${a.cliente}`, a.area && `Área: ${a.area}`]
+              {t("Fecha", "Date")}: {a.completadaEn ? fechaHora(a.completadaEn) : t("En curso", "In progress")}
+            </Text>
+            <Text style={{ fontSize: 9 }}>
+              {[
+                a.planta && `${t("Planta", "Plant")}: ${a.planta}`,
+                a.cliente && `${t("Cliente", "Customer")}: ${a.cliente}`,
+                a.area && `${t("Área", "Area")}: ${a.area}`,
+              ]
                 .filter(Boolean)
                 .join(" · ") || "—"}
             </Text>
@@ -102,23 +112,25 @@ export default function AuditoriaPdf({ a }: { a: DatosAuditoriaPdf }) {
 
         {a.items.map((item, i) => {
           const r = a.respuestas[i];
-          const res = r?.resultado ? RESULTADO[r.resultado] : { texto: "Sin evaluar", color: "#999" };
+          const res = r?.resultado ? RESULTADO[r.resultado] : { texto: "Sin evaluar", en: "Not evaluated", color: "#999" };
           return (
             <View key={i} style={s.fila} wrap={false}>
               <Text style={s.num}>{i + 1}</Text>
               <View style={s.texto}>
                 <Text>{item.texto}</Text>
-                {r?.resultado === "no" && r.comentario && <Text style={s.hallazgo}>Hallazgo: {r.comentario}</Text>}
+                {r?.resultado === "no" && r.comentario && <Text style={s.hallazgo}>
+                    {t("Hallazgo", "Finding")}: {r.comentario}
+                  </Text>}
                 {/* eslint-disable-next-line jsx-a11y/alt-text */}
                 {a.fotos[i] && <Image src={a.fotos[i]} style={s.foto} />}
               </View>
-              <Text style={[s.res, { color: res.color }]}>{res.texto}</Text>
+              <Text style={[s.res, { color: res.color }]}>{t(res.texto, res.en)}</Text>
             </View>
           );
         })}
 
         <Text style={s.footer} fixed>
-          {PIE_PDF} · {new Date().toLocaleString("es-MX")}
+          {t(PIE_PDF, PIE_PDF_EN)} · {fechaHora(new Date().toISOString())}
         </Text>
       </Page>
     </Document>
