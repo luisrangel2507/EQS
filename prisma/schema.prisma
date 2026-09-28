@@ -53,6 +53,8 @@ model Usuario {
   solicitudesServicio  SolicitudServicio[]   @relation("SolicitudServicioSolicitante")
   solicitudesResueltas SolicitudServicio[]   @relation("SolicitudServicioAtendida")
   asistencias          RegistroAsistencia[]
+  certificaciones      Certificacion[]       @relation("CertificacionInspector")
+  certificacionesDadas Certificacion[]       @relation("CertificacionOtorgante")
   relevosRecibidos     RelevoTurno[]         @relation("RelevoReceptor")
 }
 
@@ -342,4 +344,35 @@ model RegistroAsistencia {
   @@index([usuarioId, entrada])
   @@index([inspeccionId, entrada])
   @@index([salida])
+}
+
+// criterio de aceptación de un número de parte con su examen; si existe, solo
+// inspectores certificados en esa parte pueden asignarse a sus inspecciones
+model CriterioParte {
+  id            String   @id @default(cuid())
+  numeroParte   String   @unique
+  descripcion   String
+  fotoOkUrl     String?
+  fotoNgUrl     String?
+  // [{ texto, opciones: string[], correcta: number }]
+  preguntas     Json     @default("[]")
+  vigenciaDias  Int      @default(365)
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+}
+
+model Certificacion {
+  id            String    @id @default(cuid())
+  usuario       Usuario   @relation("CertificacionInspector", fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId     String
+  numeroParte   String
+  metodo        String // examen | manual
+  calificacion  Int?
+  otorgadaPor   Usuario?  @relation("CertificacionOtorgante", fields: [otorgadaPorId], references: [id])
+  otorgadaPorId String?
+  vence         DateTime?
+  creadoEn      DateTime  @default(now())
+
+  @@unique([usuarioId, numeroParte])
+  @@index([numeroParte])
 }

@@ -21,6 +21,7 @@ import SpcCard from "@/components/SpcCard";
 import JornadaBarra from "@/components/JornadaBarra";
 import GaleriaDefectos, { type FotoDefecto } from "@/components/GaleriaDefectos";
 import ClienteSelect from "@/components/ClienteSelect";
+import SelectorInspectores from "@/components/SelectorInspectores";
 import { useModoInmersivo } from "@/components/AppShell";
 import { AnimatePresence, motion } from "framer-motion";
 import Modal from "@/components/ui/Modal";
@@ -1482,21 +1483,10 @@ function EditarModal({
   const [inspectorIds, setInspectorIds] = useState<string[]>(
     inspeccion.inspectores.map((a) => a.usuario.id)
   );
-  const [inspectores, setInspectores] = useState<{ id: string; nombre: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
-  useEffect(() => {
-    fetch("/api/usuarios/inspectores")
-      .then((r) => r.json())
-      .then(setInspectores);
-  }, []);
 
-  function alternarInspector(idInspector: string) {
-    setInspectorIds((prev) =>
-      prev.includes(idInspector) ? prev.filter((x) => x !== idInspector) : [...prev, idInspector]
-    );
-  }
 
   async function manejarEnvio(e: React.FormEvent) {
     e.preventDefault();
@@ -1617,25 +1607,7 @@ function EditarModal({
           </div>
           <div className="sm:col-span-2">
             <label className="label">Inspectores asignados</label>
-            <div className="flex flex-wrap gap-2">
-              {inspectores.length === 0 && (
-                <p className="text-xs text-navy-400">No hay inspectores dados de alta todavía.</p>
-              )}
-              {inspectores.map((insp) => (
-                <button
-                  type="button"
-                  key={insp.id}
-                  onClick={() => alternarInspector(insp.id)}
-                  className={`rounded-full border px-3 py-1 text-xs font-semibold ${
-                    inspectorIds.includes(insp.id)
-                      ? "border-navy bg-navy text-white"
-                      : "border-navy-200 text-navy-600"
-                  }`}
-                >
-                  {insp.nombre}
-                </button>
-              ))}
-            </div>
+            <SelectorInspectores numeroParte={numeroParte} seleccionados={inspectorIds} onCambiar={setInspectorIds} />
           </div>
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}

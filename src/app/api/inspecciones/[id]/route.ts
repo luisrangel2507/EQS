@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requerirRol, requerirSesion, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { obtenerInspeccionVisible } from "@/lib/inspecciones";
+import { validarAsignacion } from "@/lib/certificaciones";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     const body = await req.json();
     const datos = actualizarInspeccionSchema.parse(body);
+    if (datos.inspectorIds !== undefined) {
+      // solo se exige para inspectores recién agregados: no se desasigna a nadie por un criterio nuevo
+      const actuales = new Set(
+        (await prisma.inspeccionInspector.findMany({ where: { inspeccionId: params.id } })).map((a) => a.usuarioId)
+      );
+      await validarAsignacion(
+        datos.inspectorIds.filter((id) => !actuales.has(id)),
+        datos.numeroParte !== undefined ? datos.numeroParte : existente.numeroParte
+      );
+    }
 
     const data: Record<string, unknown> = {};
     if (datos.nombre !== undefined) data.nombre = datos.nombre;

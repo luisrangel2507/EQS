@@ -91,6 +91,7 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
       (LIDERAZGO.includes(rol) || rol === "CLIENTE") && { id: "solicitudes", grupo: "Ir a", icono: "📥", titulo: "Solicitudes de servicio", ejecutar: ir("/solicitudes") },
       (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "turnos", grupo: "Ir a", icono: "🕐", titulo: "Turnos", ejecutar: ir("/turnos") },
       (LIDERAZGO.includes(rol) || rol === "INSPECTOR") && { id: "ranking", grupo: "Ir a", icono: "🏆", titulo: "Ranking", ejecutar: ir("/ranking") },
+      (LIDERAZGO.includes(rol) || rol === "INSPECTOR") && { id: "certificaciones", grupo: "Ir a", icono: "🎓", titulo: rol === "INSPECTOR" ? "Mis certificaciones" : "Certificaciones y matriz de habilidades", ejecutar: ir("/certificaciones") },
       LIDERAZGO.includes(rol) && { id: "asistencia", grupo: "Ir a", icono: "🕒", titulo: "Asistencia y horas", ejecutar: ir("/asistencia") },
       (rol === "ADMIN" || rol === "GERENTE") && { id: "facturacion", grupo: "Ir a", icono: "💰", titulo: "Facturación", ejecutar: ir("/facturacion") },
       rol === "ADMIN" && { id: "usuarios", grupo: "Ir a", icono: "👤", titulo: "Usuarios", ejecutar: ir("/usuarios") },

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requerirRol, requerirSesion, manejarErrorApi } from "@/lib/permissions";
 import { whereInspeccionesVisibles } from "@/lib/inspecciones";
+import { validarAsignacion } from "@/lib/certificaciones";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +44,7 @@ export async function POST(req: NextRequest) {
     await requerirRol("ADMIN", "SUPERVISOR");
     const body = await req.json();
     const datos = crearInspeccionSchema.parse(body);
+    await validarAsignacion(datos.inspectorIds, datos.numeroParte);
 
     const inspeccion = await prisma.inspeccion.create({
       data: {
