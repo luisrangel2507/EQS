@@ -80,6 +80,8 @@ model Inspeccion {
   instruccionesPdfUrl String?
   piezasBuenas        Int       @default(0)
   piezasMalas         Int       @default(0)
+  // NG que se recuperaron con retrabajo (no se cobran aparte); scrap = malas - retrabajadas
+  piezasRetrabajadas  Int       @default(0)
   cerrado             Boolean   @default(false)
   cerradoPor          String?
   cerradoEn           DateTime?
@@ -128,6 +130,7 @@ model Captura {
   usuarioId    String
   buenas       Int        @default(0)
   malas        Int        @default(0)
+  retrabajadas Int        @default(0)
   defecto      String?
   fotoUrl      String?
   // id generado en el dispositivo: evita duplicados al reintentar capturas hechas sin señal
@@ -145,6 +148,7 @@ model DefectoResumen {
   inspeccionId String
   tipo         String
   cantidad     Int        @default(0)
+  recuperadas  Int        @default(0)
 
   @@unique([inspeccionId, tipo])
 }

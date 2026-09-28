@@ -22,6 +22,7 @@ export async function datosPublicos(inspeccionId: string, token: string) {
       fechaEntrega: true,
       piezasBuenas: true,
       piezasMalas: true,
+      piezasRetrabajadas: true,
       cerrado: true,
       cerradoEn: true,
       creadoEn: true,

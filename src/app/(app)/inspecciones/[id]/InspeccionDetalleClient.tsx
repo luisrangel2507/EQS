@@ -54,11 +54,12 @@ type Inspeccion = {
   instruccionesPdfUrl: string | null;
   piezasBuenas: number;
   piezasMalas: number;
+  piezasRetrabajadas: number;
   cerrado: boolean;
   cerradoPor: string | null;
   cerradoEn: string | null;
   inspectores: { usuario: { id: string; nombre: string } }[];
-  defectos: { tipo: string; cantidad: number }[];
+  defectos: { tipo: string; cantidad: number; recuperadas: number }[];
   puntoLimpio: string | null;
   puntoLimpioFotoUrl: string | null;
   puntoLimpioReportadoPor: string | null;
@@ -171,9 +172,14 @@ export default function InspeccionDetalleClient({
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <Metrica etiqueta="Piezas buenas" valor={<NumeroAnimado valor={inspeccion.piezasBuenas} />} />
         <Metrica etiqueta="Piezas malas" valor={<NumeroAnimado valor={inspeccion.piezasMalas} />} />
+        <Metrica etiqueta="🔧 Recuperadas" valor={<NumeroAnimado valor={inspeccion.piezasRetrabajadas} />} />
+        <Metrica
+          etiqueta="NG final (scrap)"
+          valor={<NumeroAnimado valor={inspeccion.piezasMalas - inspeccion.piezasRetrabajadas} />}
+        />
         <Metrica
           etiqueta="% Rechazo"
           valor={<NumeroAnimado valor={rechazo * 100} formato={(n) => `${n.toFixed(1)}%`} />}
@@ -429,6 +435,13 @@ function VistaInspectorJuego({
           </div>
         </div>
 
+        {inspeccion.piezasRetrabajadas > 0 && (
+          <p className="mt-2 text-center text-xs font-semibold text-amber-200">
+            🔧 {inspeccion.piezasRetrabajadas} recuperada{inspeccion.piezasRetrabajadas === 1 ? "" : "s"} con retrabajo ·
+            NG final {inspeccion.piezasMalas - inspeccion.piezasRetrabajadas}
+          </p>
+        )}
+
         <div className="mt-5 flex items-center justify-between rounded-xl bg-white/10 px-4 py-3">
           <span className="text-xs font-semibold uppercase tracking-wide text-white/70">
             ⚡ Ritmo
@@ -469,6 +482,7 @@ function VistaInspectorJuego({
           mostrarExtras
           onResultado={manejarResultado}
           onDeshecho={() => setRacha(0)}
+          defectos={inspeccion.defectos}
         />
       )}
 
@@ -900,12 +914,14 @@ function CapturaPanel({
   mostrarExtras,
   onResultado,
   onDeshecho,
+  defectos = [],
 }: {
   inspeccionId: string;
   onCapturado: () => void;
   mostrarExtras: boolean;
   onResultado?: (esBuena: boolean, cantidad: number) => void;
   onDeshecho?: () => void;
+  defectos?: { tipo: string; cantidad: number; recuperadas: number }[];
 }) {
   const toast = useToast();
   const [cantidadBuena, setCantidadBuena] = useState(0);
@@ -1167,6 +1183,16 @@ function CapturaPanel({
         </div>
       </div>
 
+      <PanelRetrabajo
+        inspeccionId={inspeccionId}
+        defectos={defectos}
+        onRegistrado={() => {
+          onCapturado();
+          cargarHoy();
+        }}
+        onDeshacer={deshacer}
+      />
+
       {mostrarExtras && (
         <motion.button
           type="button"
@@ -1181,6 +1207,113 @@ function CapturaPanel({
               ? "Avisando…"
               : "🔔 Llamar líder / supervisor"}
         </motion.button>
+      )}
+    </div>
+  );
+}
+
+function PanelRetrabajo({
+  inspeccionId,
+  defectos,
+  onRegistrado,
+  onDeshacer,
+}: {
+  inspeccionId: string;
+  defectos: { tipo: string; cantidad: number; recuperadas: number }[];
+  onRegistrado: () => void;
+  onDeshacer: (r: ResultadoEnvio) => void;
+}) {
+  const toast = useToast();
+  const pendientes = defectos
+    .map((d) => ({ tipo: d.tipo, pendientes: d.cantidad - d.recuperadas }))
+    .filter((d) => d.pendientes > 0);
+  const [abierto, setAbierto] = useState(false);
+  const [tipo, setTipo] = useState<string>("");
+  const [cantidad, setCantidad] = useState(1);
+  const [enviando, setEnviando] = useState(false);
+
+  const elegido = pendientes.find((d) => d.tipo === tipo) ?? pendientes[0];
+  const maximo = elegido?.pendientes ?? 0;
+
+  if (pendientes.length === 0) return null;
+
+  async function registrar() {
+    if (!elegido || cantidad <= 0) return;
+    setEnviando(true);
+    const resultado = await enviarCaptura(inspeccionId, { tipo: "retrabajo", cantidad, defecto: elegido.tipo });
+    setEnviando(false);
+    if (resultado.estado === "error") {
+      vibrar("error");
+      toast.error(resultado.mensaje);
+      return;
+    }
+    vibrar("exito");
+    flashPantalla("exito");
+    toast.exito(
+      `🔧 ${cantidad} pieza${cantidad === 1 ? "" : "s"} recuperada${cantidad === 1 ? "" : "s"} (${elegido.tipo})${
+        resultado.estado === "encolada" ? " · sin señal, se enviará al reconectar" : ""
+      }`,
+      { duracion: 5000, accion: { etiqueta: "Deshacer", onClick: () => onDeshacer(resultado) } }
+    );
+    setCantidad(1);
+    setAbierto(false);
+    onRegistrado();
+  }
+
+  return (
+    <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+      {!abierto ? (
+        <button
+          type="button"
+          onClick={() => {
+            vibrar("toque");
+            setAbierto(true);
+          }}
+          className="flex w-full items-center justify-between rounded-lg px-1 text-left text-sm font-bold text-amber-900"
+        >
+          <span>🔧 Retrabajo: recuperar piezas NG</span>
+          <span className="badge bg-amber-200 text-amber-900">
+            {pendientes.reduce((a, d) => a + d.pendientes, 0)} por recuperar
+          </span>
+        </button>
+      ) : (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-amber-900">🔧 Piezas recuperadas con retrabajo</p>
+            <button type="button" onClick={() => setAbierto(false)} className="text-xs font-semibold text-amber-700">
+              Cancelar
+            </button>
+          </div>
+          <select
+            className="input"
+            value={elegido?.tipo ?? ""}
+            onChange={(e) => {
+              setTipo(e.target.value);
+              setCantidad(1);
+            }}
+          >
+            {pendientes.map((d) => (
+              <option key={d.tipo} value={d.tipo}>
+                {d.tipo} · {d.pendientes} por recuperar
+              </option>
+            ))}
+          </select>
+          <ContadorPiezas
+            cantidad={cantidad}
+            onCambiar={(n) => setCantidad(Math.min(maximo, Math.max(0, n)))}
+            disabled={enviando}
+            colorTexto="text-amber-700"
+          />
+          <motion.button
+            type="button"
+            whileTap={{ scale: 0.96 }}
+            onClick={registrar}
+            disabled={enviando || cantidad <= 0}
+            className="w-full rounded-lg bg-amber-500 py-3 text-sm font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-40"
+          >
+            {enviando ? "Guardando…" : `Registrar ${cantidad} recuperada${cantidad === 1 ? "" : "s"}`}
+          </motion.button>
+        </motion.div>
       )}
     </div>
   );

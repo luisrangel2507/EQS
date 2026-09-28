@@ -129,12 +129,15 @@ export default function PortalPublicoClient({ token, inicial }: { token: string;
       </header>
 
       <div className="mx-auto -mt-6 max-w-5xl space-y-6 px-5 pb-16">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className={`grid grid-cols-2 gap-3 ${datos.piezasRetrabajadas > 0 ? "sm:grid-cols-5" : "sm:grid-cols-4"}`}>
           {[
             { etiqueta: "Inspeccionadas", valor: total, color: "text-navy-900" },
             { etiqueta: "Buenas", valor: datos.piezasBuenas, color: "text-emerald-600" },
             { etiqueta: "Rechazadas", valor: datos.piezasMalas, color: "text-red-600" },
             { etiqueta: "% Rechazo", valor: rechazo, color: rechazo >= 8 ? "text-red-600" : "text-navy-900", pct: true },
+            ...(datos.piezasRetrabajadas > 0
+              ? [{ etiqueta: "🔧 Recuperadas", valor: datos.piezasRetrabajadas, color: "text-amber-600" }]
+              : []),
           ].map((k, i) => (
             <motion.div
               key={k.etiqueta}

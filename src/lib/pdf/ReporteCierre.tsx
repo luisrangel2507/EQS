@@ -94,6 +94,7 @@ export type DatosReporte = {
   instrucciones: string | null;
   piezasBuenas: number;
   piezasMalas: number;
+  piezasRetrabajadas: number;
   cerradoPor: string | null;
   cerradoEn: string | null;
   creadoEn: string;
@@ -169,6 +170,18 @@ export default function ReporteCierre({ datos }: { datos: DatosReporte }) {
             <Text style={styles.kpiEtiqueta}>% Rechazo</Text>
           </View>
         </View>
+        {datos.piezasRetrabajadas > 0 && (
+          <View style={styles.kpiFila}>
+            <View style={styles.kpiCaja}>
+              <Text style={styles.kpiValor}>{datos.piezasRetrabajadas}</Text>
+              <Text style={styles.kpiEtiqueta}>Recuperadas con retrabajo</Text>
+            </View>
+            <View style={styles.kpiCaja}>
+              <Text style={styles.kpiValor}>{datos.piezasMalas - datos.piezasRetrabajadas}</Text>
+              <Text style={styles.kpiEtiqueta}>NG final (scrap)</Text>
+            </View>
+          </View>
+        )}
 
         <View style={styles.seccion}>
           <Text style={styles.seccionTitulo}>Pareto de defectos</Text>

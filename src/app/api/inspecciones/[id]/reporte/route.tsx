@@ -31,6 +31,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
           instrucciones: inspeccion.instrucciones,
           piezasBuenas: inspeccion.piezasBuenas,
           piezasMalas: inspeccion.piezasMalas,
+          piezasRetrabajadas: inspeccion.piezasRetrabajadas,
           cerradoPor: inspeccion.cerradoPor,
           cerradoEn: inspeccion.cerradoEn?.toISOString() ?? null,
           creadoEn: inspeccion.creadoEn.toISOString(),

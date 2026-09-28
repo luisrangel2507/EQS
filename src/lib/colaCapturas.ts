@@ -8,7 +8,7 @@ import { comprimirImagen } from "@/lib/imagen";
 // llega dos veces. Las fotos se guardan en IndexedDB (localStorage no aguanta blobs).
 
 export type CuerpoCaptura = {
-  tipo: "buena" | "mala";
+  tipo: "buena" | "mala" | "retrabajo";
   cantidad: number;
   defecto?: string;
   fotoUrl?: string;
