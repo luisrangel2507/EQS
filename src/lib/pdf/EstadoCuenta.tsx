@@ -1,5 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import { NOMBRE_EMPRESA, NOMBRE_LEGAL, PIE_PDF } from "@/lib/branding";
+import { EMPRESA_POR_OMISION, type EmpresaEmisora, PIE_PDF } from "@/lib/branding";
 import type { LineaFactura } from "@/lib/facturacion";
 
 const NAVY = "#142B6B";
@@ -62,11 +62,13 @@ export default function EstadoCuenta({
   periodo,
   lineas,
   tasaIva,
+  empresa = EMPRESA_POR_OMISION,
 }: {
   cliente: string;
   periodo: string;
   lineas: LineaFactura[];
   tasaIva: number;
+  empresa?: EmpresaEmisora;
 }) {
   const subtotal = lineas.reduce((acc, l) => acc + l.importe, 0);
   const piezas = lineas.reduce((acc, l) => acc + l.piezas, 0);
@@ -76,10 +78,10 @@ export default function EstadoCuenta({
     <Document title={`Estado de cuenta ${cliente} ${periodo}`}>
       <Page size="A4" style={s.page}>
         <View style={s.header}>
-          <Text style={s.logo}>{NOMBRE_EMPRESA}</Text>
+          <Text style={s.logo}>{empresa.nombreCorto}</Text>
           <View style={{ alignItems: "flex-end" }}>
             <Text style={s.titulo}>Estado de cuenta</Text>
-            <Text style={s.sub}>{NOMBRE_LEGAL}</Text>
+            <Text style={s.sub}>{empresa.nombre}</Text>
           </View>
         </View>
 
@@ -100,7 +102,7 @@ export default function EstadoCuenta({
 
         <View style={s.tabla}>
           <View style={s.filaHeader}>
-            {["Inspección / Número de parte", "Planta", "Piezas", "Precio/pza", "Importe"].map((t, i) => (
+            {["Inspección / Número de parte", "Planta", "Cantidad", "Precio", "Importe"].map((t, i) => (
               <Text key={t} style={[s.celdaH, { flex: ANCHOS[i], textAlign: i >= 2 ? "right" : "left" }]}>
                 {t}
               </Text>
@@ -113,8 +115,12 @@ export default function EstadoCuenta({
                 {l.nombre}
               </Text>
               <Text style={[s.celda, { flex: ANCHOS[1] }]}>{l.planta ?? "—"}</Text>
-              <Text style={[s.celda, { flex: ANCHOS[2], textAlign: "right" }]}>{l.piezas.toLocaleString("es-MX")}</Text>
-              <Text style={[s.celda, { flex: ANCHOS[3], textAlign: "right" }]}>{dinero(l.precio)}</Text>
+              <Text style={[s.celda, { flex: ANCHOS[2], textAlign: "right" }]}>
+                {l.modo === "hora" ? `${l.horas.toFixed(1)} h` : `${l.piezas.toLocaleString("es-MX")} pzas`}
+              </Text>
+              <Text style={[s.celda, { flex: ANCHOS[3], textAlign: "right" }]}>
+                {dinero(l.precio)}/{l.modo === "hora" ? "h" : "pza"}
+              </Text>
               <Text style={[s.celda, { flex: ANCHOS[4], textAlign: "right" }]}>{dinero(l.importe)}</Text>
             </View>
           ))}

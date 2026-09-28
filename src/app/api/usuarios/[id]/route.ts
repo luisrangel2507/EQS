@@ -34,7 +34,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     const rolResultante = datos.rol ?? existente.rol;
     if (rolResultante === "CLIENTE" && datos.clienteNombre) {
-      const empresa = await prisma.empresa.findUnique({ where: { nombre: datos.clienteNombre } });
+      const empresa = await prisma.empresa.findFirst({ where: { nombre: datos.clienteNombre } });
       if (!empresa || !empresa.activa) {
         throw new ErrorPermiso("La empresa seleccionada no está registrada. Dala de alta primero.", 400);
       }

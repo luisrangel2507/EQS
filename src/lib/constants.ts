@@ -53,6 +53,19 @@ export const DEFECTOS_COMUNES = [
   "Otro",
 ] as const;
 
+export const DEFECTOS_EN: Record<string, string> = {
+  Rebaba: "Burr",
+  "Rayón / marca superficial": "Scratch / surface mark",
+  "Dimensión fuera de tolerancia": "Dimension out of tolerance",
+  "Golpe / abolladura": "Dent / damage",
+  "Falta de pintura / recubrimiento": "Missing paint / coating",
+  "Contaminación / suciedad": "Contamination / dirt",
+  "Ensamble incorrecto": "Wrong assembly",
+  "Pieza incompleta": "Incomplete part",
+  "Rosca dañada": "Damaged thread",
+  Otro: "Other",
+};
+
 // una por día, elegida por fecha para que sea la misma para todos durante el día
 // (para Admin, Supervisor, Líder e Inspector)
 export const FRASES_DEL_DIA = [
@@ -83,6 +96,19 @@ export const FRASES_DEL_DIA_CLIENTE = [
   "Calidad constante, confianza garantizada.",
 ] as const;
 
+export const FRASES_DEL_DIA_CLIENTE_EN = [
+  "Thank you for your trust. Your line is protected.",
+  "Every part that leaves here carries our commitment to you.",
+  "Your quality is our priority, shift after shift.",
+  "We treat every part like the first one.",
+  "Full transparency: that's how we protect your production.",
+  "Your trust is earned one part at a time.",
+  "We're here to protect the quality your brand deserves.",
+  "Every inspection is a promise kept.",
+  "Your line, our responsibility.",
+  "Consistent quality, guaranteed confidence.",
+] as const;
+
 export const ROLES = ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER", "INSPECTOR", "RESIDENTE", "CLIENTE"] as const;
 
 export const ROL_ETIQUETAS: Record<string, string> = {
@@ -93,6 +119,16 @@ export const ROL_ETIQUETAS: Record<string, string> = {
   INSPECTOR: "Inspector",
   RESIDENTE: "Residente",
   CLIENTE: "Cliente",
+};
+
+export const ROL_ETIQUETAS_EN: Record<string, string> = {
+  ADMIN: "Administrator",
+  SUPERVISOR: "Supervisor",
+  GERENTE: "Manager",
+  LIDER: "Team lead",
+  INSPECTOR: "Inspector",
+  RESIDENTE: "Resident",
+  CLIENTE: "Customer",
 };
 
 // "sello" visual por posición: icono + degradado, usado donde se muestra el
@@ -106,3 +142,18 @@ export const ROL_SELLO: Record<string, { icono: string; clase: string }> = {
   RESIDENTE: { icono: "🏭", clase: "bg-gradient-to-br from-orange-500 to-amber-600 text-white" },
   CLIENTE: { icono: "🤝", clase: "bg-gradient-to-br from-slate-500 to-slate-700 text-white" },
 };
+
+export const TIPOS_SOLICITUD = ["sorteo", "retrabajo", "inspeccion_recibo", "otro"] as const;
+
+export const TIPO_SOLICITUD_INFO: Record<string, { etiqueta: string; en: string; icono: string }> = {
+  sorteo: { etiqueta: "Sorteo", en: "Sorting", icono: "🔍" },
+  retrabajo: { etiqueta: "Retrabajo", en: "Rework", icono: "🔧" },
+  inspeccion_recibo: { etiqueta: "Inspección de recibo", en: "Receiving inspection", icono: "📦" },
+  otro: { etiqueta: "Otro servicio", en: "Other service", icono: "📝" },
+};
+
+export const URGENCIAS = [
+  { valor: "normal", etiqueta: "Normal", en: "Normal", clase: "bg-navy-100 text-navy-700" },
+  { valor: "urgente", etiqueta: "⚡ Urgente", en: "⚡ Urgent", clase: "bg-amber-100 text-amber-800" },
+  { valor: "critica", etiqueta: "🚨 Crítica", en: "🚨 Critical", clase: "bg-red-100 text-red-800" },
+] as const;

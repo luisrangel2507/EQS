@@ -60,7 +60,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={api.current}>
       {children}
-      <div className="pointer-events-none fixed inset-x-0 bottom-24 z-[60] flex flex-col items-center gap-2 px-4 sm:bottom-6 sm:left-auto sm:right-24 sm:items-end">
+      <div className="pointer-events-none fixed print:hidden inset-x-0 bottom-24 z-[60] flex flex-col items-center gap-2 px-4 sm:bottom-6 sm:left-auto sm:right-24 sm:items-end">
         <AnimatePresence initial={false}>
           {toasts.map((t) => {
             const estilo = ESTILOS[t.tipo];

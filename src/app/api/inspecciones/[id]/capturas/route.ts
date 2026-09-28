@@ -5,18 +5,19 @@ import { prisma } from "@/lib/prisma";
 import { requerirSesion, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { whereInspeccionesVisibles } from "@/lib/inspecciones";
 import { enviarPush } from "@/lib/push";
+import { asegurarJornada } from "@/lib/asistencia";
 
 export const dynamic = "force-dynamic";
 
 const capturaSchema = z
   .object({
-    tipo: z.enum(["buena", "mala"]),
+    tipo: z.enum(["buena", "mala", "retrabajo"]),
     cantidad: z.coerce.number().int().min(1).max(999).optional().default(1),
     defecto: z.string().trim().optional().nullable(),
     fotoUrl: z.string().trim().optional().nullable(),
     idCliente: z.string().trim().max(64).optional().nullable(),
   })
-  .refine((d) => d.tipo !== "mala" || Boolean(d.defecto), {
+  .refine((d) => d.tipo === "buena" || Boolean(d.defecto), {
     message: "Selecciona el tipo de defecto",
     path: ["defecto"],
   });
@@ -42,8 +43,44 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       if (repetida) return Response.json(repetida, { status: 200 });
     }
 
-    const esBuena = datos.tipo === "buena";
     const cantidad = datos.cantidad;
+
+    // capturar implica estar trabajando: si no marcó entrada en esta pieza, se marca sola
+    await asegurarJornada(user.id, params.id).catch((e) => console.error("No se pudo abrir la jornada", e));
+
+    if (datos.tipo === "retrabajo") {
+      const resumen = await prisma.defectoResumen.findUnique({
+        where: { inspeccionId_tipo: { inspeccionId: params.id, tipo: datos.defecto! } },
+      });
+      const pendientes = resumen ? resumen.cantidad - resumen.recuperadas : 0;
+      if (cantidad > pendientes) {
+        throw new ErrorPermiso(
+          pendientes > 0
+            ? `Solo quedan ${pendientes} pieza(s) NG de "${datos.defecto}" por recuperar`
+            : `No hay piezas NG de "${datos.defecto}" por recuperar`,
+          400
+        );
+      }
+      const [retrabajo] = await prisma.$transaction([
+        prisma.captura.create({
+          data: {
+            inspeccionId: params.id,
+            usuarioId: user.id,
+            retrabajadas: cantidad,
+            defecto: datos.defecto,
+            idCliente: datos.idCliente || null,
+          },
+        }),
+        prisma.inspeccion.update({ where: { id: params.id }, data: { piezasRetrabajadas: { increment: cantidad } } }),
+        prisma.defectoResumen.update({
+          where: { inspeccionId_tipo: { inspeccionId: params.id, tipo: datos.defecto! } },
+          data: { recuperadas: { increment: cantidad } },
+        }),
+      ]);
+      return Response.json(retrabajo, { status: 201 });
+    }
+
+    const esBuena = datos.tipo === "buena";
 
     const [captura] = await prisma.$transaction([
       prisma.captura.create({

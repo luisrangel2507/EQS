@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useIdioma } from "@/components/ui/Idioma";
 
 const CLAVE_PUBLICA = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
 
@@ -22,6 +23,7 @@ function esIosNoInstalado() {
 }
 
 export default function PushToggle() {
+  const { idioma, t } = useIdioma();
   const [soportado, setSoportado] = useState(true);
   const [iosSinInstalar, setIosSinInstalar] = useState(false);
   const [suscrito, setSuscrito] = useState(false);
@@ -66,7 +68,7 @@ export default function PushToggle() {
       });
       setSuscrito(true);
     } catch {
-      setError("No se pudo activar. Intenta de nuevo.");
+      setError(t("No se pudo activar. Intenta de nuevo.", "Could not turn on. Try again."));
     } finally {
       setCargando(false);
     }
@@ -88,13 +90,19 @@ export default function PushToggle() {
       }
       setSuscrito(false);
     } catch {
-      setError("No se pudo desactivar. Intenta de nuevo.");
+      setError(t("No se pudo desactivar. Intenta de nuevo.", "Could not turn off. Try again."));
     } finally {
       setCargando(false);
     }
   }
 
   if (iosSinInstalar) {
+    if (idioma === "en")
+      return (
+        <p className="border-t border-navy-100 px-4 py-2.5 text-xs text-navy-500">
+          📲 To get notifications, add this app to your home screen (Share → Add to Home Screen) and open it from there.
+        </p>
+      );
     return (
       <p className="border-t border-navy-100 px-4 py-2.5 text-xs text-navy-500">
         📲 Para recibir notificaciones, agrega esta app a tu pantalla de inicio (Compartir → Agregar
@@ -114,10 +122,10 @@ export default function PushToggle() {
         className="block w-full px-4 py-2 text-left text-sm font-semibold text-navy-700 hover:bg-navy-50 disabled:opacity-50"
       >
         {cargando
-          ? "Un momento…"
+          ? t("Un momento…", "One moment…")
           : suscrito
-            ? "🔕 Desactivar notificaciones push"
-            : "🔔 Activar notificaciones push"}
+            ? `🔕 ${t("Desactivar notificaciones push", "Turn off push notifications")}`
+            : `🔔 ${t("Activar notificaciones push", "Turn on push notifications")}`}
       </button>
       {error && <p className="px-4 pb-2 text-xs text-red-600">{error}</p>}
     </div>

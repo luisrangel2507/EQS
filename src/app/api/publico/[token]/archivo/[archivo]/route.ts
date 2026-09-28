@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
-import { prisma } from "@/lib/prisma";
+// Público por token: sin filtro de organización.
+import { prismaGlobal as prisma } from "@/lib/prisma";
 import { enlaceVigente } from "@/lib/compartido";
 import { respuestaArchivo } from "@/lib/uploads";
 

@@ -1,11 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Skeleton, SkeletonKpis, SkeletonTarjetas } from "@/components/ui/Skeleton";
 import type { Rol } from "@prisma/client";
 import { usePolling } from "@/lib/usePolling";
-import { FRASES_DEL_DIA, FRASES_DEL_DIA_CLIENTE } from "@/lib/constants";
+import { FRASES_DEL_DIA, FRASES_DEL_DIA_CLIENTE, FRASES_DEL_DIA_CLIENTE_EN } from "@/lib/constants";
+import { useIdioma } from "@/components/ui/Idioma";
+import type { Idioma } from "@/lib/i18n";
 import {
   Kpi,
   SorteosAbiertosCard,
@@ -15,14 +18,16 @@ import {
   type Residente,
 } from "./shared";
 
-function fraseDelDia(rol: Rol) {
-  const frases = rol === "CLIENTE" ? FRASES_DEL_DIA_CLIENTE : FRASES_DEL_DIA;
+function fraseDelDia(rol: Rol, idioma: Idioma) {
+  // las frases de piso quedan en español: el equipo operativo es de planta en México
+  const frases = rol === "CLIENTE" ? (idioma === "en" ? FRASES_DEL_DIA_CLIENTE_EN : FRASES_DEL_DIA_CLIENTE) : FRASES_DEL_DIA;
   const inicioAno = new Date(new Date().getFullYear(), 0, 0);
   const dia = Math.floor((Date.now() - inicioAno.getTime()) / 86400000);
   return frases[dia % frases.length];
 }
 
 export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: string }) {
+  const { t, idioma } = useIdioma();
   const { datos, cargando } = usePolling<DashboardData>("/api/dashboard", 7000);
   const esOperativo = rol === "ADMIN" || rol === "SUPERVISOR" || rol === "GERENTE" || rol === "LIDER";
   const { datos: residentes } = usePolling<Residente[]>(esOperativo ? "/api/residentes" : null, 20000);
@@ -61,10 +66,10 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
             Dashboard
           </p>
           <h1 className="font-display text-3xl font-bold text-white drop-shadow sm:text-5xl">
-            Bienvenido, {nombre.split(" ")[0]}
+            {t("Bienvenido", "Welcome")}, {nombre.split(" ")[0]}
           </h1>
           <p className="mt-2 max-w-xl text-sm text-white/80 sm:text-base">
-            <span className="font-semibold text-white">Frase del día:</span> {fraseDelDia(rol)}
+            <span className="font-semibold text-white">{t("Frase del día:", "Today's thought:")}</span> {fraseDelDia(rol, idioma)}
           </p>
         </motion.div>
       </div>
@@ -73,8 +78,8 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
         <div className="relative left-1/2 w-screen -translate-x-1/2">
           <div className="mx-auto max-w-[1800px] space-y-6 px-4 sm:px-8">
             <div className="grid grid-cols-2 gap-4">
-              <Kpi etiqueta="Sorteos activos" valor={datos.kpis.inspeccionesActivas} />
-              <Kpi etiqueta="Residentes activos" valor={residentes ? residentes.length : "…"} indice={1} />
+              <Kpi etiqueta={t("Sorteos activos", "Active sorts")} valor={datos.kpis.inspeccionesActivas} />
+              <Kpi etiqueta={t("Residentes activos", "Active residents")} valor={residentes ? residentes.length : "…"} indice={1} />
             </div>
 
             <SorteosAbiertosCard rol={rol} sorteosAbiertos={datos.sorteosAbiertos} />
@@ -85,18 +90,37 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
       ) : (
         <div className="space-y-6">
           {rol === "RESIDENTE" && <MiEstadoResidenteCard />}
+          {rol === "CLIENTE" && (
+            <Link
+              href="/solicitudes?nueva=1"
+              className="group flex items-center justify-between gap-4 rounded-2xl bg-gradient-to-r from-yellow to-amber-400 p-5 text-navy-900 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
+            >
+              <div>
+                <p className="font-display text-xl font-extrabold">{t("¿Necesitas un sorteo o retrabajo?", "Need a sort or rework?")}</p>
+                <p className="text-sm font-medium text-navy-800/80">
+                  {t(
+                    "Levanta tu solicitud aquí y síguela en vivo, sin llamadas ni correos.",
+                    "Submit your request here and track it live, no calls or emails."
+                  )}
+                </p>
+              </div>
+              <span className="rounded-xl bg-navy px-4 py-2 font-semibold text-white transition group-hover:scale-105">
+                📥 {t("Solicitar servicio", "Request service")}
+              </span>
+            </Link>
+          )}
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <Kpi etiqueta="Inspecciones activas" valor={datos.kpis.inspeccionesActivas} />
-            <Kpi etiqueta="Piezas inspeccionadas (mes)" valor={datos.kpis.piezasInspeccionadasMes} indice={1} />
+            <Kpi etiqueta={t("Inspecciones activas", "Active inspections")} valor={datos.kpis.inspeccionesActivas} />
+            <Kpi etiqueta={t("Piezas inspeccionadas (mes)", "Parts inspected (month)")} valor={datos.kpis.piezasInspeccionadasMes} indice={1} />
             <Kpi
-              etiqueta="% Rechazo global"
+              etiqueta={t("% Rechazo global", "Overall reject %")}
               valor={datos.kpis.porcentajeRechazoGlobal * 100}
               formato={(n) => `${n.toFixed(1)}%`}
               alerta={datos.kpis.porcentajeRechazoGlobal >= 0.08}
               indice={2}
             />
             <Kpi
-              etiqueta="Inspecciones en crítico"
+              etiqueta={t("Inspecciones en crítico", "Critical inspections")}
               valor={datos.kpis.inspeccionesEnCritico}
               alerta={datos.kpis.inspeccionesEnCritico > 0}
               indice={3}

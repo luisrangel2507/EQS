@@ -14,6 +14,8 @@ type Linea = {
   numeroParte: string | null;
   planta: string | null;
   piezas: number;
+  horas: number;
+  modo: "pieza" | "hora";
   precio: number;
   importe: number;
 };
@@ -116,7 +118,7 @@ export default function FacturacionClient() {
           <div className="mt-1 flex flex-wrap gap-2">
             {datos.sinPrecio.map((l) => (
               <Link key={l.id} href={`/inspecciones/${l.id}`} className="underline">
-                {l.numeroParte ?? l.nombre} ({l.piezas} pzas)
+                {l.numeroParte ?? l.nombre} ({l.modo === "hora" ? `${l.horas.toFixed(1)} h` : `${l.piezas} pzas`})
               </Link>
             ))}
           </div>
@@ -210,8 +212,8 @@ export default function FacturacionClient() {
                             <tr>
                               <th className="px-4 py-2">Inspección</th>
                               <th className="px-4 py-2">Planta</th>
-                              <th className="px-4 py-2 text-right">Piezas</th>
-                              <th className="px-4 py-2 text-right">Precio/pza</th>
+                              <th className="px-4 py-2 text-right">Cantidad</th>
+                              <th className="px-4 py-2 text-right">Precio</th>
                               <th className="px-4 py-2 text-right">Importe</th>
                             </tr>
                           </thead>
@@ -225,11 +227,13 @@ export default function FacturacionClient() {
                                   </Link>
                                 </td>
                                 <td className="px-4 py-2 text-navy-600">{l.planta ?? "—"}</td>
-                                <td className="px-4 py-2 text-right tabular-nums">{l.piezas.toLocaleString("es-MX")}</td>
+                                <td className="px-4 py-2 text-right tabular-nums">
+                                  {l.modo === "hora" ? `${l.horas.toFixed(1)} h` : l.piezas.toLocaleString("es-MX")}
+                                </td>
                                 <td
                                   className={`px-4 py-2 text-right tabular-nums ${l.precio === 0 ? "font-semibold text-amber-700" : ""}`}
                                 >
-                                  {l.precio === 0 ? "Sin precio" : precioExacto(l.precio)}
+                                  {l.precio === 0 ? "Sin precio" : `${precioExacto(l.precio)}/${l.modo === "hora" ? "h" : "pza"}`}
                                 </td>
                                 <td className="px-4 py-2 text-right font-semibold tabular-nums">{formatoMoneda(l.importe)}</td>
                               </tr>

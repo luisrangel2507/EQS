@@ -4,46 +4,79 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import type { Rol } from "@prisma/client";
 import { AnimatePresence, motion } from "framer-motion";
 import { NOMBRE_APP } from "@/lib/branding";
+import { useIdioma } from "@/components/ui/Idioma";
+import type { Traductor } from "@/lib/i18n";
 
 type Paso = { objetivo?: string; titulo: string; texto: string };
 
 const VERSION_TOUR = "v1";
 const MARGEN = 8;
 
-function pasosPara(rol: Rol, nombre: string): Paso[] {
+function pasosPara(rol: Rol, nombre: string, t: Traductor): Paso[] {
   const primero = nombre.split(" ")[0];
   const bienvenida: Paso = {
-    titulo: `¡Hola, ${primero}! 👋`,
-    texto: `Te damos un recorrido de 30 segundos por ${NOMBRE_APP}. Puedes saltarlo y verlo después desde la búsqueda (Ctrl K).`,
+    titulo: t(`¡Hola, ${primero}! 👋`, `Hi, ${primero}! 👋`),
+    texto: t(
+      `Te damos un recorrido de 30 segundos por ${NOMBRE_APP}. Puedes saltarlo y verlo después desde la búsqueda (Ctrl K).`,
+      `Here's a 30-second tour of ${NOMBRE_APP}. You can skip it and replay it later from search (Ctrl K).`
+    ),
   };
   const buscar: Paso = {
     objetivo: "buscar",
-    titulo: "Busca lo que sea",
-    texto: "Escribe un número de parte, cliente o acción y llega directo. En computadora también abre con Ctrl K.",
+    titulo: t("Busca lo que sea", "Search anything"),
+    texto: t(
+      "Escribe un número de parte, cliente o acción y llega directo. En computadora también abre con Ctrl K.",
+      "Type a part number, customer or action and jump right there. On a computer it also opens with Ctrl K."
+    ),
   };
   const escanear: Paso = {
     objetivo: "escanear",
-    titulo: "Escanea la etiqueta",
-    texto: "Apunta la cámara al QR del contenedor o al código de barras y se abre la inspección correcta.",
+    titulo: t("Escanea la etiqueta", "Scan the label"),
+    texto: t(
+      "Apunta la cámara al QR del contenedor o al código de barras y se abre la inspección correcta.",
+      "Point the camera at the container's QR or barcode and the right inspection opens."
+    ),
   };
   const perfil: Paso = {
     objetivo: "perfil",
-    titulo: "Tu perfil",
-    texto: "Aquí activas notificaciones, el modo oscuro y cierras sesión.",
+    titulo: t("Tu perfil", "Your profile"),
+    texto: t(
+      "Aquí cambias el idioma, activas notificaciones, el modo oscuro y cierras sesión.",
+      "Change the language, turn on notifications and dark mode, or sign out here."
+    ),
   };
   const chat: Paso = {
     objetivo: "chat",
-    titulo: "Chat del equipo",
-    texto: "Habla con liderazgo y compañeros sin salir de la app.",
+    titulo: t("Chat del equipo", "Team chat"),
+    texto: t("Habla con liderazgo y compañeros sin salir de la app.", "Talk to leadership and teammates without leaving the app."),
   };
-  const final: Paso = { titulo: "¡Listo! 🚀", texto: "Eso es todo. Si algo no queda claro, vuelve a abrir este recorrido desde la búsqueda." };
+  const final: Paso = {
+    titulo: t("¡Listo! 🚀", "All set! 🚀"),
+    texto: t(
+      "Eso es todo. Si algo no queda claro, vuelve a abrir este recorrido desde la búsqueda.",
+      "That's it. If anything is unclear, reopen this tour from search."
+    ),
+  };
 
   if (rol === "INSPECTOR") {
     return [
       bienvenida,
-      { objetivo: "nav", titulo: "Tu estación", texto: "En Mis inspecciones está lo que tienes asignado; en Ranking ves cómo vas en el turno." },
+      {
+        objetivo: "nav",
+        titulo: t("Tu estación", "Your station"),
+        texto: t(
+          "En Mis inspecciones está lo que tienes asignado; en Ranking ves cómo vas en el turno.",
+          "My inspections has your assignments; Ranking shows how your shift is going."
+        ),
+      },
       escanear,
-      { titulo: "Capturar es rápido", texto: "Registra piezas con los botones grandes. Si te equivocas, toca Deshacer en el aviso. Sin señal, se guarda en el equipo y se envía solo." },
+      {
+        titulo: t("Capturar es rápido", "Logging is fast"),
+        texto: t(
+          "Registra piezas con los botones grandes. Si te equivocas, toca Deshacer en el aviso. Sin señal, se guarda en el equipo y se envía solo.",
+          "Log parts with the big buttons. Made a mistake? Tap Undo on the notice. With no signal it's saved on the device and sent automatically."
+        ),
+      },
       chat,
       perfil,
       final,
@@ -52,8 +85,19 @@ function pasosPara(rol: Rol, nombre: string): Paso[] {
   if (rol === "CLIENTE") {
     return [
       bienvenida,
-      { objetivo: "nav", titulo: "Tus inspecciones", texto: "Ve en vivo el avance, el Pareto de defectos y las fotos de evidencia de tus piezas." },
-      { objetivo: "notificaciones", titulo: "Avisos al momento", texto: "Te avisamos aquí cuando se detecta una pieza NG." },
+      {
+        objetivo: "nav",
+        titulo: t("Tus inspecciones", "Your inspections"),
+        texto: t(
+          "Ve en vivo el avance, el Pareto de defectos y las fotos de evidencia de tus piezas. En Solicitudes pides un servicio nuevo.",
+          "See live progress, the defect Pareto and evidence photos for your parts. Use Requests to ask for a new service."
+        ),
+      },
+      {
+        objetivo: "notificaciones",
+        titulo: t("Avisos al momento", "Instant alerts"),
+        texto: t("Te avisamos aquí cuando se detecta una pieza NG.", "We'll notify you here as soon as an NG part is found."),
+      },
       buscar,
       perfil,
       final,
@@ -61,8 +105,26 @@ function pasosPara(rol: Rol, nombre: string): Paso[] {
   }
   return [
     bienvenida,
-    { objetivo: "nav", titulo: "Todo el piso aquí", texto: "Inspecciones, turnos, residentes, ranking y facturación según tu rol." },
-    ...(rol !== "RESIDENTE" ? [{ objetivo: "ejecutivo", titulo: "Dashboard Ejecutivo", texto: "KPIs del mes, alertas de rechazo y estado de inspectores. Desde ahí abres el Modo TV para la pantalla de piso." }] : []),
+    {
+      objetivo: "nav",
+      titulo: t("Todo el piso aquí", "The whole floor, here"),
+      texto: t(
+        "Inspecciones, turnos, residentes, ranking y facturación según tu rol.",
+        "Inspections, shifts, residents, ranking and billing, depending on your role."
+      ),
+    },
+    ...(rol !== "RESIDENTE"
+      ? [
+          {
+            objetivo: "ejecutivo",
+            titulo: t("Dashboard Ejecutivo", "Executive dashboard"),
+            texto: t(
+              "KPIs del mes, alertas de rechazo y estado de inspectores. Desde ahí abres el Modo TV para la pantalla de piso.",
+              "Monthly KPIs, reject alerts and inspector status. Open TV mode for the floor display from there."
+            ),
+          },
+        ]
+      : []),
     buscar,
     escanear,
     chat,
@@ -85,7 +147,8 @@ export default function TourBienvenida({ rol, nombre, usuarioId }: { rol: Rol; n
   const [paso, setPaso] = useState<number | null>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const [vista, setVista] = useState({ ancho: 0, alto: 0 });
-  const pasos = useMemo(() => pasosPara(rol, nombre), [rol, nombre]);
+  const { t } = useIdioma();
+  const pasos = useMemo(() => pasosPara(rol, nombre, t), [rol, nombre, t]);
   const clave = `eqs_tour_${VERSION_TOUR}_${usuarioId}`;
   const inicio = useRef(0);
 
@@ -175,7 +238,7 @@ export default function TourBienvenida({ rol, nombre, usuarioId }: { rol: Rol; n
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           role="dialog"
-          aria-label="Recorrido de bienvenida"
+          aria-label={t("Recorrido de bienvenida", "Welcome tour")}
         >
           {hueco ? (
             <motion.div
@@ -209,16 +272,16 @@ export default function TourBienvenida({ rol, nombre, usuarioId }: { rol: Rol; n
               </div>
               {!ultimo && (
                 <button className="px-2 text-xs font-semibold text-navy-400 hover:text-navy-700" onClick={terminar}>
-                  Saltar
+                  {t("Saltar", "Skip")}
                 </button>
               )}
               {paso > 0 && (
                 <button className="btn-secondary px-3 py-1.5 text-sm" onClick={() => setPaso(paso - 1)}>
-                  Atrás
+                  {t("Atrás", "Back")}
                 </button>
               )}
               <button className="btn-accent px-3 py-1.5 text-sm" onClick={() => (ultimo ? terminar() : setPaso(paso + 1))}>
-                {ultimo ? "¡Empezar!" : "Siguiente"}
+                {ultimo ? t("¡Empezar!", "Let’s go!") : t("Siguiente", "Next")}
               </button>
             </div>
           </motion.div>

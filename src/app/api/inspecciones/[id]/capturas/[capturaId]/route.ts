@@ -33,8 +33,17 @@ export async function DELETE(
         data: {
           piezasBuenas: { decrement: captura.buenas },
           piezasMalas: { decrement: captura.malas },
+          piezasRetrabajadas: { decrement: captura.retrabajadas },
         },
       }),
+      ...(captura.defecto && captura.retrabajadas > 0
+        ? [
+            prisma.defectoResumen.updateMany({
+              where: { inspeccionId: params.id, tipo: captura.defecto },
+              data: { recuperadas: { decrement: captura.retrabajadas } },
+            }),
+          ]
+        : []),
       ...(captura.defecto && captura.malas > 0
         ? [
             prisma.defectoResumen.updateMany({

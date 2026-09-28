@@ -1,5 +1,7 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import { NOMBRE_EMPRESA, NOMBRE_LEGAL, PIE_PDF } from "@/lib/branding";
+import { EMPRESA_POR_OMISION, type EmpresaEmisora, PIE_PDF, PIE_PDF_EN } from "@/lib/branding";
+import { crearT, LOCALES, nombreDefecto, type Idioma } from "@/lib/i18n";
+import { ZONA_HORARIA } from "@/lib/turnos";
 import { DISCIPLINAS, type ClaveDisciplina } from "@/lib/ochoD";
 
 const NAVY = "#142B6B";
@@ -51,29 +53,38 @@ export type Datos8D = Record<ClaveDisciplina, string | null> & {
   inspeccion: { nombre: string; numeroParte: string | null; cliente: string | null; planta: string | null };
 };
 
-const fecha = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("es-MX") : "—");
 
-export default function Reporte8DPdf({ r }: { r: Datos8D }) {
+export default function Reporte8DPdf({
+  r,
+  idioma = "es",
+  empresa = EMPRESA_POR_OMISION,
+}: {
+  r: Datos8D;
+  idioma?: Idioma;
+  empresa?: EmpresaEmisora;
+}) {
+  const t = crearT(idioma);
+  const fecha = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(LOCALES[idioma], { timeZone: ZONA_HORARIA }) : "—");
   const datos: [string, string][] = [
-    ["Folio", `8D-${String(r.folio).padStart(4, "0")}`],
-    ["Número de parte", r.inspeccion.numeroParte ?? "—"],
-    ["Cliente", r.inspeccion.cliente ?? "—"],
-    ["Defecto", r.defecto ?? "General"],
-    ["Planta", r.inspeccion.planta ?? "—"],
-    ["Estado", r.estado === "cerrado" ? `Cerrado ${fecha(r.cerradoEn)}` : "Abierto"],
-    ["Abierto", fecha(r.creadoEn)],
-    ["Responsable", r.creadoPor],
-    ["Inspección", r.inspeccion.nombre],
+    [t("Folio", "No."), `8D-${String(r.folio).padStart(4, "0")}`],
+    [t("Número de parte", "Part number"), r.inspeccion.numeroParte ?? "—"],
+    [t("Cliente", "Customer"), r.inspeccion.cliente ?? "—"],
+    [t("Defecto", "Defect"), r.defecto ? nombreDefecto(r.defecto, idioma) : "General"],
+    [t("Planta", "Plant"), r.inspeccion.planta ?? "—"],
+    [t("Estado", "Status"), r.estado === "cerrado" ? `${t("Cerrado", "Closed")} ${fecha(r.cerradoEn)}` : t("Abierto", "Open")],
+    [t("Abierto", "Opened"), fecha(r.creadoEn)],
+    [t("Responsable", "Owner"), r.creadoPor],
+    [t("Inspección", "Inspection"), r.inspeccion.nombre],
   ];
 
   return (
     <Document title={`8D-${r.folio}`}>
       <Page size="A4" style={s.page}>
         <View style={s.header} fixed>
-          <Text style={s.logo}>{NOMBRE_EMPRESA}</Text>
+          <Text style={s.logo}>{empresa.nombreCorto}</Text>
           <View style={{ alignItems: "flex-end" }}>
-            <Text style={s.titulo}>Reporte 8D · Acción correctiva</Text>
-            <Text style={s.sub}>{NOMBRE_LEGAL}</Text>
+            <Text style={s.titulo}>{t("Reporte 8D · Acción correctiva", "8D Report · Corrective action")}</Text>
+            <Text style={s.sub}>{empresa.nombre}</Text>
           </View>
         </View>
 
@@ -89,14 +100,14 @@ export default function Reporte8DPdf({ r }: { r: Datos8D }) {
         {DISCIPLINAS.map((d) => (
           <View key={d.clave} style={s.disciplina} wrap={false}>
             <Text style={s.dTitulo}>
-              {d.codigo} · {d.titulo}
+              {d.codigo} · {t(d.titulo, d.en)}
             </Text>
-            {r[d.clave]?.trim() ? <Text style={s.dTexto}>{r[d.clave]}</Text> : <Text style={s.vacio}>Pendiente</Text>}
+            {r[d.clave]?.trim() ? <Text style={s.dTexto}>{r[d.clave]}</Text> : <Text style={s.vacio}>{t("Pendiente", "Pending")}</Text>}
           </View>
         ))}
 
         <Text style={s.footer} fixed>
-          {PIE_PDF} · {new Date().toLocaleString("es-MX")}
+          {t(PIE_PDF, PIE_PDF_EN)} · {new Date().toLocaleString(LOCALES[idioma], { timeZone: ZONA_HORARIA })}
         </Text>
       </Page>
     </Document>

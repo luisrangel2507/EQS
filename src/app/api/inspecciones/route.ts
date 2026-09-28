@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requerirRol, requerirSesion, manejarErrorApi } from "@/lib/permissions";
 import { whereInspeccionesVisibles } from "@/lib/inspecciones";
+import { validarAsignacion } from "@/lib/certificaciones";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,8 @@ const crearInspeccionSchema = z.object({
   puntoLimpio: z.string().trim().optional().nullable(),
   meta: z.coerce.number().int().min(0).optional(),
   precioPorPieza: z.coerce.number().min(0).optional(),
+  modoCobro: z.enum(["pieza", "hora"]).optional(),
+  precioPorHora: z.coerce.number().min(0).optional(),
   fechaEntrega: z.string().datetime().optional().nullable().or(z.literal("").transform(() => null)),
   instrucciones: z.string().trim().optional().nullable(),
   instruccionesPdfUrl: z.string().trim().optional().nullable(),
@@ -38,12 +41,14 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    await requerirRol("ADMIN", "SUPERVISOR");
+    const user = await requerirRol("ADMIN", "SUPERVISOR");
     const body = await req.json();
     const datos = crearInspeccionSchema.parse(body);
+    await validarAsignacion(datos.inspectorIds, datos.numeroParte);
 
     const inspeccion = await prisma.inspeccion.create({
       data: {
+        organizacionId: user.organizacionId,
         nombre: datos.nombre,
         numeroParte: datos.numeroParte || null,
         cliente: datos.cliente || null,
@@ -51,6 +56,8 @@ export async function POST(req: NextRequest) {
         puntoLimpio: datos.puntoLimpio || null,
         meta: datos.meta ?? 0,
         precioPorPieza: datos.precioPorPieza ?? 0,
+        modoCobro: datos.modoCobro ?? "pieza",
+        precioPorHora: datos.precioPorHora ?? 0,
         fechaEntrega: datos.fechaEntrega ? new Date(datos.fechaEntrega) : null,
         instrucciones: datos.instrucciones || null,
         instruccionesPdfUrl: datos.instruccionesPdfUrl || null,

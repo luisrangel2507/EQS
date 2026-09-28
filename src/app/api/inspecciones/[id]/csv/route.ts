@@ -31,7 +31,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       c.creadoEn.toLocaleDateString("es-MX"),
       c.creadoEn.toLocaleTimeString("es-MX"),
       c.usuario.nombre,
-      c.buenas > 0 ? "Buena" : "Mala",
+      c.retrabajadas > 0 ? `Retrabajo (${c.retrabajadas} recuperadas)` : c.buenas > 0 ? `Buena (${c.buenas})` : `Mala (${c.malas})`,
       c.defecto ?? "",
       c.fotoUrl ?? "",
     ]);

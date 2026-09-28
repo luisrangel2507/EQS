@@ -17,25 +17,49 @@ enum Rol {
   CLIENTE
 }
 
+// Cada empresa de sorteo que usa la plataforma (multi-empresa / SaaS). Todo lo
+// demás cuelga de ella: sus usuarios, inspecciones, clientes y criterios.
+// El resto de las tablas se aísla a través de esas relaciones (ver lib/tenant.ts).
+model Organizacion {
+  id          String   @id @default(cuid())
+  nombre      String // razón social: sale en reportes, PDF y páginas públicas
+  nombreCorto String // marca corta (ej. EQS)
+  activa      Boolean  @default(true)
+  creadoEn    DateTime @default(now())
+
+  usuarios     Usuario[]
+  inspecciones Inspeccion[]
+  empresas     Empresa[]
+  criterios    CriterioParte[]
+}
+
 // empresas cliente dadas de alta por un Admin; los usuarios con rol CLIENTE
 // solo pueden asignarse a una empresa ya registrada aquí
 model Empresa {
-  id       String   @id @default(cuid())
-  nombre   String   @unique
-  activa   Boolean  @default(true)
-  creadoEn DateTime @default(now())
+  id             String       @id @default(cuid())
+  organizacion   Organizacion @relation(fields: [organizacionId], references: [id], onDelete: Cascade)
+  organizacionId String
+  nombre         String
+  activa         Boolean      @default(true)
+  creadoEn       DateTime     @default(now())
+
+  @@unique([organizacionId, nombre])
 }
 
 model Usuario {
-  id              String   @id @default(cuid())
+  id              String       @id @default(cuid())
+  organizacion    Organizacion @relation(fields: [organizacionId], references: [id], onDelete: Cascade)
+  organizacionId  String
+  // dueño de la plataforma: da de alta y administra organizaciones
+  superadmin      Boolean      @default(false)
   nombre          String
-  usuario         String   @unique // login, minúsculas normalizadas
+  usuario         String       @unique // login, minúsculas normalizadas
   passwordHash    String
   rol             Rol
   clienteNombre   String? // para rol CLIENTE: debe coincidir con Inspeccion.cliente
   plantaResidente String? // para rol RESIDENTE: planta donde está asignado
-  activo          Boolean  @default(true)
-  creadoEn        DateTime @default(now())
+  activo          Boolean      @default(true)
+  creadoEn        DateTime     @default(now())
 
   capturas             Captura[]
   estado               EstadoInspector?
@@ -50,6 +74,14 @@ model Usuario {
   relevosEntregados    RelevoTurno[]         @relation("RelevoAutor")
   enlacesCreados       EnlaceCompartido[]
   reportes8D           Reporte8D[]
+  solicitudesServicio  SolicitudServicio[]   @relation("SolicitudServicioSolicitante")
+  solicitudesResueltas SolicitudServicio[]   @relation("SolicitudServicioAtendida")
+  asistencias          RegistroAsistencia[]
+  certificaciones      Certificacion[]       @relation("CertificacionInspector")
+  certificacionesDadas Certificacion[]       @relation("CertificacionOtorgante")
+  plantillasChecklist  PlantillaChecklist[]
+  auditorias           Auditoria[]
+  etiquetasLiberacion  EtiquetaLiberacion[]
   relevosRecibidos     RelevoTurno[]         @relation("RelevoReceptor")
 }
 
@@ -68,22 +100,29 @@ model NotaResidente {
 }
 
 model Inspeccion {
-  id                  String    @id @default(cuid())
+  id                  String       @id @default(cuid())
+  organizacion        Organizacion @relation(fields: [organizacionId], references: [id], onDelete: Cascade)
+  organizacionId      String
   nombre              String
   numeroParte         String?
   cliente             String?
   planta              String?
-  meta                Int       @default(0)
-  precioPorPieza      Float     @default(0)
+  meta                Int          @default(0)
+  precioPorPieza      Float        @default(0)
+  // "pieza" cobra piezas x precioPorPieza; "hora" cobra horas registradas x precioPorHora
+  modoCobro           String       @default("pieza")
+  precioPorHora       Float        @default(0)
   fechaEntrega        DateTime?
   instrucciones       String?
   instruccionesPdfUrl String?
-  piezasBuenas        Int       @default(0)
-  piezasMalas         Int       @default(0)
-  cerrado             Boolean   @default(false)
+  piezasBuenas        Int          @default(0)
+  piezasMalas         Int          @default(0)
+  // NG que se recuperaron con retrabajo (no se cobran aparte); scrap = malas - retrabajadas
+  piezasRetrabajadas  Int          @default(0)
+  cerrado             Boolean      @default(false)
   cerradoPor          String?
   cerradoEn           DateTime?
-  creadoEn            DateTime  @default(now())
+  creadoEn            DateTime     @default(now())
 
   // Punto Limpio: identificación del lote de material ya certificado/bueno
   // que llega de la planta del proveedor a la del cliente, con evidencia
@@ -96,16 +135,20 @@ model Inspeccion {
   puntoLimpioOkPor        String?
   puntoLimpioOkEn         DateTime?
 
-  capturas         Captura[]
-  defectos         DefectoResumen[]
-  inspectores      InspeccionInspector[]
-  solicitudesApoyo SolicitudApoyo[]
-  notificaciones   Notificacion[]
-  enlaces          EnlaceCompartido[]
-  reportes8D       Reporte8D[]
+  capturas          Captura[]
+  defectos          DefectoResumen[]
+  inspectores       InspeccionInspector[]
+  solicitudesApoyo  SolicitudApoyo[]
+  notificaciones    Notificacion[]
+  enlaces           EnlaceCompartido[]
+  reportes8D        Reporte8D[]
+  solicitudServicio SolicitudServicio?
+  asistencias       RegistroAsistencia[]
+  etiquetas         EtiquetaLiberacion[]
 
   @@index([cliente])
   @@index([cerrado])
+  @@index([organizacionId])
 }
 
 // tabla puente: qué inspectores están asignados a qué inspección
@@ -128,6 +171,7 @@ model Captura {
   usuarioId    String
   buenas       Int        @default(0)
   malas        Int        @default(0)
+  retrabajadas Int        @default(0)
   defecto      String?
   fotoUrl      String?
   // id generado en el dispositivo: evita duplicados al reintentar capturas hechas sin señal
@@ -145,6 +189,7 @@ model DefectoResumen {
   inspeccionId String
   tipo         String
   cantidad     Int        @default(0)
+  recuperadas  Int        @default(0)
 
   @@unique([inspeccionId, tipo])
 }
@@ -194,8 +239,9 @@ model Notificacion {
   usuarioId    String
   inspeccion   Inspeccion? @relation(fields: [inspeccionId], references: [id], onDelete: Cascade)
   inspeccionId String?
-  tipo         String // "pieza_ng"
+  tipo         String // "pieza_ng" | "solicitud_nueva" | "solicitud_respuesta" | ...
   mensaje      String
+  url          String?
   leida        Boolean     @default(false)
   creadoEn     DateTime    @default(now())
 
@@ -281,4 +327,155 @@ model Reporte8D {
   actualizadoEn    DateTime   @updatedAt
 
   @@index([inspeccionId])
+}
+
+// pedido de servicio que el cliente levanta desde su portal; al aceptarse se
+// convierte en una inspección
+model SolicitudServicio {
+  id            String      @id @default(cuid())
+  folio         Int         @unique @default(autoincrement())
+  cliente       String
+  solicitante   Usuario     @relation("SolicitudServicioSolicitante", fields: [solicitanteId], references: [id])
+  solicitanteId String
+  tipo          String // sorteo | retrabajo | inspeccion_recibo | otro
+  numeroParte   String
+  descripcion   String
+  cantidad      Int?
+  planta        String?
+  urgencia      String      @default("normal") // normal | urgente | critica
+  fotoUrl       String?
+  estado        String      @default("pendiente") // pendiente | aceptada | rechazada
+  respuesta     String?
+  atendidaPor   Usuario?    @relation("SolicitudServicioAtendida", fields: [atendidaPorId], references: [id])
+  atendidaPorId String?
+  atendidaEn    DateTime?
+  inspeccion    Inspeccion? @relation(fields: [inspeccionId], references: [id], onDelete: SetNull)
+  inspeccionId  String?     @unique
+  creadoEn      DateTime    @default(now())
+
+  @@index([cliente, creadoEn])
+  @@index([estado])
+}
+
+// jornada de un inspector en una inspección: base para cobrar por hora y para nómina
+model RegistroAsistencia {
+  id           String      @id @default(cuid())
+  usuario      Usuario     @relation(fields: [usuarioId], references: [id])
+  usuarioId    String
+  inspeccion   Inspeccion? @relation(fields: [inspeccionId], references: [id], onDelete: SetNull)
+  inspeccionId String?
+  entrada      DateTime    @default(now())
+  salida       DateTime?
+  // true cuando el sistema la cerró solo (jornada olvidada): liderazgo debe revisarla
+  cerradaAuto  Boolean     @default(false)
+  automatica   Boolean     @default(false)
+  nota         String?
+  creadoEn     DateTime    @default(now())
+
+  @@index([usuarioId, entrada])
+  @@index([inspeccionId, entrada])
+  @@index([salida])
+}
+
+// criterio de aceptación de un número de parte con su examen; si existe, solo
+// inspectores certificados en esa parte pueden asignarse a sus inspecciones
+model CriterioParte {
+  id             String       @id @default(cuid())
+  organizacion   Organizacion @relation(fields: [organizacionId], references: [id], onDelete: Cascade)
+  organizacionId String
+  numeroParte    String
+  descripcion    String
+  fotoOkUrl      String?
+  fotoNgUrl      String?
+  // [{ texto, opciones: string[], correcta: number }]
+  preguntas      Json         @default("[]")
+  vigenciaDias   Int          @default(365)
+  creadoEn       DateTime     @default(now())
+  actualizadoEn  DateTime     @updatedAt
+
+  @@unique([organizacionId, numeroParte])
+}
+
+model Certificacion {
+  id            String    @id @default(cuid())
+  usuario       Usuario   @relation("CertificacionInspector", fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId     String
+  numeroParte   String
+  metodo        String // examen | manual
+  calificacion  Int?
+  otorgadaPor   Usuario?  @relation("CertificacionOtorgante", fields: [otorgadaPorId], references: [id])
+  otorgadaPorId String?
+  vence         DateTime?
+  creadoEn      DateTime  @default(now())
+
+  @@unique([usuarioId, numeroParte])
+  @@index([numeroParte])
+}
+
+// checklist configurable (auditoría de capas, 5S, recibo...); items: [{ texto, requiereFoto }]
+model PlantillaChecklist {
+  id            String      @id @default(cuid())
+  nombre        String
+  tipo          String // capas | 5s | recibo | producto | otro
+  descripcion   String?
+  items         Json        @default("[]")
+  activa        Boolean     @default(true)
+  creadoPor     Usuario     @relation(fields: [creadoPorId], references: [id])
+  creadoPorId   String
+  creadoEn      DateTime    @default(now())
+  actualizadoEn DateTime    @updatedAt
+  auditorias    Auditoria[]
+}
+
+// una auditoría guarda copia de los items: editar la plantilla no altera auditorías pasadas
+model Auditoria {
+  id              String             @id @default(cuid())
+  folio           Int                @unique @default(autoincrement())
+  plantilla       PlantillaChecklist @relation(fields: [plantillaId], references: [id])
+  plantillaId     String
+  nombrePlantilla String
+  tipo            String
+  items           Json
+  // [{ resultado: "ok" | "no" | "na" | null, comentario, fotoUrl }]
+  respuestas      Json
+  planta          String?
+  cliente         String?
+  area            String?
+  auditor         Usuario            @relation(fields: [auditorId], references: [id])
+  auditorId       String
+  puntaje         Float?
+  hallazgos       Int                @default(0)
+  estado          String             @default("borrador") // borrador | completada
+  creadoEn        DateTime           @default(now())
+  completadaEn    DateTime?
+
+  @@index([creadoEn])
+  @@index([cliente])
+}
+
+// Etiqueta de "material liberado" que va pegada en cada contenedor: su QR abre
+// /t/{codigo} (público) para que cualquiera en la cadena verifique qué se inspeccionó.
+model EtiquetaLiberacion {
+  id                String     @id @default(cuid())
+  folio             Int        @unique @default(autoincrement())
+  codigo            String     @unique
+  inspeccion        Inspeccion @relation(fields: [inspeccionId], references: [id], onDelete: Cascade)
+  inspeccionId      String
+  // contenedores impresos juntos comparten "tanda" para numerarlos 1 de N
+  tanda             String
+  contenedor        Int
+  totalContenedores Int
+  cantidad          Int
+  lote              String?
+  creadaPor         Usuario    @relation(fields: [creadaPorId], references: [id])
+  creadaPorId       String
+  creadoEn          DateTime   @default(now())
+  anulada           Boolean    @default(false)
+  anuladaEn         DateTime?
+  motivoAnulacion   String?
+  escaneos          Int        @default(0)
+  ultimoEscaneo     DateTime?
+
+  @@index([inspeccionId])
+  @@index([tanda])
 }

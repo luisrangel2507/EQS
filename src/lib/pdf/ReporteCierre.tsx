@@ -1,5 +1,7 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import { NOMBRE_EMPRESA, NOMBRE_LEGAL, PIE_PDF } from "@/lib/branding";
+import { EMPRESA_POR_OMISION, type EmpresaEmisora, PIE_PDF, PIE_PDF_EN } from "@/lib/branding";
+import { crearT, LOCALES, nombreDefecto, type Idioma } from "@/lib/i18n";
+import { ZONA_HORARIA } from "@/lib/turnos";
 
 const NAVY = "#142B6B";
 const YELLOW = "#F4D935";
@@ -94,58 +96,71 @@ export type DatosReporte = {
   instrucciones: string | null;
   piezasBuenas: number;
   piezasMalas: number;
+  piezasRetrabajadas: number;
   cerradoPor: string | null;
   cerradoEn: string | null;
   creadoEn: string;
   defectos: { tipo: string; cantidad: number }[];
 };
 
-export default function ReporteCierre({ datos }: { datos: DatosReporte }) {
+export default function ReporteCierre({
+  datos,
+  idioma = "es",
+  empresa = EMPRESA_POR_OMISION,
+}: {
+  datos: DatosReporte;
+  idioma?: Idioma;
+  empresa?: EmpresaEmisora;
+}) {
+  const t = crearT(idioma);
+  const locale = LOCALES[idioma];
+  const fechaHora = (iso: string) => new Date(iso).toLocaleString(locale, { timeZone: ZONA_HORARIA });
+  const def = (tipo: string) => nombreDefecto(tipo, idioma);
   const total = datos.piezasBuenas + datos.piezasMalas;
   const porcentajeRechazo = total > 0 ? (datos.piezasMalas / total) * 100 : 0;
   const topDefectos = [...datos.defectos].sort((a, b) => b.cantidad - a.cantidad).slice(0, 8);
   const maxCantidad = topDefectos.reduce((max, d) => Math.max(max, d.cantidad), 0);
 
   return (
-    <Document title={`Reporte de cierre - ${datos.nombre}`}>
+    <Document title={`${t("Reporte de cierre", "Closing report")} - ${datos.nombre}`}>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.logo}>{NOMBRE_EMPRESA}</Text>
+            <Text style={styles.logo}>{empresa.nombreCorto}</Text>
           </View>
           <View style={{ alignItems: "flex-end" }}>
-            <Text style={styles.headerTitulo}>Reporte de Cierre de Inspección</Text>
-            <Text style={styles.headerSub}>{NOMBRE_LEGAL}</Text>
+            <Text style={styles.headerTitulo}>{t("Reporte de Cierre de Inspección", "Inspection Closing Report")}</Text>
+            <Text style={styles.headerSub}>{empresa.nombre}</Text>
           </View>
         </View>
 
         <View style={styles.seccion}>
-          <Text style={styles.seccionTitulo}>Datos generales</Text>
+          <Text style={styles.seccionTitulo}>{t("Datos generales", "General information")}</Text>
           <View style={styles.fila}>
-            <Text style={styles.etiqueta}>Inspección</Text>
+            <Text style={styles.etiqueta}>{t("Inspección", "Inspection")}</Text>
             <Text style={styles.valor}>{datos.nombre}</Text>
           </View>
           <View style={styles.fila}>
-            <Text style={styles.etiqueta}>Número de parte</Text>
+            <Text style={styles.etiqueta}>{t("Número de parte", "Part number")}</Text>
             <Text style={styles.valor}>{datos.numeroParte ?? "—"}</Text>
           </View>
           <View style={styles.fila}>
-            <Text style={styles.etiqueta}>Cliente</Text>
+            <Text style={styles.etiqueta}>{t("Cliente", "Customer")}</Text>
             <Text style={styles.valor}>{datos.cliente ?? "—"}</Text>
           </View>
           <View style={styles.fila}>
-            <Text style={styles.etiqueta}>Planta</Text>
+            <Text style={styles.etiqueta}>{t("Planta", "Plant")}</Text>
             <Text style={styles.valor}>{datos.planta ?? "—"}</Text>
           </View>
           <View style={styles.fila}>
-            <Text style={styles.etiqueta}>Fecha de entrega</Text>
+            <Text style={styles.etiqueta}>{t("Fecha de entrega", "Due date")}</Text>
             <Text style={styles.valor}>
-              {datos.fechaEntrega ? new Date(datos.fechaEntrega).toLocaleDateString("es-MX") : "—"}
+              {datos.fechaEntrega ? new Date(datos.fechaEntrega).toLocaleDateString(locale, { timeZone: "UTC" }) : "—"}
             </Text>
           </View>
           {datos.instrucciones && (
             <View style={styles.fila}>
-              <Text style={styles.etiqueta}>Instrucción de trabajo</Text>
+              <Text style={styles.etiqueta}>{t("Instrucción de trabajo", "Work instruction")}</Text>
               <Text style={styles.valor}>{datos.instrucciones}</Text>
             </View>
           )}
@@ -154,31 +169,43 @@ export default function ReporteCierre({ datos }: { datos: DatosReporte }) {
         <View style={styles.kpiFila}>
           <View style={styles.kpiCaja}>
             <Text style={styles.kpiValor}>{total}</Text>
-            <Text style={styles.kpiEtiqueta}>Piezas inspeccionadas</Text>
+            <Text style={styles.kpiEtiqueta}>{t("Piezas inspeccionadas", "Parts inspected")}</Text>
           </View>
           <View style={styles.kpiCaja}>
             <Text style={styles.kpiValor}>{datos.piezasBuenas}</Text>
-            <Text style={styles.kpiEtiqueta}>Piezas buenas</Text>
+            <Text style={styles.kpiEtiqueta}>{t("Piezas buenas", "Good parts")}</Text>
           </View>
           <View style={styles.kpiCaja}>
             <Text style={styles.kpiValor}>{datos.piezasMalas}</Text>
-            <Text style={styles.kpiEtiqueta}>Piezas malas</Text>
+            <Text style={styles.kpiEtiqueta}>{t("Piezas malas", "Rejected parts")}</Text>
           </View>
           <View style={styles.kpiCaja}>
             <Text style={styles.kpiValor}>{porcentajeRechazo.toFixed(1)}%</Text>
-            <Text style={styles.kpiEtiqueta}>% Rechazo</Text>
+            <Text style={styles.kpiEtiqueta}>{t("% Rechazo", "% Reject")}</Text>
           </View>
         </View>
+        {datos.piezasRetrabajadas > 0 && (
+          <View style={styles.kpiFila}>
+            <View style={styles.kpiCaja}>
+              <Text style={styles.kpiValor}>{datos.piezasRetrabajadas}</Text>
+              <Text style={styles.kpiEtiqueta}>{t("Recuperadas con retrabajo", "Recovered by rework")}</Text>
+            </View>
+            <View style={styles.kpiCaja}>
+              <Text style={styles.kpiValor}>{datos.piezasMalas - datos.piezasRetrabajadas}</Text>
+              <Text style={styles.kpiEtiqueta}>{t("NG final (scrap)", "Final NG (scrap)")}</Text>
+            </View>
+          </View>
+        )}
 
         <View style={styles.seccion}>
-          <Text style={styles.seccionTitulo}>Pareto de defectos</Text>
+          <Text style={styles.seccionTitulo}>{t("Pareto de defectos", "Defect Pareto")}</Text>
           {topDefectos.length === 0 ? (
-            <Text>No se registraron defectos.</Text>
+            <Text>{t("No se registraron defectos.", "No defects were recorded.")}</Text>
           ) : (
             <View>
               {topDefectos.map((d) => (
                 <View style={styles.paretoFila} key={d.tipo}>
-                  <Text style={styles.paretoEtiqueta}>{d.tipo}</Text>
+                  <Text style={styles.paretoEtiqueta}>{def(d.tipo)}</Text>
                   <View style={styles.paretoBarraFondo}>
                     <View
                       style={[
@@ -195,19 +222,19 @@ export default function ReporteCierre({ datos }: { datos: DatosReporte }) {
         </View>
 
         <View style={styles.seccion}>
-          <Text style={styles.seccionTitulo}>Detalle de defectos</Text>
+          <Text style={styles.seccionTitulo}>{t("Detalle de defectos", "Defect detail")}</Text>
           {topDefectos.length === 0 ? (
-            <Text>No se registraron defectos.</Text>
+            <Text>{t("No se registraron defectos.", "No defects were recorded.")}</Text>
           ) : (
             <View style={styles.tabla}>
               <View style={styles.tablaFilaHeader}>
-                <Text style={[styles.tablaCeldaHeader, { flex: 2 }]}>Tipo de defecto</Text>
-                <Text style={styles.tablaCeldaHeader}>Cantidad</Text>
-                <Text style={styles.tablaCeldaHeader}>% del total malas</Text>
+                <Text style={[styles.tablaCeldaHeader, { flex: 2 }]}>{t("Tipo de defecto", "Defect type")}</Text>
+                <Text style={styles.tablaCeldaHeader}>{t("Cantidad", "Quantity")}</Text>
+                <Text style={styles.tablaCeldaHeader}>{t("% del total malas", "% of rejects")}</Text>
               </View>
               {topDefectos.map((d) => (
                 <View style={styles.tablaFila} key={d.tipo}>
-                  <Text style={[styles.tablaCelda, { flex: 2 }]}>{d.tipo}</Text>
+                  <Text style={[styles.tablaCelda, { flex: 2 }]}>{def(d.tipo)}</Text>
                   <Text style={styles.tablaCelda}>{d.cantidad}</Text>
                   <Text style={styles.tablaCelda}>
                     {datos.piezasMalas > 0 ? ((d.cantidad / datos.piezasMalas) * 100).toFixed(1) : "0"}%
@@ -219,21 +246,21 @@ export default function ReporteCierre({ datos }: { datos: DatosReporte }) {
         </View>
 
         <View style={styles.firma}>
-          <Text style={styles.seccionTitulo}>Cierre</Text>
+          <Text style={styles.seccionTitulo}>{t("Cierre", "Closure")}</Text>
           <View style={styles.fila}>
-            <Text style={styles.etiqueta}>Cerrado por</Text>
+            <Text style={styles.etiqueta}>{t("Cerrado por", "Closed by")}</Text>
             <Text style={styles.valor}>{datos.cerradoPor ?? "—"}</Text>
           </View>
           <View style={styles.fila}>
-            <Text style={styles.etiqueta}>Fecha y hora de cierre</Text>
+            <Text style={styles.etiqueta}>{t("Fecha y hora de cierre", "Closed on")}</Text>
             <Text style={styles.valor}>
-              {datos.cerradoEn ? new Date(datos.cerradoEn).toLocaleString("es-MX") : "—"}
+              {datos.cerradoEn ? fechaHora(datos.cerradoEn) : "—"}
             </Text>
           </View>
         </View>
 
         <Text style={styles.footer}>
-          {PIE_PDF} · {new Date().toLocaleString("es-MX")}
+          {t(PIE_PDF, PIE_PDF_EN)} · {fechaHora(new Date().toISOString())}
         </Text>
       </Page>
     </Document>

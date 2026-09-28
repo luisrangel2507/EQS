@@ -14,12 +14,17 @@ import {
 import { usePolling } from "@/lib/usePolling";
 import { DEFECTOS_COMUNES, ESTADOS_INSPECTOR, PLANTAS } from "@/lib/constants";
 import SubidaPdf from "@/components/SubidaPdf";
+import CampoCobro from "@/components/CampoCobro";
 import CompartirInspeccion from "@/components/CompartirInspeccion";
 import Reportes8DCard from "@/components/Reportes8DCard";
 import SpcCard from "@/components/SpcCard";
+import JornadaBarra from "@/components/JornadaBarra";
 import GaleriaDefectos, { type FotoDefecto } from "@/components/GaleriaDefectos";
 import ClienteSelect from "@/components/ClienteSelect";
+import SelectorInspectores from "@/components/SelectorInspectores";
 import { useModoInmersivo } from "@/components/AppShell";
+import { useIdioma } from "@/components/ui/Idioma";
+import { nombreDefecto } from "@/lib/i18n";
 import { AnimatePresence, motion } from "framer-motion";
 import Modal from "@/components/ui/Modal";
 import NumeroAnimado from "@/components/ui/NumeroAnimado";
@@ -49,16 +54,19 @@ type Inspeccion = {
   creadoEn: string;
   meta: number;
   precioPorPieza: number;
+  modoCobro: string;
+  precioPorHora: number;
   fechaEntrega: string | null;
   instrucciones: string | null;
   instruccionesPdfUrl: string | null;
   piezasBuenas: number;
   piezasMalas: number;
+  piezasRetrabajadas: number;
   cerrado: boolean;
   cerradoPor: string | null;
   cerradoEn: string | null;
   inspectores: { usuario: { id: string; nombre: string } }[];
-  defectos: { tipo: string; cantidad: number }[];
+  defectos: { tipo: string; cantidad: number; recuperadas: number }[];
   puntoLimpio: string | null;
   puntoLimpioFotoUrl: string | null;
   puntoLimpioReportadoPor: string | null;
@@ -76,6 +84,7 @@ export default function InspeccionDetalleClient({
   sesion: SesionUsuario;
 }) {
   const router = useRouter();
+  const { t, idioma, locale } = useIdioma();
   const { datos: inspeccion, cargando, recargar } = usePolling<Inspeccion>(
     `/api/inspecciones/${id}`,
     6000
@@ -119,6 +128,8 @@ export default function InspeccionDetalleClient({
     .sort((a, b) => b.cantidad - a.cantidad)
     .slice(0, 8)
     .map((d) => ({ tipo: d.tipo, cantidad: d.cantidad }));
+  // el Pareto de la gráfica se muestra traducido; el 8D recibe los nombres originales
+  const paretoVisible = datosPareto.map((d) => ({ ...d, tipo: nombreDefecto(d.tipo, idioma) }));
 
   return (
     <div className="space-y-6">
@@ -128,31 +139,34 @@ export default function InspeccionDetalleClient({
             onClick={() => router.push("/inspecciones")}
             className="mb-1 text-xs font-semibold text-navy-400 hover:text-navy-700"
           >
-            ← Inspecciones
+            ← {t("Inspecciones", "Inspections")}
           </button>
           <h1 className="font-display text-2xl font-bold text-navy-900">{inspeccion.nombre}</h1>
           <p className="text-sm text-navy-500">
-            {inspeccion.numeroParte ?? "Sin número de parte"} · {inspeccion.planta ?? "Sin planta"}
-            {inspeccion.cliente ? ` · Cliente: ${inspeccion.cliente}` : ""}
+            {inspeccion.numeroParte ?? t("Sin número de parte", "No part number")} · {inspeccion.planta ?? t("Sin planta", "No plant")}
+            {inspeccion.cliente ? ` · ${t("Cliente", "Customer")}: ${inspeccion.cliente}` : ""}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span
             className={`badge ${inspeccion.cerrado ? "bg-navy-100 text-navy-500" : "bg-green-100 text-green-800"}`}
           >
-            {inspeccion.cerrado ? "Cerrada" : "Activa"}
+            {inspeccion.cerrado ? t("Cerrada", "Closed") : t("Activa", "Active")}
           </span>
           {inspeccion.cerrado && (
             <a href={`/api/inspecciones/${id}/reporte`} target="_blank" className="btn-secondary">
-              Descargar PDF
+              {t("Descargar PDF", "Download PDF")}
             </a>
           )}
           <a href={`/api/inspecciones/${id}/csv`} className="btn-secondary">
-            Exportar CSV
+            {t("Exportar CSV", "Export CSV")}
+          </a>
+          <a href={`/inspecciones/${id}/liberacion`} className="btn-secondary">
+            ✅ {sesion.rol === "CLIENTE" ? t("Material liberado", "Released material") : t("Liberar material", "Release material")}
           </a>
           {puedeGestionar && (
             <a href={`/inspecciones/${id}/etiqueta`} className="btn-secondary">
-              🏷️ Etiqueta QR
+              🏷️ {t("Etiqueta QR", "QR label")}
             </a>
           )}
           {sesion.rol !== "RESIDENTE" && (
@@ -160,22 +174,27 @@ export default function InspeccionDetalleClient({
           )}
           {puedeGestionar && !inspeccion.cerrado && (
             <button className="btn-secondary" onClick={() => setMostrarEditar(true)}>
-              Editar
+              {t("Editar", "Edit")}
             </button>
           )}
           {puedeGestionar && !inspeccion.cerrado && (
             <button className="btn-accent" onClick={() => setMostrarCierre(true)}>
-              Cerrar inspección
+              {t("Cerrar inspección", "Close inspection")}
             </button>
           )}
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Metrica etiqueta="Piezas buenas" valor={<NumeroAnimado valor={inspeccion.piezasBuenas} />} />
-        <Metrica etiqueta="Piezas malas" valor={<NumeroAnimado valor={inspeccion.piezasMalas} />} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <Metrica etiqueta={t("Piezas buenas", "Good parts")} valor={<NumeroAnimado valor={inspeccion.piezasBuenas} />} />
+        <Metrica etiqueta={t("Piezas malas", "Rejected parts")} valor={<NumeroAnimado valor={inspeccion.piezasMalas} />} />
+        <Metrica etiqueta={`🔧 ${t("Recuperadas", "Reworked OK")}`} valor={<NumeroAnimado valor={inspeccion.piezasRetrabajadas} />} />
         <Metrica
-          etiqueta="% Rechazo"
+          etiqueta={t("NG final (scrap)", "Final NG (scrap)")}
+          valor={<NumeroAnimado valor={inspeccion.piezasMalas - inspeccion.piezasRetrabajadas} />}
+        />
+        <Metrica
+          etiqueta={t("% Rechazo", "% Reject")}
           valor={<NumeroAnimado valor={rechazo * 100} formato={(n) => `${n.toFixed(1)}%`} />}
           alerta={rechazo >= 0.08}
         />
@@ -198,7 +217,7 @@ export default function InspeccionDetalleClient({
       {(inspeccion.instrucciones || inspeccion.instruccionesPdfUrl) && (
         <div className="card">
           <h2 className="mb-1 font-display font-semibold text-navy-900">
-            Instrucción de trabajo / criterio de aceptación
+            {t("Instrucción de trabajo / criterio de aceptación", "Work instruction / acceptance criteria")}
           </h2>
           {inspeccion.instrucciones && (
             <p className="whitespace-pre-wrap text-sm text-navy-600">{inspeccion.instrucciones}</p>
@@ -210,24 +229,24 @@ export default function InspeccionDetalleClient({
               rel="noreferrer"
               className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-navy underline"
             >
-              Ver PDF de instrucción de trabajo
+              {t("Ver PDF de instrucción de trabajo", "View work instruction PDF")}
             </a>
           )}
         </div>
       )}
 
       <div className="card">
-        <h2 className="mb-3 font-display font-semibold text-navy-900">Pareto de defectos</h2>
+        <h2 className="mb-3 font-display font-semibold text-navy-900">{t("Pareto de defectos", "Defect Pareto")}</h2>
         {datosPareto.length === 0 ? (
-          <p className="text-sm text-navy-400">Todavía no se han registrado defectos.</p>
+          <p className="text-sm text-navy-400">{t("Todavía no se han registrado defectos.", "No defects recorded yet.")}</p>
         ) : (
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={datosPareto} layout="vertical" margin={{ left: 24 }}>
+            <BarChart data={paretoVisible} layout="vertical" margin={{ left: 24 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" allowDecimals={false} />
               <YAxis type="category" dataKey="tipo" width={160} tick={{ fontSize: 12 }} />
               <Tooltip />
-              <Bar dataKey="cantidad" fill="#142B6B" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="cantidad" name={t("Cantidad", "Quantity")} fill="#142B6B" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -245,7 +264,7 @@ export default function InspeccionDetalleClient({
 
       {inspeccion.inspectores.length > 0 && (
         <div className="card">
-          <h2 className="mb-2 font-display font-semibold text-navy-900">Inspectores asignados</h2>
+          <h2 className="mb-2 font-display font-semibold text-navy-900">{t("Inspectores asignados", "Assigned inspectors")}</h2>
           <div className="flex flex-wrap gap-2">
             {inspeccion.inspectores.map((a) => (
               <span key={a.usuario.id} className="badge bg-navy-50 text-navy-700">
@@ -259,8 +278,8 @@ export default function InspeccionDetalleClient({
       {inspeccion.cerrado && (
         <div className="card bg-navy-50">
           <p className="text-sm text-navy-700">
-            Cerrada por <strong>{inspeccion.cerradoPor}</strong> el{" "}
-            {inspeccion.cerradoEn && new Date(inspeccion.cerradoEn).toLocaleString("es-MX")}
+            {t("Cerrada por", "Closed by")} <strong>{inspeccion.cerradoPor}</strong> {t("el", "on")}{" "}
+            {inspeccion.cerradoEn && new Date(inspeccion.cerradoEn).toLocaleString(locale)}
           </p>
         </div>
       )}
@@ -296,6 +315,7 @@ function GaleriaCard({ inspeccionId }: { inspeccionId: string }) {
   const { datos } = usePolling<
     { id: string; fotoUrl: string; defecto: string | null; malas: number; creadoEn: string; usuario?: { nombre: string } }[]
   >(`/api/inspecciones/${inspeccionId}/galeria`, 30000);
+  const { t } = useIdioma();
 
   const fotos: FotoDefecto[] = (datos ?? []).map((f) => ({
     id: f.id,
@@ -309,7 +329,7 @@ function GaleriaCard({ inspeccionId }: { inspeccionId: string }) {
   return (
     <div className="card">
       <h2 className="mb-3 font-display font-semibold text-navy-900">
-        📸 Evidencia de defectos {fotos.length > 0 && <span className="text-navy-400">({fotos.length})</span>}
+        📸 {t("Evidencia de defectos", "Defect evidence")} {fotos.length > 0 && <span className="text-navy-400">({fotos.length})</span>}
       </h2>
       {datos === null ? (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
@@ -429,6 +449,13 @@ function VistaInspectorJuego({
           </div>
         </div>
 
+        {inspeccion.piezasRetrabajadas > 0 && (
+          <p className="mt-2 text-center text-xs font-semibold text-amber-200">
+            🔧 {inspeccion.piezasRetrabajadas} recuperada{inspeccion.piezasRetrabajadas === 1 ? "" : "s"} con retrabajo ·
+            NG final {inspeccion.piezasMalas - inspeccion.piezasRetrabajadas}
+          </p>
+        )}
+
         <div className="mt-5 flex items-center justify-between rounded-xl bg-white/10 px-4 py-3">
           <span className="text-xs font-semibold uppercase tracking-wide text-white/70">
             ⚡ Ritmo
@@ -441,6 +468,8 @@ function VistaInspectorJuego({
           </span>
         </div>
       </div>
+
+      {puedeCapturar && <JornadaBarra inspeccionId={id} />}
 
       <AnimatePresence>
         {puedeCapturar && (!cola.enLinea || cola.pendientes > 0) && (
@@ -469,6 +498,7 @@ function VistaInspectorJuego({
           mostrarExtras
           onResultado={manejarResultado}
           onDeshecho={() => setRacha(0)}
+          defectos={inspeccion.defectos}
         />
       )}
 
@@ -613,15 +643,16 @@ function PuntoLimpioMetrica({
   inspeccionId: string;
   onActualizado: () => void;
 }) {
+  const { t } = useIdioma();
   const [editando, setEditando] = useState(false);
   const [valor, setValor] = useState(inspeccion.puntoLimpio ?? "");
   const [guardando, setGuardando] = useState(false);
 
   const estado = inspeccion.puntoLimpioOk
-    ? { texto: "✅ Verificado", color: "text-green-700" }
+    ? { texto: `✅ ${t("Verificado", "Verified")}`, color: "text-green-700" }
     : inspeccion.puntoLimpioFotoUrl
-      ? { texto: "🟡 Pendiente OK", color: "text-amber-600" }
-      : { texto: "— Sin reportar", color: "text-navy-400" };
+      ? { texto: `🟡 ${t("Pendiente OK", "Awaiting OK")}`, color: "text-amber-600" }
+      : { texto: `— ${t("Sin reportar", "Not reported")}`, color: "text-navy-400" };
 
   async function guardar() {
     setGuardando(true);
@@ -639,7 +670,7 @@ function PuntoLimpioMetrica({
 
   return (
     <div className="card">
-      <p className="text-xs font-semibold uppercase tracking-wide text-navy-500">🧼 Punto Limpio</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-navy-500">🧼 {t("Punto Limpio", "Clean Point")}</p>
       {editando ? (
         <div className="mt-1 space-y-2">
           <input
@@ -683,7 +714,7 @@ function PuntoLimpioMetrica({
         </button>
       ) : (
         <p className="mt-1 font-display text-lg font-bold text-navy-900">
-          {inspeccion.puntoLimpio || "Sin identificar"}
+          {inspeccion.puntoLimpio || t("Sin identificar", "Not identified")}
         </p>
       )}
       <p className={`text-xs font-semibold ${estado.color}`}>{estado.texto}</p>
@@ -694,7 +725,7 @@ function PuntoLimpioMetrica({
           rel="noreferrer"
           className="mt-1 inline-block text-xs font-semibold text-navy underline"
         >
-          Ver evidencia
+          {t("Ver evidencia", "View evidence")}
         </a>
       )}
     </div>
@@ -900,12 +931,14 @@ function CapturaPanel({
   mostrarExtras,
   onResultado,
   onDeshecho,
+  defectos = [],
 }: {
   inspeccionId: string;
   onCapturado: () => void;
   mostrarExtras: boolean;
   onResultado?: (esBuena: boolean, cantidad: number) => void;
   onDeshecho?: () => void;
+  defectos?: { tipo: string; cantidad: number; recuperadas: number }[];
 }) {
   const toast = useToast();
   const [cantidadBuena, setCantidadBuena] = useState(0);
@@ -1167,6 +1200,16 @@ function CapturaPanel({
         </div>
       </div>
 
+      <PanelRetrabajo
+        inspeccionId={inspeccionId}
+        defectos={defectos}
+        onRegistrado={() => {
+          onCapturado();
+          cargarHoy();
+        }}
+        onDeshacer={deshacer}
+      />
+
       {mostrarExtras && (
         <motion.button
           type="button"
@@ -1181,6 +1224,113 @@ function CapturaPanel({
               ? "Avisando…"
               : "🔔 Llamar líder / supervisor"}
         </motion.button>
+      )}
+    </div>
+  );
+}
+
+function PanelRetrabajo({
+  inspeccionId,
+  defectos,
+  onRegistrado,
+  onDeshacer,
+}: {
+  inspeccionId: string;
+  defectos: { tipo: string; cantidad: number; recuperadas: number }[];
+  onRegistrado: () => void;
+  onDeshacer: (r: ResultadoEnvio) => void;
+}) {
+  const toast = useToast();
+  const pendientes = defectos
+    .map((d) => ({ tipo: d.tipo, pendientes: d.cantidad - d.recuperadas }))
+    .filter((d) => d.pendientes > 0);
+  const [abierto, setAbierto] = useState(false);
+  const [tipo, setTipo] = useState<string>("");
+  const [cantidad, setCantidad] = useState(1);
+  const [enviando, setEnviando] = useState(false);
+
+  const elegido = pendientes.find((d) => d.tipo === tipo) ?? pendientes[0];
+  const maximo = elegido?.pendientes ?? 0;
+
+  if (pendientes.length === 0) return null;
+
+  async function registrar() {
+    if (!elegido || cantidad <= 0) return;
+    setEnviando(true);
+    const resultado = await enviarCaptura(inspeccionId, { tipo: "retrabajo", cantidad, defecto: elegido.tipo });
+    setEnviando(false);
+    if (resultado.estado === "error") {
+      vibrar("error");
+      toast.error(resultado.mensaje);
+      return;
+    }
+    vibrar("exito");
+    flashPantalla("exito");
+    toast.exito(
+      `🔧 ${cantidad} pieza${cantidad === 1 ? "" : "s"} recuperada${cantidad === 1 ? "" : "s"} (${elegido.tipo})${
+        resultado.estado === "encolada" ? " · sin señal, se enviará al reconectar" : ""
+      }`,
+      { duracion: 5000, accion: { etiqueta: "Deshacer", onClick: () => onDeshacer(resultado) } }
+    );
+    setCantidad(1);
+    setAbierto(false);
+    onRegistrado();
+  }
+
+  return (
+    <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+      {!abierto ? (
+        <button
+          type="button"
+          onClick={() => {
+            vibrar("toque");
+            setAbierto(true);
+          }}
+          className="flex w-full items-center justify-between rounded-lg px-1 text-left text-sm font-bold text-amber-900"
+        >
+          <span>🔧 Retrabajo: recuperar piezas NG</span>
+          <span className="badge bg-amber-200 text-amber-900">
+            {pendientes.reduce((a, d) => a + d.pendientes, 0)} por recuperar
+          </span>
+        </button>
+      ) : (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-amber-900">🔧 Piezas recuperadas con retrabajo</p>
+            <button type="button" onClick={() => setAbierto(false)} className="text-xs font-semibold text-amber-700">
+              Cancelar
+            </button>
+          </div>
+          <select
+            className="input"
+            value={elegido?.tipo ?? ""}
+            onChange={(e) => {
+              setTipo(e.target.value);
+              setCantidad(1);
+            }}
+          >
+            {pendientes.map((d) => (
+              <option key={d.tipo} value={d.tipo}>
+                {d.tipo} · {d.pendientes} por recuperar
+              </option>
+            ))}
+          </select>
+          <ContadorPiezas
+            cantidad={cantidad}
+            onCambiar={(n) => setCantidad(Math.min(maximo, Math.max(0, n)))}
+            disabled={enviando}
+            colorTexto="text-amber-700"
+          />
+          <motion.button
+            type="button"
+            whileTap={{ scale: 0.96 }}
+            onClick={registrar}
+            disabled={enviando || cantidad <= 0}
+            className="w-full rounded-lg bg-amber-500 py-3 text-sm font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-40"
+          >
+            {enviando ? "Guardando…" : `Registrar ${cantidad} recuperada${cantidad === 1 ? "" : "s"}`}
+          </motion.button>
+        </motion.div>
       )}
     </div>
   );
@@ -1331,6 +1481,8 @@ function EditarModal({
   const [precioPorPieza, setPrecioPorPieza] = useState(
     inspeccion.precioPorPieza ? String(inspeccion.precioPorPieza) : ""
   );
+  const [modoCobro, setModoCobro] = useState<"pieza" | "hora">(inspeccion.modoCobro === "hora" ? "hora" : "pieza");
+  const [precioPorHora, setPrecioPorHora] = useState(inspeccion.precioPorHora ? String(inspeccion.precioPorHora) : "");
   const [fechaEntrega, setFechaEntrega] = useState(
     inspeccion.fechaEntrega ? inspeccion.fechaEntrega.slice(0, 10) : ""
   );
@@ -1341,21 +1493,10 @@ function EditarModal({
   const [inspectorIds, setInspectorIds] = useState<string[]>(
     inspeccion.inspectores.map((a) => a.usuario.id)
   );
-  const [inspectores, setInspectores] = useState<{ id: string; nombre: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
-  useEffect(() => {
-    fetch("/api/usuarios/inspectores")
-      .then((r) => r.json())
-      .then(setInspectores);
-  }, []);
 
-  function alternarInspector(idInspector: string) {
-    setInspectorIds((prev) =>
-      prev.includes(idInspector) ? prev.filter((x) => x !== idInspector) : [...prev, idInspector]
-    );
-  }
 
   async function manejarEnvio(e: React.FormEvent) {
     e.preventDefault();
@@ -1372,6 +1513,8 @@ function EditarModal({
         puntoLimpio: puntoLimpio || null,
         meta: meta ? Number(meta) : 0,
         precioPorPieza: precioPorPieza ? Number(precioPorPieza) : 0,
+        modoCobro,
+        precioPorHora: precioPorHora ? Number(precioPorHora) : 0,
         fechaEntrega: fechaEntrega ? new Date(fechaEntrega).toISOString() : null,
         instrucciones: instrucciones || null,
         instruccionesPdfUrl: instruccionesPdfUrl || null,
@@ -1442,17 +1585,14 @@ function EditarModal({
               onChange={(e) => setMeta(e.target.value)}
             />
           </div>
-          <div>
-            <label className="label">Precio por pieza (facturación)</label>
-            <input
-              className="input"
-              type="number"
-              min={0}
-              step="0.01"
-              value={precioPorPieza}
-              onChange={(e) => setPrecioPorPieza(e.target.value)}
-            />
-          </div>
+          <CampoCobro
+            modo={modoCobro}
+            onModo={setModoCobro}
+            precioPieza={precioPorPieza}
+            onPrecioPieza={setPrecioPorPieza}
+            precioHora={precioPorHora}
+            onPrecioHora={setPrecioPorHora}
+          />
           <div>
             <label className="label">Fecha de entrega</label>
             <input
@@ -1477,25 +1617,7 @@ function EditarModal({
           </div>
           <div className="sm:col-span-2">
             <label className="label">Inspectores asignados</label>
-            <div className="flex flex-wrap gap-2">
-              {inspectores.length === 0 && (
-                <p className="text-xs text-navy-400">No hay inspectores dados de alta todavía.</p>
-              )}
-              {inspectores.map((insp) => (
-                <button
-                  type="button"
-                  key={insp.id}
-                  onClick={() => alternarInspector(insp.id)}
-                  className={`rounded-full border px-3 py-1 text-xs font-semibold ${
-                    inspectorIds.includes(insp.id)
-                      ? "border-navy bg-navy text-white"
-                      : "border-navy-200 text-navy-600"
-                  }`}
-                >
-                  {insp.nombre}
-                </button>
-              ))}
-            </div>
+            <SelectorInspectores numeroParte={numeroParte} seleccionados={inspectorIds} onCambiar={setInspectorIds} />
           </div>
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}

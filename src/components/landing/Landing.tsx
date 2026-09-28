@@ -4,41 +4,150 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
+import { BotonIdioma, useIdioma } from "@/components/ui/Idioma";
+import type { Traductor } from "@/lib/i18n";
 import { CONTACTO_EMAIL, CONTACTO_WHATSAPP, NOMBRE_APP, NOMBRE_CORTO, NOMBRE_EMPRESA, NOMBRE_LEGAL } from "@/lib/branding";
 
-const urlDemo = CONTACTO_WHATSAPP
-  ? `https://wa.me/${CONTACTO_WHATSAPP}?text=${encodeURIComponent(`Hola, me interesa una demo de ${NOMBRE_APP}.`)}`
-  : CONTACTO_EMAIL
-    ? `mailto:${CONTACTO_EMAIL}?subject=${encodeURIComponent(`Demo de ${NOMBRE_APP}`)}`
-    : null;
+const urlDemo = (t: Traductor) =>
+  CONTACTO_WHATSAPP
+    ? `https://wa.me/${CONTACTO_WHATSAPP}?text=${encodeURIComponent(
+        t(`Hola, me interesa una demo de ${NOMBRE_APP}.`, `Hi, I'm interested in a demo of ${NOMBRE_APP}.`)
+      )}`
+    : CONTACTO_EMAIL
+      ? `mailto:${CONTACTO_EMAIL}?subject=${encodeURIComponent(t(`Demo de ${NOMBRE_APP}`, `${NOMBRE_APP} demo`))}`
+      : null;
 
-const MODULOS = [
-  { icono: "📱", titulo: "Captura en piso", texto: "Botones grandes, vibración y deshacer. Hecha para usarse con guantes y prisa." },
-  { icono: "📡", titulo: "Funciona sin señal", texto: "Las capturas y fotos se guardan en el equipo y se sincronizan solas al volver la red." },
-  { icono: "📷", titulo: "Escaneo QR", texto: "Etiqueta imprimible por inspección: escanea y el inspector ya está capturando." },
-  { icono: "📺", titulo: "Modo TV Andon", texto: "Pantalla de piso con semáforo por sorteo, llamados de apoyo y alertas en vivo." },
-  { icono: "📉", titulo: "Control estadístico", texto: "Gráfica p por hora con límites de control y fecha estimada de término." },
-  { icono: "🔗", titulo: "Portal del cliente", texto: "Un enlace en vivo con avance, Pareto y fotos. Sin cuentas, sin llamadas de seguimiento." },
-  { icono: "🛠️", titulo: "Reportes 8D", texto: "Se llenan solos con los datos del sorteo y salen en PDF listo para el cliente." },
-  { icono: "💰", titulo: "Facturación", texto: "Piezas × precio por cliente y mes, con estado de cuenta en PDF." },
-  { icono: "🕐", titulo: "Turnos y relevos", texto: "Bitácora de entrega de turno con los números del turno guardados solos." },
+type Texto = [es: string, en: string];
+
+const MODULOS: { icono: string; titulo: Texto; texto: Texto }[] = [
+  {
+    icono: "📱",
+    titulo: ["Captura en piso", "Shop-floor capture"],
+    texto: [
+      "Botones grandes, vibración y deshacer. Hecha para usarse con guantes y prisa.",
+      "Big buttons, haptics and undo. Built to be used with gloves, in a hurry.",
+    ],
+  },
+  {
+    icono: "📡",
+    titulo: ["Funciona sin señal", "Works offline"],
+    texto: [
+      "Las capturas y fotos se guardan en el equipo y se sincronizan solas al volver la red.",
+      "Counts and photos are stored on the device and sync automatically when the network is back.",
+    ],
+  },
+  {
+    icono: "✅",
+    titulo: ["Material liberado con QR", "Released-material QR labels"],
+    texto: [
+      "Etiqueta por contenedor con QR público: cualquiera en la cadena verifica qué se inspeccionó.",
+      "One label per container with a public QR: anyone down the supply chain can verify what was inspected.",
+    ],
+  },
+  {
+    icono: "📺",
+    titulo: ["Modo TV Andon", "Andon TV mode"],
+    texto: [
+      "Pantalla de piso con semáforo por sorteo, llamados de apoyo y alertas en vivo.",
+      "A floor display with a traffic light per sort, help calls and live alerts.",
+    ],
+  },
+  {
+    icono: "📉",
+    titulo: ["Control estadístico", "Statistical control"],
+    texto: [
+      "Gráfica p por hora con límites de control y fecha estimada de término.",
+      "Hourly p-chart with control limits and an estimated completion date.",
+    ],
+  },
+  {
+    icono: "🔗",
+    titulo: ["Portal del cliente", "Customer portal"],
+    texto: [
+      "Avance en vivo, Pareto, fotos, solicitudes de servicio y auditorías. En español o inglés.",
+      "Live progress, Pareto, photos, service requests and audits. In English or Spanish.",
+    ],
+  },
+  {
+    icono: "🛠️",
+    titulo: ["Reportes 8D", "8D reports"],
+    texto: [
+      "Se llenan solos con los datos del sorteo y salen en PDF listo para el cliente.",
+      "Pre-filled with the sort data and exported as a customer-ready PDF.",
+    ],
+  },
+  {
+    icono: "📋",
+    titulo: ["Auditorías y checklists", "Audits & checklists"],
+    texto: [
+      "LPA, 5S y recibo con fotos de hallazgos, % de cumplimiento y PDF.",
+      "LPA, 5S and receiving audits with finding photos, compliance score and PDF.",
+    ],
+  },
+  {
+    icono: "🎓",
+    titulo: ["Inspectores certificados", "Certified inspectors"],
+    texto: [
+      "Examen por número de parte: solo quien aprobó puede ser asignado a ese sorteo.",
+      "A per-part-number exam: only certified inspectors can be assigned to that sort.",
+    ],
+  },
+  {
+    icono: "💰",
+    titulo: ["Facturación por pieza u hora", "Billing per piece or hour"],
+    texto: [
+      "Estado de cuenta mensual por cliente, con asistencia de inspectores integrada.",
+      "Monthly statement per customer, with inspector attendance built in.",
+    ],
+  },
+  {
+    icono: "🕐",
+    titulo: ["Turnos y relevos", "Shifts & handovers"],
+    texto: [
+      "Bitácora de entrega de turno con los números del turno guardados solos.",
+      "A shift handover log with the shift's numbers captured automatically.",
+    ],
+  },
+  {
+    icono: "🏆",
+    titulo: ["Ranking de inspectores", "Inspector leaderboard"],
+    texto: [
+      "Metas, rachas e insignias que premian productividad y detección.",
+      "Goals, streaks and badges that reward throughput and detection.",
+    ],
+  },
 ];
 
-const ROLES = [
+const ROLES: { clave: string; titulo: Texto; puntos: Texto[] }[] = [
   {
     clave: "inspector",
-    titulo: "Inspector",
-    puntos: ["Escanea la etiqueta y empieza", "Registra piezas en dos toques", "Pide apoyo con un botón", "Ve su ritmo y su lugar en el ranking"],
+    titulo: ["Inspector", "Inspector"],
+    puntos: [
+      ["Escanea la etiqueta y empieza", "Scans the label and starts"],
+      ["Registra piezas en dos toques", "Logs parts in two taps"],
+      ["Pide apoyo con un botón", "Calls for help with one button"],
+      ["Ve su ritmo y su lugar en el ranking", "Sees their pace and leaderboard spot"],
+    ],
   },
   {
     clave: "liderazgo",
-    titulo: "Supervisor / Gerente",
-    puntos: ["Semáforo de todos los sorteos", "Alertas de rechazo y fuera de control", "Entrega de turno sin papel", "Facturación del mes al instante"],
+    titulo: ["Supervisor / Gerente", "Supervisor / Manager"],
+    puntos: [
+      ["Semáforo de todos los sorteos", "A traffic light for every sort"],
+      ["Alertas de rechazo y fuera de control", "Reject-rate and out-of-control alerts"],
+      ["Entrega de turno sin papel", "Paperless shift handover"],
+      ["Facturación del mes al instante", "Month-to-date billing instantly"],
+    ],
   },
   {
     clave: "cliente",
-    titulo: "Tu cliente",
-    puntos: ["Ve el avance en vivo", "Pareto y fotos de cada defecto", "Recibe aviso al salir una pieza NG", "Descarga el 8D y el reporte de cierre"],
+    titulo: ["Tu cliente", "Your customer"],
+    puntos: [
+      ["Ve el avance en vivo", "Sees progress live"],
+      ["Pareto y fotos de cada defecto", "Pareto and photos of every defect"],
+      ["Verifica cada contenedor con su QR", "Verifies every container with its QR"],
+      ["Descarga el 8D y el reporte de cierre", "Downloads the 8D and the closing report"],
+    ],
   },
 ];
 
@@ -57,10 +166,12 @@ function Aparecer({ children, retraso = 0, className = "" }: { children: React.R
 }
 
 function BotonDemo({ grande = false }: { grande?: boolean }) {
-  if (!urlDemo) return null;
+  const { t } = useIdioma();
+  const url = urlDemo(t);
+  if (!url) return null;
   return (
     <motion.a
-      href={urlDemo}
+      href={url}
       target="_blank"
       rel="noreferrer"
       whileHover={{ scale: 1.03 }}
@@ -69,12 +180,13 @@ function BotonDemo({ grande = false }: { grande?: boolean }) {
         grande ? "px-7 py-4 text-lg" : "px-5 py-3"
       }`}
     >
-      Solicitar demo →
+      {t("Solicitar demo", "Request a demo")} →
     </motion.a>
   );
 }
 
 function MaquetaApp() {
+  const { t, locale } = useIdioma();
   const [buenas, setBuenas] = useState(1240);
   const [aviso, setAviso] = useState(0);
 
@@ -106,18 +218,18 @@ function MaquetaApp() {
             <div className="mt-2 grid grid-cols-2 gap-2 text-center">
               <div className="rounded-lg bg-white/10 py-2">
                 <motion.p key={buenas} initial={{ scale: 1.25, color: "#FDE68A" }} animate={{ scale: 1, color: "#4ADE80" }} className="font-display text-2xl font-extrabold">
-                  {buenas.toLocaleString("es-MX")}
+                  {buenas.toLocaleString(locale)}
                 </motion.p>
-                <p className="text-[8px] uppercase text-white/60">✅ Buenas</p>
+                <p className="text-[8px] uppercase text-white/60">✅ {t("Buenas", "Good")}</p>
               </div>
               <div className="rounded-lg bg-white/10 py-2">
                 <p className="font-display text-2xl font-extrabold text-red-400">38</p>
-                <p className="text-[8px] uppercase text-white/60">❌ Malas</p>
+                <p className="text-[8px] uppercase text-white/60">❌ {t("Malas", "Rejects")}</p>
               </div>
             </div>
           </div>
           <div className="rounded-xl bg-emerald-50 p-2.5">
-            <p className="text-center text-[10px] font-semibold text-emerald-800">📦 Cantidad inspeccionada</p>
+            <p className="text-center text-[10px] font-semibold text-emerald-800">📦 {t("Cantidad inspeccionada", "Inspected quantity")}</p>
             <div className="mt-1.5 flex justify-center gap-1">
               {["-1", "+1", "+10", "+100"].map((b) => (
                 <span key={b} className="rounded-md border border-navy-200 bg-white px-1.5 py-1 text-[10px] font-bold text-navy-700">
@@ -130,11 +242,11 @@ function MaquetaApp() {
               animate={{ scale: [1, 0.95, 1] }}
               transition={{ duration: 0.3, repeat: Infinity, repeatDelay: 2.3 }}
             >
-              Registrar 10 piezas
+              {t("Registrar 10 piezas", "Log 10 parts")}
             </motion.div>
           </div>
-          <div className="rounded-xl bg-red-600 py-2 text-center text-[10px] font-bold text-white">⚠️ Reportar defecto</div>
-          <div className="rounded-xl bg-orange-500 py-2 text-center text-[10px] font-bold text-white">🔔 Llamar líder</div>
+          <div className="rounded-xl bg-red-600 py-2 text-center text-[10px] font-bold text-white">⚠️ {t("Reportar defecto", "Report defect")}</div>
+          <div className="rounded-xl bg-orange-500 py-2 text-center text-[10px] font-bold text-white">🔔 {t("Llamar líder", "Call team lead")}</div>
         </div>
         <AnimatePresence>
           <motion.div
@@ -144,7 +256,8 @@ function MaquetaApp() {
             exit={{ opacity: 0 }}
             className="absolute inset-x-3 bottom-4 flex items-center gap-2 rounded-lg bg-white px-2.5 py-2 text-[10px] font-semibold text-navy-900 shadow-lg"
           >
-            ✅ +10 piezas registradas <span className="ml-auto rounded bg-navy px-1.5 py-0.5 text-[9px] text-white">Deshacer</span>
+            ✅ {t("+10 piezas registradas", "+10 parts logged")}{" "}
+            <span className="ml-auto rounded bg-navy px-1.5 py-0.5 text-[9px] text-white">{t("Deshacer", "Undo")}</span>
           </motion.div>
         </AnimatePresence>
       </motion.div>
@@ -164,7 +277,7 @@ function MaquetaApp() {
           </span>
         </div>
         <p className="mt-1 font-display text-2xl font-black text-red-300">11.9%</p>
-        <p className="text-[10px] font-semibold text-red-200">🔔 Piden apoyo · Estación 3</p>
+        <p className="text-[10px] font-semibold text-red-200">🔔 {t("Piden apoyo · Estación 3", "Help requested · Station 3")}</p>
       </motion.div>
 
       <motion.div
@@ -173,7 +286,7 @@ function MaquetaApp() {
         animate={{ opacity: 1, x: 0, y: [0, 6, 0] }}
         transition={{ opacity: { delay: 0.8 }, x: { delay: 0.8 }, y: { duration: 6, repeat: Infinity, ease: "easeInOut" } }}
       >
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-navy-500">Gráfica p · por hora</p>
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-navy-500">{t("Gráfica p · por hora", "p-chart · hourly")}</p>
         <svg viewBox="0 0 184 64" className="mt-1 h-16 w-full">
           <line x1="0" x2="184" y1="22" y2="22" stroke="#8A94B8" strokeDasharray="4 3" strokeWidth="1" />
           <line x1="0" x2="184" y1="42" y2="42" stroke="#8A94B8" strokeWidth="1" />
@@ -188,13 +301,14 @@ function MaquetaApp() {
           />
           <motion.circle cx={6 * 22 + 4} cy={60 - 44} r="4" fill="#DC2626" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 2.6 }} />
         </svg>
-        <p className="text-[10px] font-semibold text-red-700">⚠️ 1 hora fuera de control</p>
+        <p className="text-[10px] font-semibold text-red-700">⚠️ {t("1 hora fuera de control", "1 hour out of control")}</p>
       </motion.div>
     </div>
   );
 }
 
-export default function Landing() {
+export default function Landing({ registro = false }: { registro?: boolean }) {
+  const { t } = useIdioma();
   const [conScroll, setConScroll] = useState(false);
   const [rol, setRol] = useState(ROLES[0].clave);
 
@@ -217,13 +331,16 @@ export default function Landing() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
           <Image src="/logo-header.png" alt={NOMBRE_APP} width={800} height={266} className="h-10 w-auto" priority />
           <nav className="hidden items-center gap-6 text-sm font-medium text-white/80 md:flex">
-            <a href="#modulos" className="hover:text-white">Módulos</a>
-            <a href="#como-funciona" className="hover:text-white">Cómo funciona</a>
-            <a href="#roles" className="hover:text-white">Para quién</a>
+            <a href="#modulos" className="hover:text-white">{t("Módulos", "Features")}</a>
+            <a href="#como-funciona" className="hover:text-white">{t("Cómo funciona", "How it works")}</a>
+            <a href="#roles" className="hover:text-white">{t("Para quién", "Who it’s for")}</a>
           </nav>
-          <Link href="/login" className="rounded-lg border border-white/25 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10">
-            Iniciar sesión
-          </Link>
+          <div className="flex items-center gap-3">
+            <BotonIdioma oscuro />
+            <Link href="/login" className="rounded-lg border border-white/25 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10">
+              {t("Iniciar sesión", "Sign in")}
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -245,7 +362,7 @@ export default function Landing() {
               animate={{ opacity: 1, y: 0 }}
               className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold text-yellow"
             >
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> Sorteo e inspección automotriz
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> {t("Sorteo e inspección automotriz", "Automotive sorting & inspection")}
             </motion.p>
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
@@ -253,8 +370,11 @@ export default function Landing() {
               transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="mt-5 font-display text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-6xl"
             >
-              Tu piso de inspección,{" "}
-              <span className="bg-gradient-to-r from-yellow via-amber-300 to-orange-400 bg-clip-text text-transparent">en tiempo real</span>.
+              {t("Tu piso de inspección,", "Your inspection floor,")}{" "}
+              <span className="bg-gradient-to-r from-yellow via-amber-300 to-orange-400 bg-clip-text text-transparent">
+                {t("en tiempo real", "in real time")}
+              </span>
+              .
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -262,8 +382,10 @@ export default function Landing() {
               transition={{ delay: 0.2, duration: 0.6 }}
               className="mt-5 max-w-xl text-lg text-white/75"
             >
-              {NOMBRE_CORTO} reemplaza las hojas de captura, los grupos de WhatsApp y el Excel de fin de turno. Inspectores capturan en
-              segundos, liderazgo ve el semáforo del piso y tu cliente ve su avance en vivo.
+              {t(
+                `${NOMBRE_CORTO} reemplaza las hojas de captura, los grupos de WhatsApp y el Excel de fin de turno. Inspectores capturan en segundos, liderazgo ve el semáforo del piso y tu cliente ve su avance en vivo.`,
+                `${NOMBRE_CORTO} replaces paper tally sheets, WhatsApp groups and the end-of-shift spreadsheet. Inspectors log in seconds, leadership sees the floor at a glance and your customer follows progress live.`
+              )}
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -272,11 +394,19 @@ export default function Landing() {
               className="mt-8 flex flex-wrap gap-3"
             >
               <BotonDemo grande />
+              {registro && (
+                <Link
+                  href="/registro"
+                  className="inline-flex items-center justify-center rounded-xl bg-white px-7 py-4 text-lg font-bold text-navy-900 transition hover:bg-white/90"
+                >
+                  {t("Crear cuenta gratis", "Create free account")}
+                </Link>
+              )}
               <Link
                 href="/login"
                 className="inline-flex items-center justify-center rounded-xl border border-white/25 px-7 py-4 text-lg font-semibold text-white transition hover:bg-white/10"
               >
-                Ya tengo cuenta
+                {t("Ya tengo cuenta", "I have an account")}
               </Link>
             </motion.div>
             <motion.div
@@ -285,9 +415,10 @@ export default function Landing() {
               transition={{ delay: 0.5 }}
               className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/60"
             >
-              <span>✓ Celular, tablet o TV</span>
-              <span>✓ Funciona sin señal</span>
-              <span>✓ Se instala como app</span>
+              <span>✓ {t("Celular, tablet o TV", "Phone, tablet or TV")}</span>
+              <span>✓ {t("Funciona sin señal", "Works offline")}</span>
+              <span>✓ {t("Se instala como app", "Installs as an app")}</span>
+              <span>✓ {t("Español e inglés", "English & Spanish")}</span>
             </motion.div>
           </div>
           <MaquetaApp />
@@ -296,13 +427,20 @@ export default function Landing() {
 
       <section id="modulos" className="mx-auto max-w-6xl px-5 py-24">
         <Aparecer className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-navy-500">Todo en un solo lugar</p>
-          <h2 className="mt-2 font-display text-3xl font-extrabold sm:text-4xl">Del contenedor al reporte del cliente</h2>
-          <p className="mt-3 text-navy-500">Cada módulo está pensado para el ritmo real de un sorteo, no para una oficina.</p>
+          <p className="text-sm font-semibold uppercase tracking-widest text-navy-500">{t("Todo en un solo lugar", "All in one place")}</p>
+          <h2 className="mt-2 font-display text-3xl font-extrabold sm:text-4xl">
+            {t("Del contenedor al reporte del cliente", "From the container to the customer report")}
+          </h2>
+          <p className="mt-3 text-navy-500">
+            {t(
+              "Cada módulo está pensado para el ritmo real de un sorteo, no para una oficina.",
+              "Every feature is built for the real pace of a sort, not for an office."
+            )}
+          </p>
         </Aparecer>
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {MODULOS.map((m, i) => (
-            <Aparecer key={m.titulo} retraso={(i % 3) * 0.08}>
+            <Aparecer key={m.icono} retraso={(i % 3) * 0.08}>
               <motion.div
                 whileHover={{ y: -4 }}
                 className="group h-full rounded-2xl border border-navy-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-xl"
@@ -310,8 +448,8 @@ export default function Landing() {
                 <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-navy-700 to-navy-900 text-2xl shadow-md transition-transform group-hover:scale-110 group-hover:rotate-3">
                   {m.icono}
                 </span>
-                <h3 className="mt-4 font-display text-lg font-bold">{m.titulo}</h3>
-                <p className="mt-1 text-sm text-navy-500">{m.texto}</p>
+                <h3 className="mt-4 font-display text-lg font-bold">{t(...m.titulo)}</h3>
+                <p className="mt-1 text-sm text-navy-500">{t(...m.texto)}</p>
               </motion.div>
             </Aparecer>
           ))}
@@ -321,8 +459,8 @@ export default function Landing() {
       <section id="como-funciona" className="bg-white py-24">
         <div className="mx-auto max-w-6xl px-5">
           <Aparecer className="text-center">
-            <p className="text-sm font-semibold uppercase tracking-widest text-navy-500">Cómo funciona</p>
-            <h2 className="mt-2 font-display text-3xl font-extrabold sm:text-4xl">Tres pasos, cero papel</h2>
+            <p className="text-sm font-semibold uppercase tracking-widest text-navy-500">{t("Cómo funciona", "How it works")}</p>
+            <h2 className="mt-2 font-display text-3xl font-extrabold sm:text-4xl">{t("Tres pasos, cero papel", "Three steps, zero paper")}</h2>
           </Aparecer>
           <div className="relative mt-14 grid gap-10 md:grid-cols-3">
             <motion.div
@@ -333,9 +471,33 @@ export default function Landing() {
               transition={{ duration: 1.2, ease: "easeInOut" }}
             />
             {[
-              { n: 1, icono: "📷", titulo: "Escanea", texto: "El inspector escanea la etiqueta QR del contenedor y ve el criterio de aceptación." },
-              { n: 2, icono: "👆", titulo: "Captura", texto: "Piezas buenas y defectos con foto, aunque no haya señal. El Pareto se arma solo." },
-              { n: 3, icono: "📊", titulo: "Todos lo ven", texto: "Liderazgo en el semáforo del piso, tu cliente en su enlace en vivo y la factura al cierre." },
+              {
+                n: 1,
+                icono: "📷",
+                titulo: t("Escanea", "Scan"),
+                texto: t(
+                  "El inspector escanea la etiqueta QR del contenedor y ve el criterio de aceptación.",
+                  "The inspector scans the container's QR label and sees the acceptance criteria."
+                ),
+              },
+              {
+                n: 2,
+                icono: "👆",
+                titulo: t("Captura", "Log"),
+                texto: t(
+                  "Piezas buenas y defectos con foto, aunque no haya señal. El Pareto se arma solo.",
+                  "Good parts and defects with photos, even with no signal. The Pareto builds itself."
+                ),
+              },
+              {
+                n: 3,
+                icono: "📊",
+                titulo: t("Todos lo ven", "Everyone sees it"),
+                texto: t(
+                  "Liderazgo en el semáforo del piso, tu cliente en su enlace en vivo y la factura al cierre.",
+                  "Leadership on the floor dashboard, your customer on their live link, and the invoice at close."
+                ),
+              },
             ].map((p, i) => (
               <Aparecer key={p.n} retraso={0.2 + i * 0.25} className="relative text-center">
                 <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-navy-900 text-3xl shadow-lg ring-8 ring-white">
@@ -354,8 +516,8 @@ export default function Landing() {
 
       <section id="roles" className="mx-auto max-w-6xl px-5 py-24">
         <Aparecer className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-navy-500">Para quién</p>
-          <h2 className="mt-2 font-display text-3xl font-extrabold sm:text-4xl">Una pantalla para cada quien</h2>
+          <p className="text-sm font-semibold uppercase tracking-widest text-navy-500">{t("Para quién", "Who it’s for")}</p>
+          <h2 className="mt-2 font-display text-3xl font-extrabold sm:text-4xl">{t("Una pantalla para cada quien", "A screen for everyone")}</h2>
         </Aparecer>
         <div className="mt-10 flex justify-center">
           <div className="inline-flex flex-wrap justify-center rounded-full border border-navy-200 bg-white p-1">
@@ -368,7 +530,7 @@ export default function Landing() {
                 {rol === r.clave && (
                   <motion.span layoutId="rol-landing" className="absolute inset-0 rounded-full bg-navy" transition={{ type: "spring", stiffness: 500, damping: 36 }} />
                 )}
-                <span className="relative">{r.titulo}</span>
+                <span className="relative">{t(...r.titulo)}</span>
               </button>
             ))}
           </div>
@@ -385,14 +547,14 @@ export default function Landing() {
             >
               {rolActual.puntos.map((p, i) => (
                 <motion.li
-                  key={p}
+                  key={p[0]}
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.06 }}
                   className="flex items-center gap-3 rounded-xl border border-navy-100 bg-white px-4 py-3 text-sm font-medium shadow-sm"
                 >
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs text-emerald-700">✓</span>
-                  {p}
+                  {t(...p)}
                 </motion.li>
               ))}
             </motion.ul>
@@ -404,14 +566,17 @@ export default function Landing() {
         <Aparecer>
           <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl bg-gradient-to-br from-navy-800 via-navy-900 to-navy-950 px-8 py-14 text-center text-white shadow-2xl">
             <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-yellow/20 blur-3xl" />
-            <h2 className="relative font-display text-3xl font-extrabold sm:text-4xl">¿Listo para dejar el papel?</h2>
+            <h2 className="relative font-display text-3xl font-extrabold sm:text-4xl">{t("¿Listo para dejar el papel?", "Ready to ditch the paper?")}</h2>
             <p className="relative mx-auto mt-3 max-w-xl text-white/75">
-              Te mostramos {NOMBRE_CORTO} con un sorteo real en 20 minutos y dejamos tu primera planta configurada.
+              {t(
+                `Te mostramos ${NOMBRE_CORTO} con un sorteo real en 20 minutos y dejamos tu primera planta configurada.`,
+                `We'll walk you through ${NOMBRE_CORTO} with a real sort in 20 minutes and set up your first plant.`
+              )}
             </p>
             <div className="relative mt-8 flex flex-wrap justify-center gap-3">
               <BotonDemo grande />
               <Link href="/login" className="inline-flex items-center rounded-xl border border-white/25 px-7 py-4 text-lg font-semibold hover:bg-white/10">
-                Iniciar sesión
+                {t("Iniciar sesión", "Sign in")}
               </Link>
             </div>
           </div>
@@ -430,7 +595,7 @@ export default function Landing() {
               </a>
             )}
             <Link href="/login" className="hover:text-navy-900">
-              Iniciar sesión
+              {t("Iniciar sesión", "Sign in")}
             </Link>
           </div>
         </div>

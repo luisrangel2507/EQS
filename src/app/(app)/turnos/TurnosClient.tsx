@@ -10,6 +10,7 @@ import { Kpi } from "@/app/(app)/dashboard/shared";
 import Modal from "@/components/ui/Modal";
 import { SkeletonPagina } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
+import { consumirParametro } from "@/lib/eventos";
 
 type Fila = { nombre: string; buenas: number; malas: number };
 
@@ -60,7 +61,7 @@ export default function TurnosClient({ rol, miId }: { rol: Rol; miId: string }) 
 
   useEffect(() => {
     const t = setInterval(() => setAhora(Date.now()), 30000);
-    if (new URLSearchParams(window.location.search).get("entregar") === "1") setEntregando(true);
+    if (consumirParametro("entregar") === "1") setEntregando(true);
     return () => clearInterval(t);
   }, []);
 

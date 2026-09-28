@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import EscanerCodigo from "@/components/EscanerCodigo";
+import JornadaBarra from "@/components/JornadaBarra";
 
 type InspeccionResumen = {
   id: string;
@@ -35,6 +36,7 @@ export default function EstacionClient({
 
   const botonEscanear = (
     <>
+      <JornadaBarra />
       <motion.button
         type="button"
         whileTap={{ scale: 0.97 }}

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requerirRol, requerirSesion, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { obtenerInspeccionVisible } from "@/lib/inspecciones";
+import { validarAsignacion } from "@/lib/certificaciones";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,8 @@ const actualizarInspeccionSchema = z.object({
   puntoLimpio: z.string().trim().optional().nullable(),
   meta: z.coerce.number().int().min(0).optional(),
   precioPorPieza: z.coerce.number().min(0).optional(),
+  modoCobro: z.enum(["pieza", "hora"]).optional(),
+  precioPorHora: z.coerce.number().min(0).optional(),
   fechaEntrega: z.string().datetime().optional().nullable().or(z.literal("").transform(() => null)),
   instrucciones: z.string().trim().optional().nullable(),
   instruccionesPdfUrl: z.string().trim().optional().nullable(),
@@ -40,6 +43,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     const body = await req.json();
     const datos = actualizarInspeccionSchema.parse(body);
+    if (datos.inspectorIds !== undefined) {
+      // solo se exige para inspectores recién agregados: no se desasigna a nadie por un criterio nuevo
+      const actuales = new Set(
+        (await prisma.inspeccionInspector.findMany({ where: { inspeccionId: params.id } })).map((a) => a.usuarioId)
+      );
+      await validarAsignacion(
+        datos.inspectorIds.filter((id) => !actuales.has(id)),
+        datos.numeroParte !== undefined ? datos.numeroParte : existente.numeroParte
+      );
+    }
 
     const data: Record<string, unknown> = {};
     if (datos.nombre !== undefined) data.nombre = datos.nombre;
@@ -49,6 +62,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (datos.puntoLimpio !== undefined) data.puntoLimpio = datos.puntoLimpio || null;
     if (datos.meta !== undefined) data.meta = datos.meta;
     if (datos.precioPorPieza !== undefined) data.precioPorPieza = datos.precioPorPieza;
+    if (datos.modoCobro !== undefined) data.modoCobro = datos.modoCobro;
+    if (datos.precioPorHora !== undefined) data.precioPorHora = datos.precioPorHora;
     if (datos.fechaEntrega !== undefined) {
       data.fechaEntrega = datos.fechaEntrega ? new Date(datos.fechaEntrega) : null;
     }

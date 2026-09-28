@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import AltaCliente from "@/components/AltaCliente";
+import { consumirParametro } from "@/lib/eventos";
 
 type Empresa = {
   id: string;
@@ -26,7 +27,7 @@ export default function EmpresasClient() {
 
   useEffect(() => {
     cargar();
-    if (new URLSearchParams(window.location.search).get("alta") === "1") setAsistente(true);
+    if (consumirParametro("alta") === "1") setAsistente(true);
   }, [cargar]);
 
   async function crear(e: React.FormEvent) {

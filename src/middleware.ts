@@ -14,5 +14,10 @@ export const config = {
     "/facturacion/:path*",
     "/tv/:path*",
     "/salud/:path*",
+    "/solicitudes/:path*",
+    "/asistencia/:path*",
+    "/certificaciones/:path*",
+    "/auditorias/:path*",
+    "/plataforma/:path*",
   ],
 };
