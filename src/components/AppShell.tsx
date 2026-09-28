@@ -74,7 +74,7 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
 
   return (
     <OcultarHeaderContext.Provider value={setInmersivo}>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background print:bg-white">
         <header className="sticky top-0 z-20 border-b border-navy-100 bg-navy-900 text-white print:hidden">
           {inmersivo ? (
             <div className="flex items-center px-4 py-3">

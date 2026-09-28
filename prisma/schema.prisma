@@ -57,6 +57,7 @@ model Usuario {
   certificacionesDadas Certificacion[]       @relation("CertificacionOtorgante")
   plantillasChecklist  PlantillaChecklist[]
   auditorias           Auditoria[]
+  etiquetasLiberacion  EtiquetaLiberacion[]
   relevosRecibidos     RelevoTurno[]         @relation("RelevoReceptor")
 }
 
@@ -117,6 +118,7 @@ model Inspeccion {
   reportes8D        Reporte8D[]
   solicitudServicio SolicitudServicio?
   asistencias       RegistroAsistencia[]
+  etiquetas         EtiquetaLiberacion[]
 
   @@index([cliente])
   @@index([cerrado])
@@ -418,4 +420,31 @@ model Auditoria {
 
   @@index([creadoEn])
   @@index([cliente])
+}
+
+// Etiqueta de "material liberado" que va pegada en cada contenedor: su QR abre
+// /t/{codigo} (público) para que cualquiera en la cadena verifique qué se inspeccionó.
+model EtiquetaLiberacion {
+  id                String     @id @default(cuid())
+  folio             Int        @unique @default(autoincrement())
+  codigo            String     @unique
+  inspeccion        Inspeccion @relation(fields: [inspeccionId], references: [id], onDelete: Cascade)
+  inspeccionId      String
+  // contenedores impresos juntos comparten "tanda" para numerarlos 1 de N
+  tanda             String
+  contenedor        Int
+  totalContenedores Int
+  cantidad          Int
+  lote              String?
+  creadaPor         Usuario    @relation(fields: [creadaPorId], references: [id])
+  creadaPorId       String
+  creadoEn          DateTime   @default(now())
+  anulada           Boolean    @default(false)
+  anuladaEn         DateTime?
+  motivoAnulacion   String?
+  escaneos          Int        @default(0)
+  ultimoEscaneo     DateTime?
+
+  @@index([inspeccionId])
+  @@index([tanda])
 }

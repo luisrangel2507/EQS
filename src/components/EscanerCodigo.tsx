@@ -29,6 +29,14 @@ function ContenidoEscaner({ onCerrar }: { onCerrar: () => void }) {
   async function resolver(codigo: string) {
     const limpio = codigo.trim();
     if (!limpio || buscando) return;
+    // QR de etiqueta de material liberado: abre su verificación
+    const liberado = limpio.match(/\/t\/([A-Za-z0-9]{6,12})\b/);
+    if (liberado) {
+      vibrar("exito");
+      onCerrar();
+      router.push(`/t/${liberado[1].toUpperCase()}`);
+      return;
+    }
     setBuscando(true);
     setMensaje(null);
     setOpciones(null);

@@ -156,6 +156,9 @@ export default function InspeccionDetalleClient({
           <a href={`/api/inspecciones/${id}/csv`} className="btn-secondary">
             Exportar CSV
           </a>
+          <a href={`/inspecciones/${id}/liberacion`} className="btn-secondary">
+            ✅ {sesion.rol === "CLIENTE" ? "Material liberado" : "Liberar material"}
+          </a>
           {puedeGestionar && (
             <a href={`/inspecciones/${id}/etiqueta`} className="btn-secondary">
               🏷️ Etiqueta QR
