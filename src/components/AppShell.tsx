@@ -137,7 +137,7 @@ export default function AppShell({ id, nombre, rol, organizacion, superadmin, ch
                             <Link
                               key={enlace.href + enlace.label}
                               href={enlace.href}
-                              className={`relative rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                              className={`relative rounded-md px-3 py-1.5 text-sm font-medium transition active:scale-95 ${
                                 activo ? "text-yellow" : "text-white/80 hover:bg-white/5 hover:text-white"
                               }`}
                             >
@@ -188,7 +188,7 @@ export default function AppShell({ id, nombre, rol, organizacion, superadmin, ch
                       <Link
                         key={enlace.href + enlace.label}
                         href={enlace.href}
-                        className={`shrink-0 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                        className={`shrink-0 rounded-md px-3 py-1.5 text-sm font-medium transition active:scale-95 ${
                           activo ? "bg-white/10 text-yellow" : "text-white/80"
                         }`}
                       >
@@ -222,7 +222,7 @@ function MenuMas({ enlaces, pathname }: { enlaces: { href: string; label: string
       <button
         type="button"
         onClick={() => setAbierto((a) => !a)}
-        className={`relative rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+        className={`relative rounded-md px-3 py-1.5 text-sm font-medium transition active:scale-95 ${
           activo ? "text-yellow" : "text-white/80 hover:bg-white/5 hover:text-white"
         }`}
       >

@@ -87,7 +87,7 @@ function Segmentado<T extends string>({
 export default function RankingClient() {
   const [periodo, setPeriodo] = useState("semana");
   const [metrica, setMetrica] = useState<Metrica>("piezas");
-  const { datos, cargando } = usePolling<Datos>(`/api/ranking?periodo=${periodo}`, 30000);
+  const { datos, cargando, actualizando } = usePolling<Datos>(`/api/ranking?periodo=${periodo}`, 30000);
 
   if (cargando && !datos) return <SkeletonPagina />;
   if (!datos) return null;
@@ -104,7 +104,7 @@ export default function RankingClient() {
   const formato = (n: number) => (metrica === "ritmo" ? n.toFixed(1) : Math.round(n).toLocaleString("es-MX"));
 
   return (
-    <div className="space-y-6">
+    <div className="carga-suave space-y-6" aria-busy={actualizando}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl font-bold text-navy-900">🏆 Ranking</h1>

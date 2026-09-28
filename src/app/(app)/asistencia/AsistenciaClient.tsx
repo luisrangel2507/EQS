@@ -79,7 +79,7 @@ function Barras({ titulo, filas }: { titulo: string; filas: { nombre: string; ho
 
 export default function AsistenciaClient({ puedeEditar }: { puedeEditar: boolean }) {
   const [periodo, setPeriodo] = useState("hoy");
-  const { datos, cargando, recargar } = usePolling<Datos>(`/api/asistencia?periodo=${periodo}`, 30000);
+  const { datos, cargando, recargar, actualizando } = usePolling<Datos>(`/api/asistencia?periodo=${periodo}`, 30000);
   const [editando, setEditando] = useState<Fila | null>(null);
   const [ahora, setAhora] = useState(() => Date.now());
 
@@ -92,7 +92,7 @@ export default function AsistenciaClient({ puedeEditar }: { puedeEditar: boolean
   if (!datos) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="carga-suave space-y-6" aria-busy={actualizando}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl font-bold text-navy-900">🕒 Asistencia y horas</h1>

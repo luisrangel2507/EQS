@@ -6,6 +6,10 @@ import { useEffect, useRef, useState, useCallback } from "react";
 export function usePolling<T>(url: string | null, intervaloMs = 7000) {
   const [datos, setDatos] = useState<T | null>(null);
   const [cargando, setCargando] = useState(true);
+  // URL de la que vienen los datos mostrados: si cambió (otro periodo/pestaña) aún no llegan los nuevos
+  const [urlDatos, setUrlDatos] = useState<string | null>(null);
+  const urlActual = useRef(url);
+  urlActual.current = url;
   const [error, setError] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -14,7 +18,11 @@ export function usePolling<T>(url: string | null, intervaloMs = 7000) {
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error("Error al cargar datos");
-      setDatos(await res.json());
+      const json = await res.json();
+      // una respuesta tardía de la pestaña anterior no debe pisar la actual
+      if (urlActual.current !== url) return;
+      setDatos(json);
+      setUrlDatos(url);
       setError(null);
     } catch {
       setError("No se pudo actualizar la información");
@@ -32,5 +40,6 @@ export function usePolling<T>(url: string | null, intervaloMs = 7000) {
     };
   }, [url, intervaloMs, recargar]);
 
-  return { datos, cargando, error, recargar };
+  const actualizando = Boolean(url) && datos !== null && urlDatos !== url;
+  return { datos, cargando, error, recargar, actualizando };
 }

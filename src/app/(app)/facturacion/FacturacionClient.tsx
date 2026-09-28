@@ -58,7 +58,7 @@ const monedaCorta = (n: number) =>
 
 export default function FacturacionClient() {
   const [mes, setMes] = useState(mesHoy);
-  const { datos, cargando } = usePolling<Datos>(`/api/facturacion?mes=${mes}`, 60000);
+  const { datos, cargando, actualizando } = usePolling<Datos>(`/api/facturacion?mes=${mes}`, 60000);
   const [abierto, setAbierto] = useState<string | null>(null);
 
   if (cargando && !datos) return <SkeletonPagina />;
@@ -69,7 +69,7 @@ export default function FacturacionClient() {
   const historico = datos.historico.map((h) => ({ ...h, etiqueta: nombreMes(h.mes, true) }));
 
   return (
-    <div className="space-y-6">
+    <div className="carga-suave space-y-6" aria-busy={actualizando}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl font-bold text-navy-900">💰 Facturación</h1>
