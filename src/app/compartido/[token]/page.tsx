@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { prisma } from "@/lib/prisma";
+// Público por token: sin filtro de organización.
+import { prismaGlobal as prisma } from "@/lib/prisma";
 import { enlaceVigente, datosPublicos } from "@/lib/compartido";
 import { NOMBRE_APP } from "@/lib/branding";
 import { traductorServidor } from "@/lib/i18nServidor";

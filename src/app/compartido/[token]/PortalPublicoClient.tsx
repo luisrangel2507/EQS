@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import type { DatosPublicos } from "@/lib/compartido";
-import { NOMBRE_EMPRESA, NOMBRE_LEGAL } from "@/lib/branding";
+import { NOMBRE_EMPRESA } from "@/lib/branding";
 import NumeroAnimado from "@/components/ui/NumeroAnimado";
 import GaleriaDefectos from "@/components/GaleriaDefectos";
 import { BotonIdioma, useIdioma } from "@/components/ui/Idioma";
@@ -254,7 +254,7 @@ export default function PortalPublicoClient({ token, inicial }: { token: string;
         </div>
 
         <p className="text-center text-xs text-navy-400">
-          {NOMBRE_LEGAL} ·{" "}
+          {datos.organizacion.nombre} ·{" "}
           {t("Vista de solo lectura, se actualiza sola cada 15 segundos", "Read-only view, refreshes every 15 seconds")}
         </p>
       </div>

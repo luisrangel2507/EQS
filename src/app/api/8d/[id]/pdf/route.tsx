@@ -4,14 +4,17 @@ import { manejarErrorApi } from "@/lib/permissions";
 import { obtener8DVisible } from "@/lib/ochoDServidor";
 import { idiomaServidor } from "@/lib/i18nServidor";
 import Reporte8DPdf from "@/lib/pdf/Reporte8DPdf";
+import { datosOrganizacion } from "@/lib/organizaciones";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { reporte: r } = await obtener8DVisible(params.id);
+    const { user, reporte: r } = await obtener8DVisible(params.id);
     const buffer = await renderToBuffer(
-      <Reporte8DPdf idioma={idiomaServidor()}
+      <Reporte8DPdf
+        idioma={idiomaServidor()}
+        empresa={await datosOrganizacion(user.organizacionId)}
         r={{
           ...r,
           creadoEn: r.creadoEn.toISOString(),

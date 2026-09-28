@@ -14,7 +14,7 @@ export function preguntasDe(valor: unknown): Pregunta[] {
 /** Para un número de parte: si pide certificación y quiénes la tienen vigente. */
 export async function certificadosEn(numeroParte: string | null | undefined) {
   if (!numeroParte) return { requiere: false, certificados: new Set<string>() };
-  const criterio = await prisma.criterioParte.findUnique({ where: { numeroParte }, select: { id: true } });
+  const criterio = await prisma.criterioParte.findFirst({ where: { numeroParte }, select: { id: true } });
   if (!criterio) return { requiere: false, certificados: new Set<string>() };
   const certs = await prisma.certificacion.findMany({ where: { numeroParte } });
   return { requiere: true, certificados: new Set(certs.filter(vigente).map((c) => c.usuarioId)) };

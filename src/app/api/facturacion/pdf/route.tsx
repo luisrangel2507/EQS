@@ -3,12 +3,13 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { requerirRol, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { facturacionDelMes, parsearMes, TASA_IVA } from "@/lib/facturacion";
 import EstadoCuenta from "@/lib/pdf/EstadoCuenta";
+import { datosOrganizacion } from "@/lib/organizaciones";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
-    await requerirRol("ADMIN", "GERENTE");
+    const user = await requerirRol("ADMIN", "GERENTE");
     const periodo = parsearMes(req.nextUrl.searchParams.get("mes"));
     const cliente = req.nextUrl.searchParams.get("cliente");
     if (!periodo || !cliente) throw new ErrorPermiso("Faltan mes o cliente", 400);
@@ -23,7 +24,13 @@ export async function GET(req: NextRequest) {
       timeZone: "UTC",
     });
     const buffer = await renderToBuffer(
-      <EstadoCuenta cliente={cliente} periodo={nombreMes} lineas={grupo.lineas} tasaIva={TASA_IVA} />
+      <EstadoCuenta
+        cliente={cliente}
+        periodo={nombreMes}
+        lineas={grupo.lineas}
+        tasaIva={TASA_IVA}
+        empresa={await datosOrganizacion(user.organizacionId)}
+      />
     );
     const archivo = `EstadoCuenta_${cliente.replace(/[^a-z0-9]+/gi, "_")}_${periodo.anio}-${String(periodo.mes).padStart(2, "0")}.pdf`;
     return new Response(new Uint8Array(buffer), {

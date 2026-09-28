@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { randomInt } from "crypto";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { prisma, prismaGlobal } from "@/lib/prisma";
 import { requerirRol, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { PLANTAS } from "@/lib/constants";
 
@@ -45,10 +45,11 @@ function contrasena() {
 
 export async function POST(req: NextRequest) {
   try {
-    await requerirRol("ADMIN");
+    const user = await requerirRol("ADMIN");
     const datos = altaSchema.parse(await req.json());
+    const organizacionId = user.organizacionId;
 
-    if (await prisma.empresa.findUnique({ where: { nombre: datos.empresa } })) {
+    if (await prisma.empresa.findFirst({ where: { nombre: datos.empresa } })) {
       throw new ErrorPermiso("Ya existe una empresa con ese nombre", 409);
     }
 
@@ -56,7 +57,8 @@ export async function POST(req: NextRequest) {
     const usados = new Set<string>();
     const usuarioLibre = async (base: string) => {
       let candidato = base;
-      for (let n = 2; usados.has(candidato) || (await prisma.usuario.findUnique({ where: { usuario: candidato } })); n++) {
+      // el usuario es único en toda la plataforma, no solo en esta organización
+      for (let n = 2; usados.has(candidato) || (await prismaGlobal.usuario.findUnique({ where: { usuario: candidato } })); n++) {
         candidato = `${base}${n}`;
       }
       usados.add(candidato);
@@ -74,10 +76,17 @@ export async function POST(req: NextRequest) {
     }
 
     const resultado = await prisma.$transaction(async (tx) => {
-      const empresa = await tx.empresa.create({ data: { nombre: datos.empresa } });
+      const empresa = await tx.empresa.create({ data: { nombre: datos.empresa, organizacionId } });
       for (const c of contactos) {
         await tx.usuario.create({
-          data: { nombre: c.nombre, usuario: c.usuario, passwordHash: c.passwordHash, rol: "CLIENTE", clienteNombre: empresa.nombre },
+          data: {
+            nombre: c.nombre,
+            usuario: c.usuario,
+            passwordHash: c.passwordHash,
+            rol: "CLIENTE",
+            clienteNombre: empresa.nombre,
+            organizacionId,
+          },
         });
       }
       const inspeccion = datos.inspeccion
@@ -89,6 +98,7 @@ export async function POST(req: NextRequest) {
               precioPorPieza: datos.inspeccion.precioPorPieza ?? 0,
               meta: datos.inspeccion.meta ?? 0,
               cliente: empresa.nombre,
+              organizacionId,
             },
           })
         : null;

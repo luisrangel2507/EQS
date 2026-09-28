@@ -27,12 +27,12 @@ const criterioSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    await requerirRol("ADMIN", "SUPERVISOR");
+    const user = await requerirRol("ADMIN", "SUPERVISOR");
     const d = criterioSchema.parse(await req.json());
     const datos = { ...d, fotoOkUrl: d.fotoOkUrl || null, fotoNgUrl: d.fotoNgUrl || null };
     const criterio = await prisma.criterioParte.upsert({
-      where: { numeroParte: d.numeroParte },
-      create: datos,
+      where: { organizacionId_numeroParte: { organizacionId: user.organizacionId, numeroParte: d.numeroParte } },
+      create: { ...datos, organizacionId: user.organizacionId },
       update: datos,
     });
     return Response.json(criterio, { status: 201 });

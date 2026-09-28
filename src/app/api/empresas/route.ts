@@ -21,16 +21,16 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    await requerirRol("ADMIN");
+    const user = await requerirRol("ADMIN");
     const body = await req.json();
     const datos = crearEmpresaSchema.parse(body);
 
-    const existente = await prisma.empresa.findUnique({ where: { nombre: datos.nombre } });
+    const existente = await prisma.empresa.findFirst({ where: { nombre: datos.nombre } });
     if (existente) {
       throw new ErrorPermiso("Ya existe una empresa con ese nombre", 409);
     }
 
-    const empresa = await prisma.empresa.create({ data: { nombre: datos.nombre } });
+    const empresa = await prisma.empresa.create({ data: { nombre: datos.nombre, organizacionId: user.organizacionId } });
     return Response.json(empresa, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {

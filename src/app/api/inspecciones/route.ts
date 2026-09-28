@@ -41,13 +41,14 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    await requerirRol("ADMIN", "SUPERVISOR");
+    const user = await requerirRol("ADMIN", "SUPERVISOR");
     const body = await req.json();
     const datos = crearInspeccionSchema.parse(body);
     await validarAsignacion(datos.inspectorIds, datos.numeroParte);
 
     const inspeccion = await prisma.inspeccion.create({
       data: {
+        organizacionId: user.organizacionId,
         nombre: datos.nombre,
         numeroParte: datos.numeroParte || null,
         cliente: datos.cliente || null,

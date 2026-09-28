@@ -7,6 +7,7 @@ import { itemsDe, respuestasDe } from "@/lib/auditorias";
 import { whereAuditoriasVisibles } from "@/lib/auditoriasServidor";
 import { archivoDeUrl, nombreArchivoSeguro } from "@/lib/uploads";
 import AuditoriaPdf from "@/lib/pdf/AuditoriaPdf";
+import { datosOrganizacion } from "@/lib/organizaciones";
 import { idiomaServidor } from "@/lib/i18nServidor";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +33,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     const buffer = await renderToBuffer(
       <AuditoriaPdf
         idioma={idiomaServidor()}
+        empresa={await datosOrganizacion(user.organizacionId)}
         a={{
           folio: a.folio,
           nombrePlantilla: a.nombrePlantilla,

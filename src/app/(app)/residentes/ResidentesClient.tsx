@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { usePolling } from "@/lib/usePolling";
 import { ESTADOS_INSPECTOR, ROL_ETIQUETAS } from "@/lib/constants";
 import { Kpi } from "@/app/(app)/dashboard/shared";
-import { NOMBRE_EMPRESA } from "@/lib/branding";
+import { useOrganizacion } from "@/components/Organizacion";
 import { SkeletonTarjetas } from "@/components/ui/Skeleton";
 
 type Residente = {
@@ -42,6 +42,7 @@ function estadoInfo(valor: string) {
 }
 
 export default function ResidentesClient() {
+  const organizacion = useOrganizacion();
   const { datos: residentes, cargando } = usePolling<Residente[]>("/api/residentes", 15000);
   const [abiertoId, setAbiertoId] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
@@ -75,7 +76,7 @@ export default function ResidentesClient() {
       <div>
         <h1 className="font-display text-2xl font-bold text-navy-900">Seguimiento de Residentes</h1>
         <p className="text-sm text-navy-500">
-          Personal de {NOMBRE_EMPRESA} asignado de forma fija a la planta de un cliente. Da clic en uno para ver
+          Personal de {organizacion.nombreCorto} asignado de forma fija a la planta de un cliente. Da clic en uno para ver
           o agregar notas de seguimiento.
         </p>
       </div>

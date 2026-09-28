@@ -3,9 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+// Página pública por código de etiqueta: sin filtro de organización (el código es único en la plataforma).
+import { prismaGlobal as prisma } from "@/lib/prisma";
 import { codigoValido } from "@/lib/etiquetas";
-import { NOMBRE_APP, NOMBRE_EMPRESA, NOMBRE_LEGAL } from "@/lib/branding";
+import { NOMBRE_APP, NOMBRE_EMPRESA } from "@/lib/branding";
 import { ZONA_HORARIA } from "@/lib/turnos";
 import { traductorServidor } from "@/lib/i18nServidor";
 import { nombreDefecto } from "@/lib/i18n";
@@ -66,6 +67,7 @@ export default async function VerificacionPage({ params }: { params: { codigo: s
               cerradoEn: true,
               creadoEn: true,
               defectos: { orderBy: { cantidad: "desc" }, take: 3, select: { tipo: true, cantidad: true } },
+              organizacion: { select: { nombre: true, nombreCorto: true } },
             },
           },
         },
@@ -81,8 +83,8 @@ export default async function VerificacionPage({ params }: { params: { codigo: s
           <p className="mt-2 text-white/70">
             {t("El código", "Code")} <span className="font-mono font-bold">{codigo}</span>{" "}
             {t(
-              `no corresponde a material liberado por ${NOMBRE_EMPRESA}. Aparta el contenedor y confirma con tu contacto de calidad.`,
-              `does not match any material released by ${NOMBRE_EMPRESA}. Set the container aside and check with your quality contact.`,
+              `no corresponde a material liberado registrado en ${NOMBRE_APP}. Aparta el contenedor y confirma con tu contacto de calidad.`,
+              `does not match any material released through ${NOMBRE_APP}. Set the container aside and check with your quality contact.`,
             )}
           </p>
         </div>
@@ -129,8 +131,8 @@ export default async function VerificacionPage({ params }: { params: { codigo: s
           <p className="mt-1 text-sm text-navy-500">
             {ok
               ? t(
-                  `Este contenedor fue inspeccionado y liberado por ${NOMBRE_LEGAL}.`,
-                  `This container was inspected and released by ${NOMBRE_LEGAL}.`,
+                  `Este contenedor fue inspeccionado y liberado por ${i.organizacion.nombre}.`,
+                  `This container was inspected and released by ${i.organizacion.nombre}.`,
                 )
               : t(
                   "No uses este material. Apártalo y contacta a calidad.",

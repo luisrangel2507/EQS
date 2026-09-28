@@ -307,7 +307,7 @@ function MaquetaApp() {
   );
 }
 
-export default function Landing() {
+export default function Landing({ registro = false }: { registro?: boolean }) {
   const { t } = useIdioma();
   const [conScroll, setConScroll] = useState(false);
   const [rol, setRol] = useState(ROLES[0].clave);
@@ -394,6 +394,14 @@ export default function Landing() {
               className="mt-8 flex flex-wrap gap-3"
             >
               <BotonDemo grande />
+              {registro && (
+                <Link
+                  href="/registro"
+                  className="inline-flex items-center justify-center rounded-xl bg-white px-7 py-4 text-lg font-bold text-navy-900 transition hover:bg-white/90"
+                >
+                  {t("Crear cuenta gratis", "Create free account")}
+                </Link>
+              )}
               <Link
                 href="/login"
                 className="inline-flex items-center justify-center rounded-xl border border-white/25 px-7 py-4 text-lg font-semibold text-white transition hover:bg-white/10"

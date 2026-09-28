@@ -1,5 +1,5 @@
 import { Document, Image, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import { NOMBRE_EMPRESA, NOMBRE_LEGAL, PIE_PDF, PIE_PDF_EN } from "@/lib/branding";
+import { EMPRESA_POR_OMISION, type EmpresaEmisora, PIE_PDF, PIE_PDF_EN } from "@/lib/branding";
 import { crearT, LOCALES, type Idioma } from "@/lib/i18n";
 import { ZONA_HORARIA } from "@/lib/turnos";
 import type { ItemChecklist, Respuesta } from "@/lib/auditorias";
@@ -66,18 +66,26 @@ export type DatosAuditoriaPdf = {
   fotos: Record<number, string>; // índice → ruta de archivo en disco
 };
 
-export default function AuditoriaPdf({ a, idioma = "es" }: { a: DatosAuditoriaPdf; idioma?: Idioma }) {
+export default function AuditoriaPdf({
+  a,
+  idioma = "es",
+  empresa = EMPRESA_POR_OMISION,
+}: {
+  a: DatosAuditoriaPdf;
+  idioma?: Idioma;
+  empresa?: EmpresaEmisora;
+}) {
   const t = crearT(idioma);
   const fechaHora = (iso: string) => new Date(iso).toLocaleString(LOCALES[idioma], { timeZone: ZONA_HORARIA });
   return (
     <Document title={`${t("Auditoría", "Audit")} ${a.folio}`}>
       <Page size="A4" style={s.page}>
         <View style={s.header} fixed>
-          <Text style={s.logo}>{NOMBRE_EMPRESA}</Text>
+          <Text style={s.logo}>{empresa.nombreCorto}</Text>
           <View style={{ alignItems: "flex-end" }}>
             <Text style={s.titulo}>{a.nombrePlantilla}</Text>
             <Text style={s.sub}>
-              Folio A-{String(a.folio).padStart(4, "0")} · {NOMBRE_LEGAL}
+              Folio A-{String(a.folio).padStart(4, "0")} · {empresa.nombre}
             </Text>
           </View>
         </View>

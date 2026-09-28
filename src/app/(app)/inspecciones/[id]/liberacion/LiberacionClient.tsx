@@ -10,7 +10,7 @@ import { SkeletonPagina } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import Modal from "@/components/ui/Modal";
 import { vibrar } from "@/lib/feedback";
-import { NOMBRE_EMPRESA, NOMBRE_LEGAL } from "@/lib/branding";
+import { useOrganizacion } from "@/components/Organizacion";
 import { useIdioma } from "@/components/ui/Idioma";
 
 type Etiqueta = {
@@ -449,6 +449,7 @@ function HojaEtiquetas({
   inspeccion: Datos["inspeccion"];
   onCerrar: () => void;
 }) {
+  const organizacion = useOrganizacion();
   const [qrs, setQrs] = useState<Record<string, string>>({});
   const listos = etiquetas.every((e) => qrs[e.codigo]);
 
@@ -501,7 +502,7 @@ function HojaEtiquetas({
                 ✓ MATERIAL LIBERADO
                 <span className="block text-[10px] font-bold tracking-widest text-white/80">RELEASED MATERIAL</span>
               </span>
-              <span className="text-xs font-bold">{NOMBRE_EMPRESA}</span>
+              <span className="text-xs font-bold">{organizacion.nombreCorto}</span>
             </div>
             <div className="flex gap-3 p-3">
               <div className="shrink-0 text-center">
@@ -538,7 +539,7 @@ function HojaEtiquetas({
                 {new Date(e.creadoEn).toLocaleDateString("es-MX")} · {e.creadaPor.nombre}
               </span>
               <span>
-                L-{String(e.folio).padStart(6, "0")} · {NOMBRE_LEGAL}
+                L-{String(e.folio).padStart(6, "0")} · {organizacion.nombre}
               </span>
             </div>
           </div>

@@ -32,6 +32,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         datos.accion === "aceptar"
           ? await tx.inspeccion.create({
               data: {
+                organizacionId: user.organizacionId,
                 nombre: `${ETIQUETA_TIPO[solicitud.tipo] ?? "Servicio"} ${solicitud.numeroParte} · Solicitud #${solicitud.folio}`,
                 numeroParte: solicitud.numeroParte,
                 cliente: solicitud.cliente,

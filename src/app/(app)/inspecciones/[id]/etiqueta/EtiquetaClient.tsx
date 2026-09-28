@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import QRCode from "qrcode";
-import { NOMBRE_EMPRESA } from "@/lib/branding";
+import { useOrganizacion } from "@/components/Organizacion";
 
 export default function EtiquetaClient({
   id,
@@ -20,6 +20,7 @@ export default function EtiquetaClient({
   planta: string | null;
   puntoLimpio: string | null;
 }) {
+  const organizacion = useOrganizacion();
   const [qr, setQr] = useState<string | null>(null);
   const [copias, setCopias] = useState(1);
 
@@ -73,7 +74,7 @@ export default function EtiquetaClient({
               <div className="skeleton h-36 w-36 shrink-0 rounded-lg" />
             )}
             <div className="min-w-0 space-y-1">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-navy-500">{NOMBRE_EMPRESA}</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-navy-500">{organizacion.nombreCorto}</p>
               <p className="font-display text-2xl font-extrabold leading-tight">{numeroParte ?? nombre}</p>
               <p className="truncate text-sm">{nombre}</p>
               {cliente && <p className="text-xs">Cliente: {cliente}</p>}

@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   try {
     const user = await requerirRol("INSPECTOR");
     const { numeroParte, respuestas } = examenSchema.parse(await req.json());
-    const criterio = await prisma.criterioParte.findUnique({ where: { numeroParte } });
+    const criterio = await prisma.criterioParte.findFirst({ where: { numeroParte } });
     if (!criterio) throw new ErrorPermiso("Ese número de parte no tiene examen", 404);
     const preguntas = preguntasDe(criterio.preguntas);
     if (respuestas.length !== preguntas.length) throw new ErrorPermiso("Responde todas las preguntas", 400);

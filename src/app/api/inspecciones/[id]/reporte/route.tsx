@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requerirSesion, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { whereInspeccionesVisibles } from "@/lib/inspecciones";
 import ReporteCierre from "@/lib/pdf/ReporteCierre";
+import { datosOrganizacion } from "@/lib/organizaciones";
 import { idiomaServidor } from "@/lib/i18nServidor";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     const buffer = await renderToBuffer(
       <ReporteCierre
         idioma={idioma}
+        empresa={await datosOrganizacion(user.organizacionId)}
         datos={{
           nombre: inspeccion.nombre,
           numeroParte: inspeccion.numeroParte,

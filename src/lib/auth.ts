@@ -1,7 +1,7 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { prismaGlobal } from "@/lib/prisma";
 import type { Rol } from "@prisma/client";
 
 declare module "next-auth" {
@@ -13,6 +13,9 @@ declare module "next-auth" {
       rol: Rol;
       clienteNombre: string | null;
       plantaResidente: string | null;
+      organizacionId: string;
+      organizacionNombre: string;
+      superadmin: boolean;
     };
   }
   interface User {
@@ -22,6 +25,9 @@ declare module "next-auth" {
     rol: Rol;
     clienteNombre: string | null;
     plantaResidente: string | null;
+    organizacionId: string;
+    organizacionNombre: string;
+    superadmin: boolean;
   }
 }
 
@@ -33,6 +39,9 @@ declare module "next-auth/jwt" {
     rol: Rol;
     clienteNombre: string | null;
     plantaResidente: string | null;
+    organizacionId: string;
+    organizacionNombre: string;
+    superadmin: boolean;
   }
 }
 
@@ -50,11 +59,13 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.usuario || !credentials?.password) return null;
 
         const usuarioNormalizado = credentials.usuario.trim().toLowerCase();
-        const usuario = await prisma.usuario.findUnique({
+        // el login busca en todas las organizaciones: el nombre de usuario es único en la plataforma
+        const usuario = await prismaGlobal.usuario.findUnique({
           where: { usuario: usuarioNormalizado },
+          include: { organizacion: { select: { nombreCorto: true, activa: true } } },
         });
 
-        if (!usuario || !usuario.activo) return null;
+        if (!usuario || !usuario.activo || !usuario.organizacion.activa) return null;
 
         const valido = await bcrypt.compare(credentials.password, usuario.passwordHash);
         if (!valido) return null;
@@ -66,6 +77,9 @@ export const authOptions: NextAuthOptions = {
           rol: usuario.rol,
           clienteNombre: usuario.clienteNombre,
           plantaResidente: usuario.plantaResidente,
+          organizacionId: usuario.organizacionId,
+          organizacionNombre: usuario.organizacion.nombreCorto,
+          superadmin: usuario.superadmin,
         };
       },
     }),
@@ -79,6 +93,20 @@ export const authOptions: NextAuthOptions = {
         token.rol = user.rol;
         token.clienteNombre = user.clienteNombre;
         token.plantaResidente = user.plantaResidente;
+        token.organizacionId = user.organizacionId;
+        token.organizacionNombre = user.organizacionNombre;
+        token.superadmin = user.superadmin;
+      } else if (token.id && !token.organizacionId) {
+        // sesiones abiertas antes de multi-empresa: se completan sin pedir login otra vez
+        const u = await prismaGlobal.usuario.findUnique({
+          where: { id: token.id },
+          select: { organizacionId: true, superadmin: true, organizacion: { select: { nombreCorto: true } } },
+        });
+        if (u) {
+          token.organizacionId = u.organizacionId;
+          token.organizacionNombre = u.organizacion.nombreCorto;
+          token.superadmin = u.superadmin;
+        }
       }
       return token;
     },
@@ -89,6 +117,9 @@ export const authOptions: NextAuthOptions = {
       session.user.rol = token.rol;
       session.user.clienteNombre = token.clienteNombre;
       session.user.plantaResidente = token.plantaResidente;
+      session.user.organizacionId = token.organizacionId;
+      session.user.organizacionNombre = token.organizacionNombre;
+      session.user.superadmin = token.superadmin;
       return session;
     },
     async redirect({ url, baseUrl }) {

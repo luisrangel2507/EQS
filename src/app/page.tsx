@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { DESCRIPCION_APP, NOMBRE_APP } from "@/lib/branding";
 import Landing from "@/components/landing/Landing";
+import { registroAbierto } from "@/lib/organizaciones";
 
 export const metadata: Metadata = {
   title: `${NOMBRE_APP} · Control de inspecciones en tiempo real`,
@@ -14,5 +15,5 @@ export const metadata: Metadata = {
 export default async function Home() {
   const session = await getServerSession(authOptions);
   if (session?.user) redirect(session.user.rol === "INSPECTOR" ? "/estacion" : "/dashboard");
-  return <Landing />;
+  return <Landing registro={registroAbierto()} />;
 }

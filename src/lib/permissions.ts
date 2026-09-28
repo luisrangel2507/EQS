@@ -9,6 +9,9 @@ export type SesionUsuario = {
   rol: Rol;
   clienteNombre: string | null;
   plantaResidente: string | null;
+  organizacionId: string;
+  organizacionNombre: string;
+  superadmin: boolean;
 };
 
 export class ErrorPermiso extends Error {
@@ -22,7 +25,7 @@ export class ErrorPermiso extends Error {
 /** Obtiene la sesión actual o lanza 401. Usar en toda Server Action / API route. */
 export async function requerirSesion(): Promise<SesionUsuario> {
   const session = await getServerSession(authOptions);
-  if (!session?.user) {
+  if (!session?.user?.organizacionId) {
     throw new ErrorPermiso("No autenticado", 401);
   }
   return session.user;
@@ -56,4 +59,11 @@ export function manejarErrorApi(error: unknown) {
   }
   console.error(error);
   return Response.json({ error: "Error interno del servidor" }, { status: 500 });
+}
+
+/** Dueño de la plataforma: administra organizaciones. */
+export async function requerirSuperadmin(): Promise<SesionUsuario> {
+  const user = await requerirSesion();
+  if (!user.superadmin) throw new ErrorPermiso("Solo el administrador de la plataforma");
+  return user;
 }

@@ -1,5 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import { NOMBRE_EMPRESA, NOMBRE_LEGAL, PIE_PDF, PIE_PDF_EN } from "@/lib/branding";
+import { EMPRESA_POR_OMISION, type EmpresaEmisora, PIE_PDF, PIE_PDF_EN } from "@/lib/branding";
 import { crearT, LOCALES, nombreDefecto, type Idioma } from "@/lib/i18n";
 import { ZONA_HORARIA } from "@/lib/turnos";
 import { DISCIPLINAS, type ClaveDisciplina } from "@/lib/ochoD";
@@ -54,7 +54,15 @@ export type Datos8D = Record<ClaveDisciplina, string | null> & {
 };
 
 
-export default function Reporte8DPdf({ r, idioma = "es" }: { r: Datos8D; idioma?: Idioma }) {
+export default function Reporte8DPdf({
+  r,
+  idioma = "es",
+  empresa = EMPRESA_POR_OMISION,
+}: {
+  r: Datos8D;
+  idioma?: Idioma;
+  empresa?: EmpresaEmisora;
+}) {
   const t = crearT(idioma);
   const fecha = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(LOCALES[idioma], { timeZone: ZONA_HORARIA }) : "—");
   const datos: [string, string][] = [
@@ -73,10 +81,10 @@ export default function Reporte8DPdf({ r, idioma = "es" }: { r: Datos8D; idioma?
     <Document title={`8D-${r.folio}`}>
       <Page size="A4" style={s.page}>
         <View style={s.header} fixed>
-          <Text style={s.logo}>{NOMBRE_EMPRESA}</Text>
+          <Text style={s.logo}>{empresa.nombreCorto}</Text>
           <View style={{ alignItems: "flex-end" }}>
             <Text style={s.titulo}>{t("Reporte 8D · Acción correctiva", "8D Report · Corrective action")}</Text>
-            <Text style={s.sub}>{NOMBRE_LEGAL}</Text>
+            <Text style={s.sub}>{empresa.nombre}</Text>
           </View>
         </View>
 

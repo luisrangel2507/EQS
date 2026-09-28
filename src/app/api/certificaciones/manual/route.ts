@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       await prisma.certificacion.deleteMany({ where: { usuarioId, numeroParte } });
       return Response.json({ ok: true });
     }
-    const criterio = await prisma.criterioParte.findUnique({ where: { numeroParte } });
+    const criterio = await prisma.criterioParte.findFirst({ where: { numeroParte } });
     if (!criterio) throw new ErrorPermiso("Ese número de parte no tiene criterio de certificación", 404);
     const vence = new Date(Date.now() + criterio.vigenciaDias * 86400000);
     const cert = await prisma.certificacion.upsert({

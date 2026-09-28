@@ -1,5 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import { NOMBRE_EMPRESA, NOMBRE_LEGAL, PIE_PDF } from "@/lib/branding";
+import { EMPRESA_POR_OMISION, type EmpresaEmisora, PIE_PDF } from "@/lib/branding";
 import type { LineaFactura } from "@/lib/facturacion";
 
 const NAVY = "#142B6B";
@@ -62,11 +62,13 @@ export default function EstadoCuenta({
   periodo,
   lineas,
   tasaIva,
+  empresa = EMPRESA_POR_OMISION,
 }: {
   cliente: string;
   periodo: string;
   lineas: LineaFactura[];
   tasaIva: number;
+  empresa?: EmpresaEmisora;
 }) {
   const subtotal = lineas.reduce((acc, l) => acc + l.importe, 0);
   const piezas = lineas.reduce((acc, l) => acc + l.piezas, 0);
@@ -76,10 +78,10 @@ export default function EstadoCuenta({
     <Document title={`Estado de cuenta ${cliente} ${periodo}`}>
       <Page size="A4" style={s.page}>
         <View style={s.header}>
-          <Text style={s.logo}>{NOMBRE_EMPRESA}</Text>
+          <Text style={s.logo}>{empresa.nombreCorto}</Text>
           <View style={{ alignItems: "flex-end" }}>
             <Text style={s.titulo}>Estado de cuenta</Text>
-            <Text style={s.sub}>{NOMBRE_LEGAL}</Text>
+            <Text style={s.sub}>{empresa.nombre}</Text>
           </View>
         </View>
 

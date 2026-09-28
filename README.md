@@ -53,6 +53,46 @@ Todas las reglas se validan en el servidor (API routes), no solo en la UI:
   contraseña generada y primera inspección en un solo paso.
 - **Página pública** en `/` para quien no tiene sesión, con botón de *Solicitar demo*.
 - **Modo oscuro**: en el menú de perfil.
+- **Retrabajo**: las piezas NG recuperadas se registran aparte (NG final = malas − recuperadas).
+  No generan cobro extra: la facturación sigue siendo por pieza inspeccionada u hora.
+- **Solicitudes de servicio** (`/solicitudes`): el cliente pide un sorteo, retrabajo o
+  inspección de recibo; al aceptarla se crea la inspección.
+- **Asistencia y cobro por hora** (`/asistencia`): jornadas de inspectores; una inspección
+  puede facturarse por pieza o por hora con estas horas.
+- **Certificación de inspectores** (`/certificaciones`): criterio con fotos OK/NG y examen
+  por número de parte; solo inspectores certificados se pueden asignar a ese número de parte.
+- **Auditorías y checklists** (`/auditorias`): plantillas configurables (LPA, 5S, recibo),
+  captura punto por punto con foto del hallazgo, % de cumplimiento y PDF. El cliente ve las
+  cerradas de su empresa.
+- **Material liberado** (*✅ Liberar material* en cada inspección): etiqueta bilingüe por
+  contenedor con QR; `/t/{código}` es pública y muestra qué se inspeccionó, cuándo y por quién.
+  Liderazgo puede anular una etiqueta y su QR avisa en rojo que no se use.
+- **Inglés / español**: selector ES | EN en el perfil, login, landing y páginas públicas. Sin
+  sesión se usa el idioma del navegador; dentro de la app el default es español. Los PDF
+  (cierre, 8D, auditoría) salen en el idioma elegido.
+- **Multi-empresa (SaaS)**: ver la sección siguiente.
+
+## Multi-empresa
+
+Una sola instalación atiende a varias empresas de sorteo, cada una aislada de las demás.
+
+- Solo `Usuario`, `Inspeccion`, `Empresa` y `CriterioParte` guardan `organizacionId`; el
+  resto de tablas se aísla por su relación con ellas. `src/lib/tenant.ts` es una extensión de
+  Prisma que agrega el filtro de la organización de la sesión a **toda** consulta, así una
+  ruta nueva no puede olvidarlo. Sin sesión, las consultas no regresan nada.
+- `prismaGlobal` (sin filtro) se usa solo en login, alta de organizaciones, el panel de
+  plataforma y las páginas públicas por código/token (`/t/…`, `/compartido/…`).
+- El nombre de usuario es único en toda la plataforma; los nombres de clientes y números de
+  parte solo deben ser únicos dentro de cada organización.
+- **Plataforma** (`/plataforma`, menú de perfil): la ven los usuarios con `superadmin`
+  (los Admin que existían al migrar). Da de alta organizaciones con su primer Admin y
+  contraseña temporal, las renombra o suspende (sus usuarios ya no pueden entrar).
+- **Registro público** (`/registro`): cualquier empresa crea su cuenta sola si
+  `REGISTRO_ABIERTO=1`; si no, la página indica que es por invitación.
+- Reportes, PDF, etiquetas y la verificación pública muestran el nombre de la organización
+  que emitió el documento.
+- Al migrar, todo lo existente quedó en la organización principal (`org_principal`), sin cambios
+  para los usuarios actuales.
 
 ## Desarrollo local
 
@@ -120,6 +160,7 @@ servicio para que las fotos y PDFs persistan entre deploys.
 | `TASA_IVA` | Opcional. Tasa de IVA del estado de cuenta (default `0.16`) |
 | `NEXT_PUBLIC_CONTACTO_WHATSAPP` | Opcional. WhatsApp del botón *Solicitar demo* de la página pública, formato internacional sin signos (ej. `5218112345678`). Se lee en **build time** |
 | `NEXT_PUBLIC_CONTACTO_EMAIL` | Opcional. Correo alterno para *Solicitar demo* si no hay WhatsApp. Se lee en **build time** |
+| `REGISTRO_ABIERTO` | Opcional. `1` permite que cualquier empresa cree su cuenta en `/registro`; si falta, las organizaciones solo las da de alta un superadmin en `/plataforma` |
 
 `npm run start` corre `prisma migrate deploy` antes de arrancar el servidor,
 así que las migraciones se aplican automáticamente en cada deploy.
@@ -136,6 +177,10 @@ desde ahí, no desde una pestaña normal — es una limitación de iOS, no de la
 app. En Android/desktop funciona directo desde el navegador.
 
 ## Despliegue para nuevos clientes (white-label)
+
+> Con multi-empresa, lo normal es dar de alta al nuevo cliente como organización en
+> `/plataforma` de la misma instalación. Una instancia separada solo hace falta si el
+> cliente exige su propio dominio, base de datos o logotipo.
 
 El código es agnóstico a la marca (EQS). Todo texto de interfaz relacionado
 con branding vive en `src/lib/branding.ts`, permitiendo deploys separados

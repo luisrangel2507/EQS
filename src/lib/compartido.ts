@@ -1,4 +1,5 @@
-import { prisma } from "@/lib/prisma";
+// Público por token: el token es la credencial, así que se consulta sin filtro de organización.
+import { prismaGlobal as prisma } from "@/lib/prisma";
 import { archivoDeUrl } from "@/lib/uploads";
 
 export async function enlaceVigente(token: string) {
@@ -30,6 +31,7 @@ export async function datosPublicos(inspeccionId: string, token: string) {
       puntoLimpioOk: true,
       puntoLimpioFotoUrl: true,
       defectos: { orderBy: { cantidad: "desc" }, select: { tipo: true, cantidad: true } },
+      organizacion: { select: { nombre: true, nombreCorto: true } },
     },
   });
   if (!inspeccion) return null;

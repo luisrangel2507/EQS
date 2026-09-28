@@ -17,6 +17,8 @@ import EscanerCodigo from "./EscanerCodigo";
 import PaletaComandos from "./PaletaComandos";
 import TourBienvenida from "./TourBienvenida";
 import { EVENTO_ESCANER } from "@/lib/eventos";
+import { OrganizacionProvider } from "@/components/Organizacion";
+import type { EmpresaEmisora } from "@/lib/branding";
 
 const CLAVE_ULTIMA_LECTURA_CHAT = "eqs_chat_ultima_lectura";
 
@@ -37,6 +39,8 @@ type Props = {
   id: string;
   nombre: string;
   rol: Rol;
+  organizacion: EmpresaEmisora;
+  superadmin: boolean;
   children: React.ReactNode;
 };
 
@@ -45,13 +49,34 @@ const LIDERAZGO: Rol[] = ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER"];
 // "principal" va siempre visible en escritorio; el resto cae en el menú "Más"
 const ENLACES: { href: string; label: string; en: string; icono: string; roles: Rol[]; principal?: boolean }[] = [
   { href: "/estacion", label: "Mis inspecciones", en: "My inspections", icono: "🧰", roles: ["INSPECTOR"], principal: true },
-  { href: "/dashboard", label: "Dashboard", en: "Dashboard", icono: "🏠", roles: [...LIDERAZGO, "RESIDENTE", "CLIENTE"], principal: true },
-  { href: "/inspecciones", label: "Inspecciones", en: "Inspections", icono: "📋", roles: [...LIDERAZGO, "RESIDENTE", "CLIENTE"], principal: true },
+  {
+    href: "/dashboard",
+    label: "Dashboard",
+    en: "Dashboard",
+    icono: "🏠",
+    roles: [...LIDERAZGO, "RESIDENTE", "CLIENTE"],
+    principal: true,
+  },
+  {
+    href: "/inspecciones",
+    label: "Inspecciones",
+    en: "Inspections",
+    icono: "📋",
+    roles: [...LIDERAZGO, "RESIDENTE", "CLIENTE"],
+    principal: true,
+  },
   { href: "/inspecciones", label: "Historial", en: "History", icono: "📁", roles: ["INSPECTOR"], principal: true },
   { href: "/solicitudes", label: "Solicitudes", en: "Requests", icono: "📥", roles: [...LIDERAZGO, "CLIENTE"], principal: true },
   { href: "/turnos", label: "Turnos", en: "Shifts", icono: "🕐", roles: [...LIDERAZGO, "RESIDENTE"], principal: true },
   { href: "/ranking", label: "Ranking", en: "Ranking", icono: "🏆", roles: [...LIDERAZGO, "INSPECTOR"], principal: true },
-  { href: "/certificaciones", label: "Certificaciones", en: "Certifications", icono: "🎓", roles: ["INSPECTOR"], principal: true },
+  {
+    href: "/certificaciones",
+    label: "Certificaciones",
+    en: "Certifications",
+    icono: "🎓",
+    roles: ["INSPECTOR"],
+    principal: true,
+  },
   { href: "/auditorias", label: "Auditorías", en: "Audits", icono: "📋", roles: ["RESIDENTE", "CLIENTE"], principal: true },
   { href: "/residentes", label: "Residentes", en: "Residents", icono: "🏭", roles: LIDERAZGO },
   { href: "/auditorias", label: "Auditorías", en: "Audits", icono: "📋", roles: LIDERAZGO },
@@ -60,7 +85,7 @@ const ENLACES: { href: string; label: string; en: string; icono: string; roles: 
   { href: "/facturacion", label: "Facturación", en: "Billing", icono: "💰", roles: ["ADMIN", "GERENTE"] },
 ];
 
-export default function AppShell({ id, nombre, rol, children }: Props) {
+export default function AppShell({ id, nombre, rol, organizacion, superadmin, children }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const { t } = useIdioma();
@@ -75,123 +100,119 @@ export default function AppShell({ id, nombre, rol, children }: Props) {
   }, []);
 
   return (
-    <OcultarHeaderContext.Provider value={setInmersivo}>
-      <div className="min-h-screen bg-background print:bg-white">
-        <header className="sticky top-0 z-20 border-b border-navy-100 bg-navy-900 text-white print:hidden">
-          {inmersivo ? (
-            <div className="flex items-center px-4 py-3">
-              <button
-                type="button"
-                onClick={() => router.push(inicio)}
-                className="flex items-center gap-1.5 text-sm font-semibold text-white/90 hover:text-white"
-              >
-                ← {t("Regresar", "Back")}
-              </button>
-            </div>
-          ) : (
-            <>
-              <div className="mx-auto flex w-full max-w-[1920px] items-center justify-between px-6 py-3">
-                <div className="flex items-center gap-6">
-                  <Link href={inicio} className="flex items-center">
-                    <Image
-                      src="/logo-header.png"
-                      alt={NOMBRE_APP}
-                      width={800}
-                      height={266}
-                      priority
-                      className="h-[42px] w-auto sm:h-[52px]"
-                    />
-                  </Link>
-                  <nav className="hidden gap-1 lg:flex" data-tour="nav">
-                    {enlaces.filter((e) => e.principal).map((enlace) => {
-                      const activo = pathname?.startsWith(enlace.href);
-                      return (
-                        <Link
-                          key={enlace.href + enlace.label}
-                          href={enlace.href}
-                          className={`relative rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                            activo ? "text-yellow" : "text-white/80 hover:bg-white/5 hover:text-white"
-                          }`}
-                        >
-                          {activo && (
-                            <motion.span
-                              layoutId="nav-activo"
-                              className="absolute inset-0 rounded-md bg-white/10"
-                              transition={{ type: "spring", stiffness: 500, damping: 38 }}
-                            />
-                          )}
-                          <span className="relative">{enlace.label}</span>
-                        </Link>
-                      );
-                    })}
-                    <MenuMas enlaces={enlaces.filter((e) => !e.principal)} pathname={pathname ?? ""} />
-                  </nav>
-                </div>
-                <div className="flex items-center gap-3">
-                  {esOperativo && (
-                    <Link
-                      href="/dashboard/ejecutivo"
-                      data-tour="ejecutivo"
-                      className="flex items-center gap-1.5 rounded-md bg-yellow px-3 py-1.5 text-xs font-bold text-navy-900 transition hover:bg-yellow-400"
-                    >
-                      📊 <span className="hidden 2xl:inline">{t("Dashboard Ejecutivo", "Executive dashboard")}</span>
-                    </Link>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => window.dispatchEvent(new Event("eqs-abrir-paleta"))}
-                    className="flex h-9 items-center gap-2 rounded-full px-2.5 text-sm text-white/80 transition hover:bg-white/10 hover:text-white xl:border xl:border-white/15 xl:px-3"
-                    aria-label={t("Buscar (Ctrl K)", "Search (Ctrl K)")}
-                    data-tour="buscar"
-                  >
-                    <span className="text-base">🔍</span>
-                    <span className="hidden xl:inline">{t("Buscar", "Search")}</span>
-                    <kbd className="hidden rounded bg-white/10 px-1.5 text-[10px] font-semibold xl:inline">Ctrl K</kbd>
-                  </button>
-                  {rol !== "CLIENTE" && <BotonEscanear />}
-                  <NotificacionesBell rol={rol} />
-                  <PerfilMenu nombre={nombre} rol={rol} />
-                </div>
+    <OrganizacionProvider value={organizacion}>
+      <OcultarHeaderContext.Provider value={setInmersivo}>
+        <div className="min-h-screen bg-background print:bg-white">
+          <header className="sticky top-0 z-20 border-b border-navy-100 bg-navy-900 text-white print:hidden">
+            {inmersivo ? (
+              <div className="flex items-center px-4 py-3">
+                <button
+                  type="button"
+                  onClick={() => router.push(inicio)}
+                  className="flex items-center gap-1.5 text-sm font-semibold text-white/90 hover:text-white"
+                >
+                  ← {t("Regresar", "Back")}
+                </button>
               </div>
-              <nav className="flex gap-1 overflow-x-auto border-t border-white/10 px-2 py-1 lg:hidden" data-tour="nav">
-                {enlaces.map((enlace) => {
-                  const activo = pathname?.startsWith(enlace.href);
-                  return (
-                    <Link
-                      key={enlace.href + enlace.label}
-                      href={enlace.href}
-                      className={`shrink-0 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                        activo ? "bg-white/10 text-yellow" : "text-white/80"
-                      }`}
-                    >
-                      {enlace.label}
+            ) : (
+              <>
+                <div className="mx-auto flex w-full max-w-[1920px] items-center justify-between px-6 py-3">
+                  <div className="flex items-center gap-6">
+                    <Link href={inicio} className="flex items-center">
+                      <Image
+                        src="/logo-header.png"
+                        alt={NOMBRE_APP}
+                        width={800}
+                        height={266}
+                        priority
+                        className="h-[42px] w-auto sm:h-[52px]"
+                      />
                     </Link>
-                  );
-                })}
-              </nav>
-            </>
-          )}
-        </header>
-        <main className={inmersivo ? "px-4 pb-24 pt-4" : "mx-auto max-w-7xl px-4 pb-24 pt-6"}>
-          {children}
-        </main>
-        <div className="print:hidden">
-          <BurbujaChat rol={rol} miId={id} />
+                    <nav className="hidden gap-1 lg:flex" data-tour="nav">
+                      {enlaces
+                        .filter((e) => e.principal)
+                        .map((enlace) => {
+                          const activo = pathname?.startsWith(enlace.href);
+                          return (
+                            <Link
+                              key={enlace.href + enlace.label}
+                              href={enlace.href}
+                              className={`relative rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                                activo ? "text-yellow" : "text-white/80 hover:bg-white/5 hover:text-white"
+                              }`}
+                            >
+                              {activo && (
+                                <motion.span
+                                  layoutId="nav-activo"
+                                  className="absolute inset-0 rounded-md bg-white/10"
+                                  transition={{ type: "spring", stiffness: 500, damping: 38 }}
+                                />
+                              )}
+                              <span className="relative">{enlace.label}</span>
+                            </Link>
+                          );
+                        })}
+                      <MenuMas enlaces={enlaces.filter((e) => !e.principal)} pathname={pathname ?? ""} />
+                    </nav>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {esOperativo && (
+                      <Link
+                        href="/dashboard/ejecutivo"
+                        data-tour="ejecutivo"
+                        className="flex items-center gap-1.5 rounded-md bg-yellow px-3 py-1.5 text-xs font-bold text-navy-900 transition hover:bg-yellow-400"
+                      >
+                        📊 <span className="hidden 2xl:inline">{t("Dashboard Ejecutivo", "Executive dashboard")}</span>
+                      </Link>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => window.dispatchEvent(new Event("eqs-abrir-paleta"))}
+                      className="flex h-9 items-center gap-2 rounded-full px-2.5 text-sm text-white/80 transition hover:bg-white/10 hover:text-white xl:border xl:border-white/15 xl:px-3"
+                      aria-label={t("Buscar (Ctrl K)", "Search (Ctrl K)")}
+                      data-tour="buscar"
+                    >
+                      <span className="text-base">🔍</span>
+                      <span className="hidden xl:inline">{t("Buscar", "Search")}</span>
+                      <kbd className="hidden rounded bg-white/10 px-1.5 text-[10px] font-semibold xl:inline">Ctrl K</kbd>
+                    </button>
+                    {rol !== "CLIENTE" && <BotonEscanear />}
+                    <NotificacionesBell rol={rol} />
+                    <PerfilMenu nombre={nombre} rol={rol} organizacion={organizacion.nombreCorto} superadmin={superadmin} />
+                  </div>
+                </div>
+                <nav className="flex gap-1 overflow-x-auto border-t border-white/10 px-2 py-1 lg:hidden" data-tour="nav">
+                  {enlaces.map((enlace) => {
+                    const activo = pathname?.startsWith(enlace.href);
+                    return (
+                      <Link
+                        key={enlace.href + enlace.label}
+                        href={enlace.href}
+                        className={`shrink-0 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                          activo ? "bg-white/10 text-yellow" : "text-white/80"
+                        }`}
+                      >
+                        {enlace.label}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </>
+            )}
+          </header>
+          <main className={inmersivo ? "px-4 pb-24 pt-4" : "mx-auto max-w-7xl px-4 pb-24 pt-6"}>{children}</main>
+          <div className="print:hidden">
+            <BurbujaChat rol={rol} miId={id} />
+          </div>
+          <PaletaComandos rol={rol} />
+          <TourBienvenida rol={rol} nombre={nombre} usuarioId={id} />
         </div>
-        <PaletaComandos rol={rol} />
-        <TourBienvenida rol={rol} nombre={nombre} usuarioId={id} />
-      </div>
-    </OcultarHeaderContext.Provider>
+      </OcultarHeaderContext.Provider>
+    </OrganizacionProvider>
   );
 }
 
-function MenuMas({
-  enlaces,
-  pathname,
-}: {
-  enlaces: { href: string; label: string; icono: string }[];
-  pathname: string;
-}) {
+function MenuMas({ enlaces, pathname }: { enlaces: { href: string; label: string; icono: string }[]; pathname: string }) {
   const [abierto, setAbierto] = useState(false);
   const { t } = useIdioma();
   if (enlaces.length === 0) return null;
@@ -370,7 +391,17 @@ function NotificacionesBell({ rol }: { rol: Rol }) {
   );
 }
 
-function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
+function PerfilMenu({
+  nombre,
+  rol,
+  organizacion,
+  superadmin,
+}: {
+  nombre: string;
+  rol: Rol;
+  organizacion: string;
+  superadmin: boolean;
+}) {
   const [abierto, setAbierto] = useState(false);
   const { t } = useIdioma();
   const rolTexto = t(ROL_ETIQUETAS[rol], ROL_ETIQUETAS_EN[rol]);
@@ -408,7 +439,9 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
         </span>
         <span className="hidden text-left sm:block">
           <span className="block text-sm font-medium leading-tight">{nombre}</span>
-          <span className="block text-xs leading-tight text-white/60">{rolTexto}</span>
+          <span className="block text-xs leading-tight text-white/60">
+            {rolTexto} · {organizacion}
+          </span>
         </span>
         <span className={`text-xs text-white/50 transition ${abierto ? "rotate-180" : ""}`}>▼</span>
       </button>
@@ -424,8 +457,19 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
           >
             <div className="border-b border-navy-100 px-4 py-2 sm:hidden">
               <p className="text-sm font-semibold text-navy-900">{nombre}</p>
-              <p className="text-xs text-navy-500">{rolTexto}</p>
+              <p className="text-xs text-navy-500">
+                {rolTexto} · {organizacion}
+              </p>
             </div>
+            {superadmin && (
+              <Link
+                href="/plataforma"
+                onClick={() => setAbierto(false)}
+                className="block w-full px-4 py-2 text-left text-sm font-semibold text-navy-700 hover:bg-navy-50"
+              >
+                🌐 {t("Plataforma (empresas)", "Platform (companies)")}
+              </Link>
+            )}
             {rol === "ADMIN" && (
               <Link
                 href="/usuarios"
@@ -484,12 +528,7 @@ function PerfilMenu({ nombre, rol }: { nombre: string; rol: Rol }) {
 
 function BurbujaChat({ rol, miId }: { rol: Rol; miId: string }) {
   const puedeChatear =
-    rol === "ADMIN" ||
-    rol === "SUPERVISOR" ||
-    rol === "GERENTE" ||
-    rol === "LIDER" ||
-    rol === "INSPECTOR" ||
-    rol === "RESIDENTE";
+    rol === "ADMIN" || rol === "SUPERVISOR" || rol === "GERENTE" || rol === "LIDER" || rol === "INSPECTOR" || rol === "RESIDENTE";
   const [noLeidos, setNoLeidos] = useState(0);
   const [abierto, setAbierto] = useState(false);
 

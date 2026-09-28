@@ -18,5 +18,6 @@ export const config = {
     "/asistencia/:path*",
     "/certificaciones/:path*",
     "/auditorias/:path*",
+    "/plataforma/:path*",
   ],
 };

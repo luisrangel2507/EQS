@@ -1,5 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import { NOMBRE_EMPRESA, NOMBRE_LEGAL, PIE_PDF, PIE_PDF_EN } from "@/lib/branding";
+import { EMPRESA_POR_OMISION, type EmpresaEmisora, PIE_PDF, PIE_PDF_EN } from "@/lib/branding";
 import { crearT, LOCALES, nombreDefecto, type Idioma } from "@/lib/i18n";
 import { ZONA_HORARIA } from "@/lib/turnos";
 
@@ -103,7 +103,15 @@ export type DatosReporte = {
   defectos: { tipo: string; cantidad: number }[];
 };
 
-export default function ReporteCierre({ datos, idioma = "es" }: { datos: DatosReporte; idioma?: Idioma }) {
+export default function ReporteCierre({
+  datos,
+  idioma = "es",
+  empresa = EMPRESA_POR_OMISION,
+}: {
+  datos: DatosReporte;
+  idioma?: Idioma;
+  empresa?: EmpresaEmisora;
+}) {
   const t = crearT(idioma);
   const locale = LOCALES[idioma];
   const fechaHora = (iso: string) => new Date(iso).toLocaleString(locale, { timeZone: ZONA_HORARIA });
@@ -118,11 +126,11 @@ export default function ReporteCierre({ datos, idioma = "es" }: { datos: DatosRe
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.logo}>{NOMBRE_EMPRESA}</Text>
+            <Text style={styles.logo}>{empresa.nombreCorto}</Text>
           </View>
           <View style={{ alignItems: "flex-end" }}>
             <Text style={styles.headerTitulo}>{t("Reporte de Cierre de Inspección", "Inspection Closing Report")}</Text>
-            <Text style={styles.headerSub}>{NOMBRE_LEGAL}</Text>
+            <Text style={styles.headerSub}>{empresa.nombre}</Text>
           </View>
         </View>
 

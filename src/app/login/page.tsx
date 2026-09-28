@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { BotonIdioma, guardarIdioma, useIdioma } from "@/components/ui/Idioma";
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const { t, idioma } = useIdioma();
   const [cargando, setCargando] = useState(true);
   const [requiereBootstrap, setRequiereBootstrap] = useState(false);
+  const [registroAbierto, setRegistroAbierto] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +23,10 @@ export default function LoginPage() {
   useEffect(() => {
     fetch("/api/bootstrap")
       .then((r) => r.json())
-      .then((d) => setRequiereBootstrap(Boolean(d.requiereBootstrap)))
+      .then((d) => {
+        setRequiereBootstrap(Boolean(d.requiereBootstrap));
+        setRegistroAbierto(Boolean(d.registroAbierto));
+      })
       .finally(() => setCargando(false));
   }, []);
 
@@ -143,6 +148,14 @@ export default function LoginPage() {
                   ? t("Crear administrador e ingresar", "Create administrator and sign in")
                   : t("Ingresar", "Sign in")}
             </button>
+            {registroAbierto && !requiereBootstrap && (
+              <p className="text-center text-sm text-navy-500">
+                {t("¿Tu empresa aún no tiene cuenta?", "Company not signed up yet?")}{" "}
+                <Link href="/registro" className="font-semibold text-navy underline">
+                  {t("Regístrala", "Sign it up")}
+                </Link>
+              </p>
+            )}
           </form>
         )}
       </div>

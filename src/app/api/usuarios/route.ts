@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { prisma, prismaGlobal } from "@/lib/prisma";
+import { organizacionPrincipal } from "@/lib/organizaciones";
 import { requerirRol, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { ROLES } from "@/lib/constants";
 
@@ -47,22 +48,26 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const datos = crearUsuarioSchema.parse(body);
 
-    const totalUsuarios = await prisma.usuario.count();
+    // en toda la plataforma: sin sesión, el cliente aislado contaría 0 y abriría el bootstrap
+    const totalUsuarios = await prismaGlobal.usuario.count();
     const esBootstrap = totalUsuarios === 0;
 
     let rolFinal = datos.rol ?? "INSPECTOR";
+    let organizacionId: string;
 
     if (esBootstrap) {
       rolFinal = "ADMIN";
+      organizacionId = (await organizacionPrincipal()).id;
     } else {
       // Requiere sesión de administrador para dar de alta a cualquier otro usuario
-      await requerirRol("ADMIN");
+      organizacionId = (await requerirRol("ADMIN")).organizacionId;
       if (!datos.rol) {
         throw new ErrorPermiso("El rol es requerido", 400);
       }
     }
 
-    const existente = await prisma.usuario.findUnique({ where: { usuario: datos.usuario } });
+    // el nombre de usuario es único en toda la plataforma
+    const existente = await prismaGlobal.usuario.findUnique({ where: { usuario: datos.usuario } });
     if (existente) {
       throw new ErrorPermiso("Ese nombre de usuario ya existe", 409);
     }
@@ -71,7 +76,7 @@ export async function POST(req: NextRequest) {
       if (!datos.clienteNombre) {
         throw new ErrorPermiso("Selecciona la empresa del cliente", 400);
       }
-      const empresa = await prisma.empresa.findUnique({ where: { nombre: datos.clienteNombre } });
+      const empresa = await prisma.empresa.findFirst({ where: { nombre: datos.clienteNombre } });
       if (!empresa || !empresa.activa) {
         throw new ErrorPermiso("La empresa seleccionada no está registrada. Dala de alta primero.", 400);
       }
@@ -87,6 +92,8 @@ export async function POST(req: NextRequest) {
         rol: rolFinal,
         clienteNombre: rolFinal === "CLIENTE" ? datos.clienteNombre ?? null : null,
         plantaResidente: rolFinal === "RESIDENTE" ? datos.plantaResidente ?? null : null,
+        organizacionId,
+        superadmin: esBootstrap,
       },
       select: {
         id: true,
