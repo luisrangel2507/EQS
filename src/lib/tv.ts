@@ -128,7 +128,7 @@ export async function datosTv(planta: string | null) {
     ...apoyos.map((a) => ({
       id: `apoyo-${a.id}`,
       nivel: "critica" as const,
-      texto: `🔔 ${a.usuario.nombre} pide apoyo${a.estacion ? ` en ${a.estacion}` : ""}${
+      texto: `${a.usuario.nombre} pide apoyo${a.estacion ? ` en ${a.estacion}` : ""}${
         a.inspeccion ? ` · ${a.inspeccion.numeroParte ?? a.inspeccion.nombre}` : ""
       }`,
       desde: a.creadoEn.toISOString(),
@@ -138,7 +138,7 @@ export async function datosTv(planta: string | null) {
       .map((s) => ({
         id: `sorteo-${s.id}`,
         nivel: "critica" as const,
-        texto: `🔴 ${s.numeroParte ?? s.nombre}: ${s.motivos.join(" · ")}`,
+        texto: `${s.numeroParte ?? s.nombre}: ${s.motivos.join(" · ")}`,
         desde: new Date(ahora).toISOString(),
       })),
     ...estados
@@ -146,7 +146,7 @@ export async function datosTv(planta: string | null) {
       .map((e) => ({
         id: `pausa-${e.usuarioId}`,
         nivel: "aviso" as const,
-        texto: `⏸️ ${e.usuario.nombre} lleva ${textoMinutos(Math.floor((ahora - e.desde.getTime()) / 60000))} en ${e.estado}`,
+        texto: `${e.usuario.nombre} lleva ${textoMinutos(Math.floor((ahora - e.desde.getTime()) / 60000))} en ${e.estado}`,
         desde: e.desde.toISOString(),
       })),
     ...sorteos
@@ -154,7 +154,7 @@ export async function datosTv(planta: string | null) {
       .map((s) => ({
         id: `aviso-${s.id}`,
         nivel: "aviso" as const,
-        texto: `🟡 ${s.numeroParte ?? s.nombre}: ${s.motivos.join(" · ")}`,
+        texto: `${s.numeroParte ?? s.nombre}: ${s.motivos.join(" · ")}`,
         desde: new Date(ahora).toISOString(),
       })),
   ];

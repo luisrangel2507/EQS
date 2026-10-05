@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import EscanerCodigo from "@/components/EscanerCodigo";
 import JornadaBarra from "@/components/JornadaBarra";
+import Icono from "@/components/ui/Icono";
 
 type InspeccionResumen = {
   id: string;
@@ -43,7 +44,7 @@ export default function EstacionClient({
         onClick={() => setEscaneando(true)}
         className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-navy-700 to-navy-900 py-4 font-display text-base font-bold text-white shadow-lg"
       >
-        <span className="text-2xl">📷</span> Escanear etiqueta de la pieza
+        <Icono nombre="escanear" className="h-6 w-6" /> Escanear etiqueta de la pieza
       </motion.button>
       <EscanerCodigo abierto={escaneando} onCerrar={() => setEscaneando(false)} />
     </>
@@ -148,7 +149,7 @@ export default function EstacionClient({
         {botonEscanear}
         <div className="card space-y-2 text-center">
           <p className="font-display text-lg font-bold text-navy-900">
-            Hola {nombre.split(" ")[0]} 👋
+            Hola {nombre.split(" ")[0]}
           </p>
           <p className="text-sm text-navy-600">
             Todavía no tienes ninguna inspección asignada. Pídele a tu líder o supervisor que te

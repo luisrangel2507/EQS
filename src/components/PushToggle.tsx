@@ -100,12 +100,12 @@ export default function PushToggle() {
     if (idioma === "en")
       return (
         <p className="border-t border-navy-100 px-4 py-2.5 text-xs text-navy-500">
-          📲 To get notifications, add this app to your home screen (Share → Add to Home Screen) and open it from there.
+          To get notifications, add this app to your home screen (Share → Add to Home Screen) and open it from there.
         </p>
       );
     return (
       <p className="border-t border-navy-100 px-4 py-2.5 text-xs text-navy-500">
-        📲 Para recibir notificaciones, agrega esta app a tu pantalla de inicio (Compartir → Agregar
+        Para recibir notificaciones, agrega esta app a tu pantalla de inicio (Compartir → Agregar
         a pantalla de inicio) y ábrela desde ahí.
       </p>
     );
@@ -124,8 +124,8 @@ export default function PushToggle() {
         {cargando
           ? t("Un momento…", "One moment…")
           : suscrito
-            ? `🔕 ${t("Desactivar notificaciones push", "Turn off push notifications")}`
-            : `🔔 ${t("Activar notificaciones push", "Turn on push notifications")}`}
+            ? `${t("Desactivar notificaciones push", "Turn off push notifications")}`
+            : `${t("Activar notificaciones push", "Turn on push notifications")}`}
       </button>
       {error && <p className="px-4 pb-2 text-xs text-red-600">{error}</p>}
     </div>

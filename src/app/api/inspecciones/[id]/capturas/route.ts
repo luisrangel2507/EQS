@@ -152,7 +152,7 @@ async function notificarPiezaNg(inspeccion: Inspeccion, defecto: string) {
   const mensajePara = (rolDestino: string) =>
     rolDestino === "CLIENTE"
       ? `Se detectó una pieza NG en ${identificacion}: ${defecto}`
-      : `⚠️ Pieza NG en ${identificacion}${inspeccion.cliente ? ` (${inspeccion.cliente})` : ""}: ${defecto}`;
+      : `Pieza NG en ${identificacion}${inspeccion.cliente ? ` (${inspeccion.cliente})` : ""}: ${defecto}`;
 
   await prisma.notificacion.createMany({
     data: destinatarios.map((d) => ({
@@ -166,7 +166,7 @@ async function notificarPiezaNg(inspeccion: Inspeccion, defecto: string) {
   await Promise.all(
     destinatarios.map((d) =>
       enviarPush(d.id, {
-        titulo: "🔴 Pieza NG detectada",
+        titulo: "Pieza NG detectada",
         cuerpo: mensajePara(d.rol),
         url: `/inspecciones/${inspeccion.id}`,
       }).catch((error) => console.error("No se pudo mandar push", error))

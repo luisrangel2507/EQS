@@ -29,7 +29,7 @@ export default function CompartirInspeccion({ inspeccionId, nombre }: { inspecci
   return (
     <>
       <button className="btn-secondary" onClick={() => setAbierto(true)}>
-        🔗 {t("Compartir", "Share")}
+        {t("Compartir", "Share")}
       </button>
       <Modal abierto={abierto} onCerrar={() => setAbierto(false)}>
         {abierto && <Panel inspeccionId={inspeccionId} nombre={nombre} onCerrar={() => setAbierto(false)} />}
@@ -99,7 +99,7 @@ function Panel({ inspeccionId, nombre, onCerrar }: { inspeccionId: string; nombr
     <div className="space-y-4 rounded-xl bg-white p-5 shadow-lg">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h2 className="font-display text-lg font-bold text-navy-900">🔗 {t("Compartir en vivo", "Share live")}</h2>
+          <h2 className="font-display text-lg font-bold text-navy-900">{t("Compartir en vivo", "Share live")}</h2>
           <p className="text-sm text-navy-500">
             {t(
               `Quien tenga el enlace ve el avance, el Pareto y las fotos de ${nombre}, sin necesitar cuenta. No muestra precios ni datos internos.`,
@@ -158,7 +158,7 @@ function Panel({ inspeccionId, nombre, onCerrar }: { inspeccionId: string; nombr
                     {e.expiraEn
                       ? `${t("Vence", "Expires")} ${new Date(e.expiraEn).toLocaleDateString(locale, { day: "2-digit", month: "short" })}`
                       : t("Sin vencimiento", "No expiry")}{" "}
-                    · 👁️ {e.vistas} {t("vista", "view")}
+                    · {e.vistas} {t("vista", "view")}
                     {e.vistas === 1 ? "" : "s"} · {t("por", "by")} {e.creadoPor.nombre}
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">

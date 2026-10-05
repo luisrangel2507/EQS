@@ -92,7 +92,7 @@ export default function JornadaBarra({ inspeccionId, oscuro = false }: { inspecc
             onClick={() => accion({ accion: "entrar", inspeccionId }, enOtra ? "Jornada cambiada a esta pieza" : "Jornada iniciada")}
             className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
           >
-            {enOtra ? "↪ Cambiar aquí" : "▶ Iniciar jornada"}
+            {enOtra ? "Cambiar aquí" : "▶ Iniciar jornada"}
           </button>
         )}
         {abierta && (
@@ -103,7 +103,7 @@ export default function JornadaBarra({ inspeccionId, oscuro = false }: { inspecc
               oscuro ? "bg-white/15 text-white" : "bg-navy-100 text-navy-800"
             }`}
           >
-            ⏹ Terminar
+            Terminar
           </button>
         )}
       </div>

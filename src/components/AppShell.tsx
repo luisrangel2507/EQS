@@ -19,6 +19,7 @@ import TourBienvenida from "./TourBienvenida";
 import { EVENTO_ESCANER } from "@/lib/eventos";
 import { OrganizacionProvider } from "@/components/Organizacion";
 import type { EmpresaEmisora } from "@/lib/branding";
+import Icono from "@/components/ui/Icono";
 
 const CLAVE_ULTIMA_LECTURA_CHAT = "eqs_chat_ultima_lectura";
 
@@ -47,13 +48,12 @@ type Props = {
 const LIDERAZGO: Rol[] = ["ADMIN", "SUPERVISOR", "GERENTE", "LIDER"];
 
 // "principal" va siempre visible en escritorio; el resto cae en el menú "Más"
-const ENLACES: { href: string; label: string; en: string; icono: string; roles: Rol[]; principal?: boolean }[] = [
-  { href: "/estacion", label: "Mis inspecciones", en: "My inspections", icono: "🧰", roles: ["INSPECTOR"], principal: true },
+const ENLACES: { href: string; label: string; en: string; roles: Rol[]; principal?: boolean }[] = [
+  { href: "/estacion", label: "Mis inspecciones", en: "My inspections", roles: ["INSPECTOR"], principal: true },
   {
     href: "/dashboard",
     label: "Dashboard",
     en: "Dashboard",
-    icono: "🏠",
     roles: [...LIDERAZGO, "RESIDENTE", "CLIENTE"],
     principal: true,
   },
@@ -61,28 +61,26 @@ const ENLACES: { href: string; label: string; en: string; icono: string; roles: 
     href: "/inspecciones",
     label: "Inspecciones",
     en: "Inspections",
-    icono: "📋",
     roles: [...LIDERAZGO, "RESIDENTE", "CLIENTE"],
     principal: true,
   },
-  { href: "/inspecciones", label: "Historial", en: "History", icono: "📁", roles: ["INSPECTOR"], principal: true },
-  { href: "/solicitudes", label: "Solicitudes", en: "Requests", icono: "📥", roles: [...LIDERAZGO, "CLIENTE"], principal: true },
-  { href: "/turnos", label: "Turnos", en: "Shifts", icono: "🕐", roles: [...LIDERAZGO, "RESIDENTE"], principal: true },
-  { href: "/ranking", label: "Ranking", en: "Ranking", icono: "🏆", roles: [...LIDERAZGO, "INSPECTOR"], principal: true },
+  { href: "/inspecciones", label: "Historial", en: "History", roles: ["INSPECTOR"], principal: true },
+  { href: "/solicitudes", label: "Solicitudes", en: "Requests", roles: [...LIDERAZGO, "CLIENTE"], principal: true },
+  { href: "/turnos", label: "Turnos", en: "Shifts", roles: [...LIDERAZGO, "RESIDENTE"], principal: true },
+  { href: "/ranking", label: "Ranking", en: "Ranking", roles: [...LIDERAZGO, "INSPECTOR"], principal: true },
   {
     href: "/certificaciones",
     label: "Certificaciones",
     en: "Certifications",
-    icono: "🎓",
     roles: ["INSPECTOR"],
     principal: true,
   },
-  { href: "/auditorias", label: "Auditorías", en: "Audits", icono: "📋", roles: ["RESIDENTE", "CLIENTE"], principal: true },
-  { href: "/residentes", label: "Residentes", en: "Residents", icono: "🏭", roles: LIDERAZGO },
-  { href: "/auditorias", label: "Auditorías", en: "Audits", icono: "📋", roles: LIDERAZGO },
-  { href: "/certificaciones", label: "Certificaciones", en: "Certifications", icono: "🎓", roles: LIDERAZGO },
-  { href: "/asistencia", label: "Asistencia y horas", en: "Attendance & hours", icono: "🕒", roles: LIDERAZGO },
-  { href: "/facturacion", label: "Facturación", en: "Billing", icono: "💰", roles: ["ADMIN", "GERENTE"] },
+  { href: "/auditorias", label: "Auditorías", en: "Audits", roles: ["RESIDENTE", "CLIENTE"], principal: true },
+  { href: "/residentes", label: "Residentes", en: "Residents", roles: LIDERAZGO },
+  { href: "/auditorias", label: "Auditorías", en: "Audits", roles: LIDERAZGO },
+  { href: "/certificaciones", label: "Certificaciones", en: "Certifications", roles: LIDERAZGO },
+  { href: "/asistencia", label: "Asistencia y horas", en: "Attendance & hours", roles: LIDERAZGO },
+  { href: "/facturacion", label: "Facturación", en: "Billing", roles: ["ADMIN", "GERENTE"] },
 ];
 
 export default function AppShell({ id, nombre, rol, organizacion, superadmin, children }: Props) {
@@ -162,7 +160,8 @@ export default function AppShell({ id, nombre, rol, organizacion, superadmin, ch
                         data-tour="ejecutivo"
                         className="flex items-center gap-1.5 rounded-md bg-yellow px-3 py-1.5 text-xs font-bold text-navy-900 transition hover:bg-yellow-400"
                       >
-                        📊 <span className="hidden 2xl:inline">{t("Dashboard Ejecutivo", "Executive dashboard")}</span>
+                        <Icono nombre="grafica" className="h-4 w-4" />
+                        <span className="hidden 2xl:inline">{t("Dashboard Ejecutivo", "Executive dashboard")}</span>
                       </Link>
                     )}
                     <button
@@ -172,7 +171,7 @@ export default function AppShell({ id, nombre, rol, organizacion, superadmin, ch
                       aria-label={t("Buscar (Ctrl K)", "Search (Ctrl K)")}
                       data-tour="buscar"
                     >
-                      <span className="text-base">🔍</span>
+                      <Icono nombre="buscar" className="h-4 w-4" />
                       <span className="hidden xl:inline">{t("Buscar", "Search")}</span>
                       <kbd className="hidden rounded bg-white/10 px-1.5 text-[10px] font-semibold xl:inline">Ctrl K</kbd>
                     </button>
@@ -212,7 +211,7 @@ export default function AppShell({ id, nombre, rol, organizacion, superadmin, ch
   );
 }
 
-function MenuMas({ enlaces, pathname }: { enlaces: { href: string; label: string; icono: string }[]; pathname: string }) {
+function MenuMas({ enlaces, pathname }: { enlaces: { href: string; label: string }[]; pathname: string }) {
   const [abierto, setAbierto] = useState(false);
   const { t } = useIdioma();
   if (enlaces.length === 0) return null;
@@ -247,7 +246,6 @@ function MenuMas({ enlaces, pathname }: { enlaces: { href: string; label: string
                   pathname.startsWith(e.href) ? "text-navy-900" : "text-navy-600"
                 }`}
               >
-                <span>{e.icono}</span>
                 {e.label}
               </Link>
             ))}
@@ -276,7 +274,7 @@ function BotonEscanear() {
         data-tour="escanear"
         title={t("Escanear QR o código de barras", "Scan QR or barcode")}
       >
-        📷
+        <Icono nombre="escanear" />
       </button>
       <EscanerCodigo abierto={abierto} onCerrar={() => setAbierto(false)} />
     </>
@@ -338,7 +336,7 @@ function NotificacionesBell({ rol }: { rol: Rol }) {
         aria-label={t("Notificaciones", "Notifications")}
         data-tour="notificaciones"
       >
-        🔔
+        <Icono nombre="campana" />
         {noLeidas > 0 && (
           <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow ring-2 ring-navy-900">
             {noLeidas > 9 ? "9+" : noLeidas}
@@ -467,7 +465,7 @@ function PerfilMenu({
                 onClick={() => setAbierto(false)}
                 className="block w-full px-4 py-2 text-left text-sm font-semibold text-navy-700 hover:bg-navy-50"
               >
-                🌐 {t("Plataforma (empresas)", "Platform (companies)")}
+                {t("Plataforma (empresas)", "Platform (companies)")}
               </Link>
             )}
             {rol === "ADMIN" && (
@@ -476,7 +474,7 @@ function PerfilMenu({
                 onClick={() => setAbierto(false)}
                 className="block w-full px-4 py-2 text-left text-sm font-semibold text-navy-700 hover:bg-navy-50"
               >
-                👤 {t("Editar usuarios", "Manage users")}
+                {t("Editar usuarios", "Manage users")}
               </Link>
             )}
             {rol === "ADMIN" && (
@@ -485,7 +483,7 @@ function PerfilMenu({
                 onClick={() => setAbierto(false)}
                 className="block w-full px-4 py-2 text-left text-sm font-semibold text-navy-700 hover:bg-navy-50"
               >
-                🏢 {t("Empresas cliente", "Customer companies")}
+                {t("Empresas cliente", "Customer companies")}
               </Link>
             )}
             {rol === "ADMIN" && (
@@ -494,7 +492,7 @@ function PerfilMenu({
                 onClick={() => setAbierto(false)}
                 className="block w-full px-4 py-2 text-left text-sm font-semibold text-navy-700 hover:bg-navy-50"
               >
-                🩺 {t("Estado del sistema", "System status")}
+                {t("Estado del sistema", "System status")}
               </Link>
             )}
             {rol !== "INSPECTOR" && rol !== "CLIENTE" && (
@@ -503,11 +501,11 @@ function PerfilMenu({
                 onClick={() => setAbierto(false)}
                 className="block w-full px-4 py-2 text-left text-sm font-semibold text-navy-700 hover:bg-navy-50"
               >
-                📺 {t("Modo TV (piso)", "TV mode (floor)")}
+                {t("Modo TV (piso)", "TV mode (floor)")}
               </Link>
             )}
             <div className="flex items-center justify-between px-4 py-2 text-sm font-semibold text-navy-700">
-              🌐 {t("Idioma", "Language")}
+              {t("Idioma", "Language")}
               <BotonIdioma />
             </div>
             <BotonTema />
@@ -591,7 +589,7 @@ function BurbujaChat({ rol, miId }: { rol: Rol; miId: string }) {
           aria-label="Abrir chat del equipo"
           data-tour="chat"
         >
-          💬
+          <Icono nombre="chat" className="h-6 w-6" />
           {noLeidos > 0 && (
             <motion.span
               key={noLeidos}

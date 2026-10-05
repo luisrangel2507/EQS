@@ -162,11 +162,11 @@ export default function InspeccionDetalleClient({
             {t("Exportar CSV", "Export CSV")}
           </a>
           <a href={`/inspecciones/${id}/liberacion`} className="btn-secondary">
-            ✅ {sesion.rol === "CLIENTE" ? t("Material liberado", "Released material") : t("Liberar material", "Release material")}
+            {sesion.rol === "CLIENTE" ? t("Material liberado", "Released material") : t("Liberar material", "Release material")}
           </a>
           {puedeGestionar && (
             <a href={`/inspecciones/${id}/etiqueta`} className="btn-secondary">
-              🏷️ {t("Etiqueta QR", "QR label")}
+              {t("Etiqueta QR", "QR label")}
             </a>
           )}
           {sesion.rol !== "RESIDENTE" && (
@@ -188,7 +188,7 @@ export default function InspeccionDetalleClient({
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <Metrica etiqueta={t("Piezas buenas", "Good parts")} valor={<NumeroAnimado valor={inspeccion.piezasBuenas} />} />
         <Metrica etiqueta={t("Piezas malas", "Rejected parts")} valor={<NumeroAnimado valor={inspeccion.piezasMalas} />} />
-        <Metrica etiqueta={`🔧 ${t("Recuperadas", "Reworked OK")}`} valor={<NumeroAnimado valor={inspeccion.piezasRetrabajadas} />} />
+        <Metrica etiqueta={`${t("Recuperadas", "Reworked OK")}`} valor={<NumeroAnimado valor={inspeccion.piezasRetrabajadas} />} />
         <Metrica
           etiqueta={t("NG final (scrap)", "Final NG (scrap)")}
           valor={<NumeroAnimado valor={inspeccion.piezasMalas - inspeccion.piezasRetrabajadas} />}
@@ -329,7 +329,7 @@ function GaleriaCard({ inspeccionId }: { inspeccionId: string }) {
   return (
     <div className="card">
       <h2 className="mb-3 font-display font-semibold text-navy-900">
-        📸 {t("Evidencia de defectos", "Defect evidence")} {fotos.length > 0 && <span className="text-navy-400">({fotos.length})</span>}
+        {t("Evidencia de defectos", "Defect evidence")} {fotos.length > 0 && <span className="text-navy-400">({fotos.length})</span>}
       </h2>
       {datos === null ? (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
@@ -423,7 +423,7 @@ function VistaInspectorJuego({
                   transition={{ type: "spring", stiffness: 500, damping: 18 }}
                   className="badge bg-yellow text-navy-900 shadow-[0_0_18px_rgba(244,217,53,0.6)]"
                 >
-                  🔥 Racha x{racha}
+                  Racha x{racha}
                 </motion.span>
               )}
             </AnimatePresence>
@@ -436,7 +436,7 @@ function VistaInspectorJuego({
               <NumeroAnimado valor={buenasVista} duracion={0.5} />
             </p>
             <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-white/70">
-              ✅ Buenas
+              Buenas
             </p>
           </div>
           <div className="rounded-xl bg-white/10 py-4">
@@ -444,21 +444,21 @@ function VistaInspectorJuego({
               <NumeroAnimado valor={malasVista} duracion={0.5} />
             </p>
             <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-white/70">
-              ❌ Malas
+              Malas
             </p>
           </div>
         </div>
 
         {inspeccion.piezasRetrabajadas > 0 && (
           <p className="mt-2 text-center text-xs font-semibold text-amber-200">
-            🔧 {inspeccion.piezasRetrabajadas} recuperada{inspeccion.piezasRetrabajadas === 1 ? "" : "s"} con retrabajo ·
+            {inspeccion.piezasRetrabajadas} recuperada{inspeccion.piezasRetrabajadas === 1 ? "" : "s"} con retrabajo ·
             NG final {inspeccion.piezasMalas - inspeccion.piezasRetrabajadas}
           </p>
         )}
 
         <div className="mt-5 flex items-center justify-between rounded-xl bg-white/10 px-4 py-3">
           <span className="text-xs font-semibold uppercase tracking-wide text-white/70">
-            ⚡ Ritmo
+            Ritmo
           </span>
           <span className="font-display text-xl font-extrabold text-yellow">
             <NumeroAnimado valor={piezasPorHora} decimales={1} />{" "}
@@ -481,7 +481,7 @@ function VistaInspectorJuego({
               cola.enLinea ? "bg-blue-50 text-blue-800" : "bg-amber-50 text-amber-900"
             }`}
           >
-            <span className="text-lg">{cola.enLinea ? "🔄" : "📡"}</span>
+            <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${cola.enLinea ? "animate-pulse bg-blue-500" : "bg-amber-500"}`} />
             {cola.enLinea
               ? `Sincronizando ${cola.pendientes} captura${cola.pendientes === 1 ? "" : "s"}…`
               : `Sin conexión. Tus capturas se guardan en el equipo${
@@ -530,7 +530,6 @@ function VistaInspectorJuego({
       {inspeccion.cerrado && (
         <div className="space-y-4">
           <div className="card overflow-hidden border-none bg-gradient-to-br from-yellow via-amber-400 to-yellow-600 text-navy-900 shadow-lg">
-            <p className="text-center text-4xl">🎉🏁🎉</p>
             <h2 className="mt-2 text-center font-display text-2xl font-extrabold">
               ¡Gracias por tu trabajo, {nombre.split(" ")[0]}!
             </h2>
@@ -544,7 +543,7 @@ function VistaInspectorJuego({
                   {inspeccion.piezasBuenas}
                 </p>
                 <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-navy-800/70">
-                  ✅ Buenas
+                  Buenas
                 </p>
               </div>
               <div className="rounded-xl bg-white/50 py-4">
@@ -552,7 +551,7 @@ function VistaInspectorJuego({
                   {inspeccion.piezasMalas}
                 </p>
                 <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-navy-800/70">
-                  ❌ Malas
+                  Malas
                 </p>
               </div>
               <div className="rounded-xl bg-white/50 py-4">
@@ -560,7 +559,7 @@ function VistaInspectorJuego({
                   {(100 - rechazo * 100).toFixed(1)}%
                 </p>
                 <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-navy-800/70">
-                  🎯 Calidad
+                  Calidad
                 </p>
               </div>
               <div className="rounded-xl bg-white/50 py-4">
@@ -568,17 +567,17 @@ function VistaInspectorJuego({
                   {inspeccion.meta > 0 ? `${progreso.toFixed(0)}%` : "—"}
                 </p>
                 <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-navy-800/70">
-                  📈 Meta
+                  Meta
                 </p>
               </div>
             </div>
 
             <p className="mt-5 text-center font-display text-lg font-bold text-navy-900">
               {rechazo < 0.02
-                ? "🏆 ¡Desempeño excelente!"
+                ? "¡Desempeño excelente!"
                 : rechazo < 0.08
-                  ? "🥈 ¡Buen trabajo!"
-                  : "💪 ¡Sigue mejorando, tú puedes!"}
+                  ? "¡Buen trabajo!"
+                  : "¡Sigue mejorando, tú puedes!"}
             </p>
           </div>
 
@@ -649,9 +648,9 @@ function PuntoLimpioMetrica({
   const [guardando, setGuardando] = useState(false);
 
   const estado = inspeccion.puntoLimpioOk
-    ? { texto: `✅ ${t("Verificado", "Verified")}`, color: "text-green-700" }
+    ? { texto: `${t("Verificado", "Verified")}`, color: "text-green-700" }
     : inspeccion.puntoLimpioFotoUrl
-      ? { texto: `🟡 ${t("Pendiente OK", "Awaiting OK")}`, color: "text-amber-600" }
+      ? { texto: `${t("Pendiente OK", "Awaiting OK")}`, color: "text-amber-600" }
       : { texto: `— ${t("Sin reportar", "Not reported")}`, color: "text-navy-400" };
 
   async function guardar() {
@@ -670,7 +669,7 @@ function PuntoLimpioMetrica({
 
   return (
     <div className="card">
-      <p className="text-xs font-semibold uppercase tracking-wide text-navy-500">🧼 {t("Punto Limpio", "Clean Point")}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-navy-500">{t("Punto Limpio", "Clean Point")}</p>
       {editando ? (
         <div className="mt-1 space-y-2">
           <input
@@ -710,7 +709,7 @@ function PuntoLimpioMetrica({
           <span className="font-display text-lg font-bold text-navy-900">
             {inspeccion.puntoLimpio || "Sin identificar"}
           </span>
-          <span className="ml-1.5 text-xs font-semibold text-navy-400">✏️</span>
+          <span className="ml-1.5 text-xs font-semibold text-navy-400 underline">editar</span>
         </button>
       ) : (
         <p className="mt-1 font-display text-lg font-bold text-navy-900">
@@ -799,13 +798,13 @@ function PuntoLimpioPanel({
   return (
     <div className="card">
       <h2 className="mb-2 font-display font-semibold text-navy-900">
-        🧼 Punto Limpio{inspeccion.puntoLimpio ? `: ${inspeccion.puntoLimpio}` : ""}
+        Punto Limpio{inspeccion.puntoLimpio ? `: ${inspeccion.puntoLimpio}` : ""}
       </h2>
 
       {inspeccion.puntoLimpioOk ? (
         <div className="space-y-2">
           <p className="text-sm font-semibold text-green-700">
-            ✅ Verificado por {inspeccion.puntoLimpioOkPor}
+            Verificado por {inspeccion.puntoLimpioOkPor}
             {inspeccion.puntoLimpioOkEn &&
               ` el ${new Date(inspeccion.puntoLimpioOkEn).toLocaleString("es-MX")}`}
           </p>
@@ -840,7 +839,7 @@ function PuntoLimpioPanel({
             disabled={enviando}
             className="w-full rounded-lg bg-green-600 py-2 text-sm font-bold text-white transition hover:bg-green-700 disabled:opacity-40"
           >
-            {enviando ? "Confirmando…" : "✅ Punto limpio OK"}
+            {enviando ? "Confirmando…" : "Punto limpio OK"}
           </button>
         </div>
       ) : (
@@ -861,7 +860,7 @@ function PuntoLimpioPanel({
             disabled={enviando || !foto}
             className="w-full rounded-lg bg-navy py-2 text-sm font-bold text-white transition hover:bg-navy-600 disabled:opacity-40"
           >
-            {enviando ? "Enviando…" : "📸 Reportar Punto Limpio"}
+            {enviando ? "Enviando…" : "Reportar Punto Limpio"}
           </button>
         </form>
       )}
@@ -1078,7 +1077,7 @@ function CapturaPanel({
         <h2 className="font-display font-semibold text-navy-900">Captura</h2>
         {mostrarExtras && (
           <div className="flex flex-wrap items-center gap-2">
-            {estacion && <span className="badge bg-navy-50 text-navy-700">📍 {estacion}</span>}
+            {estacion && <span className="badge bg-navy-50 text-navy-700">{estacion}</span>}
             {hoy && (
               <span
                 className={`badge ${hoy.malas > 0 ? "bg-red-50 text-red-700" : "bg-navy-50 text-navy-700"}`}
@@ -1098,7 +1097,7 @@ function CapturaPanel({
             </span>
           )}
           <p className="mb-2 text-center text-sm font-semibold text-green-800">
-            📦 Cantidad inspeccionada
+            Cantidad inspeccionada
           </p>
           <ContadorPiezas
             cantidad={cantidadBuena}
@@ -1140,7 +1139,7 @@ function CapturaPanel({
                 }}
                 className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-600 py-3 text-sm font-bold text-white transition-colors hover:bg-red-700"
               >
-                ⚠️ Reportar defecto
+                Reportar defecto
               </motion.button>
             ) : (
               <motion.div
@@ -1152,7 +1151,7 @@ function CapturaPanel({
                 className="overflow-hidden"
               >
                 <div className="mb-2 flex items-center justify-between">
-                  <p className="text-sm font-semibold text-red-800">⚠️ Reportar defecto</p>
+                  <p className="text-sm font-semibold text-red-800">Reportar defecto</p>
                   <button
                     type="button"
                     onClick={() => setMostrarFormDefecto(false)}
@@ -1222,7 +1221,7 @@ function CapturaPanel({
             ? "✓ Se avisó a liderazgo"
             : llamandoApoyo
               ? "Avisando…"
-              : "🔔 Llamar líder / supervisor"}
+              : "Llamar líder / supervisor"}
         </motion.button>
       )}
     </div>
@@ -1267,7 +1266,7 @@ function PanelRetrabajo({
     vibrar("exito");
     flashPantalla("exito");
     toast.exito(
-      `🔧 ${cantidad} pieza${cantidad === 1 ? "" : "s"} recuperada${cantidad === 1 ? "" : "s"} (${elegido.tipo})${
+      `${cantidad} pieza${cantidad === 1 ? "" : "s"} recuperada${cantidad === 1 ? "" : "s"} (${elegido.tipo})${
         resultado.estado === "encolada" ? " · sin señal, se enviará al reconectar" : ""
       }`,
       { duracion: 5000, accion: { etiqueta: "Deshacer", onClick: () => onDeshacer(resultado) } }
@@ -1288,7 +1287,7 @@ function PanelRetrabajo({
           }}
           className="flex w-full items-center justify-between rounded-lg px-1 text-left text-sm font-bold text-amber-900"
         >
-          <span>🔧 Retrabajo: recuperar piezas NG</span>
+          <span>Retrabajo: recuperar piezas NG</span>
           <span className="badge bg-amber-200 text-amber-900">
             {pendientes.reduce((a, d) => a + d.pendientes, 0)} por recuperar
           </span>
@@ -1296,7 +1295,7 @@ function PanelRetrabajo({
       ) : (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-amber-900">🔧 Piezas recuperadas con retrabajo</p>
+            <p className="text-sm font-semibold text-amber-900">Piezas recuperadas con retrabajo</p>
             <button type="button" onClick={() => setAbierto(false)} className="text-xs font-semibold text-amber-700">
               Cancelar
             </button>

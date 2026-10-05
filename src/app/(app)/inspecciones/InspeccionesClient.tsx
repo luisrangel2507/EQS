@@ -123,7 +123,6 @@ export default function InspeccionesClient({ rol }: { rol: Rol }) {
         <SkeletonTarjetas cantidad={6} alto="h-12" />
       ) : filtradas.length === 0 ? (
         <div className="card flex flex-col items-center gap-2 py-10 text-center">
-          <span className="text-4xl">📋</span>
           <p className="text-sm text-navy-500">{t("No hay inspecciones para mostrar.", "No inspections to show.")}</p>
         </div>
       ) : (

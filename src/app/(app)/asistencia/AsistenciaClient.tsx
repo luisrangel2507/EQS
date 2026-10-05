@@ -95,7 +95,7 @@ export default function AsistenciaClient({ puedeEditar }: { puedeEditar: boolean
     <div className="carga-suave space-y-6" aria-busy={actualizando}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-navy-900">🕒 Asistencia y horas</h1>
+          <h1 className="font-display text-2xl font-bold text-navy-900">Asistencia y horas</h1>
           <p className="text-sm text-navy-500">
             Jornadas de inspectores por pieza. Las inspecciones marcadas &ldquo;por hora&rdquo; se facturan con estas horas.
           </p>
@@ -114,7 +114,7 @@ export default function AsistenciaClient({ puedeEditar }: { puedeEditar: boolean
             ))}
           </div>
           <a className="btn-secondary" href={`/api/asistencia/csv?periodo=${periodo}`}>
-            ⬇️ CSV
+            CSV
           </a>
         </div>
       </div>
@@ -201,7 +201,7 @@ export default function AsistenciaClient({ puedeEditar }: { puedeEditar: boolean
                 <td className="px-4 py-2.5 tabular-nums text-navy-700">{hora(f.entrada)}</td>
                 <td className="px-4 py-2.5 tabular-nums text-navy-700">
                   {f.salida ? hora(f.salida) : <span className="font-semibold text-emerald-700">En curso</span>}
-                  {f.cerradaAuto && <span className="badge ml-1 bg-amber-100 text-amber-800">⚠️ Cerrada sola</span>}
+                  {f.cerradaAuto && <span className="badge ml-1 bg-amber-100 text-amber-800">Cerrada sola</span>}
                 </td>
                 <td className="px-4 py-2.5 text-right font-semibold tabular-nums">{f.horas.toFixed(2)}</td>
                 <td className="px-4 py-2.5 text-right">

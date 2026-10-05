@@ -65,7 +65,7 @@ export default function SolicitudesClient({ rol }: { rol: Rol }) {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-navy-900">📥 {t("Solicitudes de servicio", "Service requests")}</h1>
+          <h1 className="font-display text-2xl font-bold text-navy-900">{t("Solicitudes de servicio", "Service requests")}</h1>
           <p className="text-sm text-navy-500">
             {esCliente
               ? t("Pide un sorteo, retrabajo o inspección y sigue su avance aquí.", "Request a sort, rework or inspection and track it here.")
@@ -104,7 +104,6 @@ export default function SolicitudesClient({ rol }: { rol: Rol }) {
         <SkeletonTarjetas cantidad={3} alto="h-16" />
       ) : lista.length === 0 ? (
         <div className="card flex flex-col items-center gap-3 py-12 text-center">
-          <span className="text-5xl">{filtro === "pendiente" ? "🎉" : "📭"}</span>
           <p className="text-sm text-navy-500">
             {filtro === "pendiente"
               ? t("No hay solicitudes pendientes.", "No pending requests.")
@@ -230,11 +229,11 @@ function Tarjeta({
             {!esCliente && ` · ${s.cliente}`}
           </p>
           <h3 className="mt-0.5 font-display text-lg font-bold text-navy-900">
-            {tipo.icono} {t(tipo.etiqueta, tipo.en)} · {s.numeroParte}
+            {t(tipo.etiqueta, tipo.en)} · {s.numeroParte}
           </h3>
           <p className="text-xs text-navy-500">
             {s.cantidad ? `${s.cantidad.toLocaleString(locale)} ${t("pzas", "pcs")}` : t("Cantidad por definir", "Quantity TBD")}
-            {s.planta ? ` · 🏭 ${s.planta}` : ""} · {t("pidió", "requested by")} {s.solicitante.nombre}
+            {s.planta ? ` · ${s.planta}` : ""} · {t("pidió", "requested by")} {s.solicitante.nombre}
           </p>
         </div>
         <span className={`badge shrink-0 ${urgencia.clase}`}>{t(urgencia.etiqueta, urgencia.en)}</span>
@@ -279,7 +278,7 @@ function Tarjeta({
       <div className="mt-auto flex flex-wrap items-center gap-2">
         {s.inspeccion && (
           <Link href={`/inspecciones/${s.inspeccion.id}`} className="btn-primary px-3 py-1.5 text-sm">
-            {esCliente ? `📊 ${t("Ver avance en vivo", "View live progress")}` : t("Abrir inspección", "Open inspection")}
+            {esCliente ? `${t("Ver avance en vivo", "View live progress")}` : t("Abrir inspección", "Open inspection")}
           </Link>
         )}
         {s.inspeccion && (
@@ -290,7 +289,7 @@ function Tarjeta({
         {s.estado === "pendiente" && puedeResolver && (
           <>
             <button className="btn-accent px-3 py-1.5 text-sm" onClick={aceptar} disabled={aceptando}>
-              {aceptando ? t("Creando inspección…", "Creating inspection…") : `✅ ${t("Aceptar", "Accept")}`}
+              {aceptando ? t("Creando inspección…", "Creating inspection…") : `${t("Aceptar", "Accept")}`}
             </button>
             <button className="btn-secondary px-3 py-1.5 text-sm" onClick={onRechazar}>
               {t("Rechazar", "Decline")}
@@ -299,7 +298,7 @@ function Tarjeta({
         )}
         {s.estado === "pendiente" && !puedeResolver && (
           <span className="text-xs font-semibold text-amber-700">
-            ⏳ {t("Esperando respuesta de supervisión", "Waiting for a supervisor’s response")}
+            {t("Esperando respuesta de supervisión", "Waiting for a supervisor’s response")}
           </span>
         )}
       </div>
@@ -388,7 +387,7 @@ function NuevaSolicitud({ esCliente, onCerrar, onCreada }: { esCliente: boolean;
                 tipo === tp ? "border-navy bg-navy text-white" : "border-navy-200 text-navy-700 hover:bg-navy-50"
               }`}
             >
-              {TIPO_SOLICITUD_INFO[tp].icono} {t(TIPO_SOLICITUD_INFO[tp].etiqueta, TIPO_SOLICITUD_INFO[tp].en)}
+              {t(TIPO_SOLICITUD_INFO[tp].etiqueta, TIPO_SOLICITUD_INFO[tp].en)}
             </button>
           ))}
         </div>
@@ -462,7 +461,7 @@ function NuevaSolicitud({ esCliente, onCerrar, onCreada }: { esCliente: boolean;
           {t("Cancelar", "Cancel")}
         </button>
         <button type="submit" className="btn-accent" disabled={enviando || (!esCliente && !cliente)}>
-          {enviando ? t("Enviando…", "Sending…") : `📨 ${t("Enviar solicitud", "Send request")}`}
+          {enviando ? t("Enviando…", "Sending…") : `${t("Enviar solicitud", "Send request")}`}
         </button>
       </div>
     </form>

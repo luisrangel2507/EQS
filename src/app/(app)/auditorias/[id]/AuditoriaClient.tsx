@@ -11,6 +11,7 @@ import { vibrar } from "@/lib/feedback";
 import { TIPOS_AUDITORIA, type ItemChecklist, type Respuesta } from "@/lib/auditorias";
 import { AnilloPuntaje } from "../AuditoriasClient";
 import { useIdioma } from "@/components/ui/Idioma";
+import Icono from "@/components/ui/Icono";
 
 type Auditoria = {
   id: string;
@@ -32,9 +33,9 @@ type Auditoria = {
 };
 
 const OPCIONES = [
-  { valor: "ok", etiqueta: "Cumple", en: "Pass", icono: "✅", activo: "border-emerald-500 bg-emerald-500 text-white" },
-  { valor: "no", etiqueta: "No cumple", en: "Fail", icono: "❌", activo: "border-red-500 bg-red-500 text-white" },
-  { valor: "na", etiqueta: "N/A", en: "N/A", icono: "➖", activo: "border-navy-400 bg-navy-400 text-white" },
+  { valor: "ok", etiqueta: "Cumple", en: "Pass", activo: "border-emerald-500 bg-emerald-500 text-white" },
+  { valor: "no", etiqueta: "No cumple", en: "Fail", activo: "border-red-500 bg-red-500 text-white" },
+  { valor: "na", etiqueta: "N/A", en: "N/A", activo: "border-navy-400 bg-navy-400 text-white" },
 ] as const;
 
 const fecha = (iso: string, locale: string) =>
@@ -118,7 +119,7 @@ export default function AuditoriaClient({ id }: { id: string }) {
     toast.exito(
       d.hallazgos
         ? t(`Auditoría cerrada con ${d.hallazgos} hallazgo(s)`, `Audit closed with ${d.hallazgos} finding(s)`)
-        : t("Auditoría cerrada sin hallazgos 🎉", "Audit closed with no findings 🎉")
+        : t("Auditoría cerrada sin hallazgos", "Audit closed with no findings")
     );
     setAuditoria((a) => (a ? { ...a, ...d, items: a.items, respuestas: a.respuestas, puedeEditar: false } : a));
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -146,7 +147,9 @@ export default function AuditoriaClient({ id }: { id: string }) {
         {auditoria.estado === "completada" ? (
           <AnilloPuntaje puntaje={auditoria.puntaje} tamano={72} />
         ) : (
-          <span className="flex h-[72px] w-[72px] items-center justify-center rounded-2xl bg-navy-50 text-4xl">{tipo.icono}</span>
+          <span className="flex h-[72px] w-[72px] items-center justify-center rounded-2xl bg-navy-50 text-navy-400">
+            <Icono nombre="documento" className="h-8 w-8" />
+          </span>
         )}
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold uppercase tracking-wide text-navy-400">
@@ -165,7 +168,7 @@ export default function AuditoriaClient({ id }: { id: string }) {
         <div className="flex gap-2">
           {auditoria.estado === "completada" && (
             <a className="btn-secondary" href={`/api/auditorias/${id}/pdf`} target="_blank" rel="noreferrer">
-              📄 PDF
+              PDF
             </a>
           )}
           {editable && (
@@ -230,7 +233,7 @@ export default function AuditoriaClient({ id }: { id: string }) {
               ? t("Cerrando…", "Closing…")
               : contestadas < total
                 ? t(`Finalizar (faltan ${total - contestadas})`, `Finish (${total - contestadas} left)`)
-                : `✔ ${t("Finalizar auditoría", "Finish audit")}`}
+                : `${t("Finalizar auditoría", "Finish audit")}`}
           </button>
         </div>
       )}
@@ -296,7 +299,7 @@ function PuntoChecklist({
         <div className="min-w-0 flex-1">
           <p className="font-medium text-navy-900">
             {item.texto}
-            {item.requiereFoto && <span className="ml-1.5 text-xs text-navy-400">📷 {t("foto si no cumple", "photo if it fails")}</span>}
+            {item.requiereFoto && <span className="ml-1.5 text-xs text-navy-400">{t("foto si no cumple", "photo if it fails")}</span>}
           </p>
 
           {editable ? (
@@ -319,7 +322,6 @@ function PuntoChecklist({
                       activo ? o.activo : "border-navy-100 bg-white text-navy-600 hover:border-navy-300"
                     }`}
                   >
-                    <span className="mr-1">{o.icono}</span>
                     {t(o.etiqueta, o.en)}
                   </motion.button>
                 );
@@ -327,9 +329,9 @@ function PuntoChecklist({
             </div>
           ) : (
             <p className="mt-1 text-sm font-semibold">
-              {respuesta.resultado === "ok" && <span className="text-emerald-600">✅ {t("Cumple", "Pass")}</span>}
-              {esNo && <span className="text-red-600">❌ {t("No cumple", "Fail")}</span>}
-              {respuesta.resultado === "na" && <span className="text-navy-400">➖ {t("No aplica", "Not applicable")}</span>}
+              {respuesta.resultado === "ok" && <span className="text-emerald-600">{t("Cumple", "Pass")}</span>}
+              {esNo && <span className="text-red-600">{t("No cumple", "Fail")}</span>}
+              {respuesta.resultado === "na" && <span className="text-navy-400">{t("No aplica", "Not applicable")}</span>}
               {!respuesta.resultado && <span className="text-navy-300">{t("Sin evaluar", "Not evaluated")}</span>}
             </p>
           )}
@@ -384,8 +386,8 @@ function PuntoChecklist({
                           {subiendo
                             ? t("Subiendo…", "Uploading…")
                             : respuesta.fotoUrl
-                              ? `📷 ${t("Cambiar foto", "Change photo")}`
-                              : `📷 ${t("Foto", "Photo")}${item.requiereFoto ? ` ${t("(obligatoria)", "(required)")}` : ""}`}
+                              ? `${t("Cambiar foto", "Change photo")}`
+                              : `${t("Foto", "Photo")}${item.requiereFoto ? ` ${t("(obligatoria)", "(required)")}` : ""}`}
                         </button>
                         {respuesta.fotoUrl && (
                           <button

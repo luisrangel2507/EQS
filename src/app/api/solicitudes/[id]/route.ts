@@ -56,7 +56,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     await notificar([solicitud.solicitanteId], {
       tipo: "solicitud_respuesta",
-      titulo: datos.accion === "aceptar" ? "✅ Solicitud aceptada" : "Solicitud no aceptada",
+      titulo: datos.accion === "aceptar" ? "Solicitud aceptada" : "Solicitud no aceptada",
       mensaje:
         datos.accion === "aceptar"
           ? `Tu solicitud #${solicitud.folio} (${solicitud.numeroParte}) fue aceptada; ya puedes seguir su avance en vivo.`

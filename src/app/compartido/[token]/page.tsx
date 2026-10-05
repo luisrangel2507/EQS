@@ -25,7 +25,6 @@ export default async function CompartidoPage({ params }: { params: { token: stri
     return (
       <main className="flex min-h-screen items-center justify-center bg-navy-950 p-6 text-center text-white">
         <div>
-          <p className="text-5xl">🔒</p>
           <h1 className="mt-3 font-display text-2xl font-bold">
             {t("Este enlace ya no es válido", "This link is no longer valid")}
           </h1>

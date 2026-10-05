@@ -32,11 +32,11 @@ export function PronosticoBadge({ p }: { p: Pronostico }) {
   const { t } = useIdioma();
   const estilos: Record<Pronostico["estado"], { texto: string; clase: string } | null> = {
     sin_meta: null,
-    sin_ritmo: { texto: `⏳ ${t("Sin ritmo todavía", "No pace yet")}`, clase: "bg-navy-100 text-navy-600" },
-    terminada: { texto: `🏁 ${t("Meta alcanzada", "Goal reached")}`, clase: "bg-green-100 text-green-800" },
-    a_tiempo: { texto: `✅ ${t("A tiempo", "On time")}`, clase: "bg-green-100 text-green-800" },
-    en_riesgo: { texto: `⚠️ ${t("En riesgo", "At risk")}`, clase: "bg-red-100 text-red-800" },
-    sin_fecha: { texto: `📅 ${t("Sin fecha de entrega", "No due date")}`, clase: "bg-navy-100 text-navy-600" },
+    sin_ritmo: { texto: `${t("Sin ritmo todavía", "No pace yet")}`, clase: "bg-navy-100 text-navy-600" },
+    terminada: { texto: `${t("Meta alcanzada", "Goal reached")}`, clase: "bg-green-100 text-green-800" },
+    a_tiempo: { texto: `${t("A tiempo", "On time")}`, clase: "bg-green-100 text-green-800" },
+    en_riesgo: { texto: `${t("En riesgo", "At risk")}`, clase: "bg-red-100 text-red-800" },
+    sin_fecha: { texto: `${t("Sin fecha de entrega", "No due date")}`, clase: "bg-navy-100 text-navy-600" },
   };
   const e = estilos[p.estado];
   return e ? <span className={`badge ${e.clase}`}>{e.texto}</span> : null;
@@ -73,10 +73,10 @@ function Detalle({ active, payload }: { active?: boolean; payload?: { payload: S
       <p className="text-navy-400">
         {t("Límite superior", "Upper limit")} {pct(s.lcs)}
       </p>
-      {s.fuera && <p className="mt-1 font-semibold text-red-700">⚠️ {t("Fuera de control", "Out of control")}</p>}
+      {s.fuera && <p className="mt-1 font-semibold text-red-700">{t("Fuera de control", "Out of control")}</p>}
       {!s.fuera && s.tendencia && (
         <p className="mt-1 font-semibold text-red-700">
-          ⚠️ {t("8+ horas seguidas arriba de la media", "8+ hours in a row above the mean")}
+          {t("8+ horas seguidas arriba de la media", "8+ hours in a row above the mean")}
         </p>
       )}
     </div>
@@ -100,18 +100,18 @@ export default function SpcCard({ inspeccionId }: { inspeccionId: string }) {
       <div className="card lg:col-span-2">
         <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="font-display font-semibold text-navy-900">
-            📉 {t("Control estadístico (gráfica p por hora)", "Statistical control (hourly p-chart)")}
+            {t("Control estadístico (gráfica p por hora)", "Statistical control (hourly p-chart)")}
           </h2>
           {subgrupos.length >= MIN_SUBGRUPOS &&
             (datos.fueraDeControl > 0 || datos.tendencia ? (
               <span className="badge animate-respirar bg-red-100 text-red-800">
-                ⚠️{" "}
+{" "}
                 {datos.fueraDeControl > 0
                   ? t(`${datos.fueraDeControl} hora(s) fuera de control`, `${datos.fueraDeControl} hour(s) out of control`)
                   : t("Tendencia al alza", "Upward trend")}
               </span>
             ) : (
-              <span className="badge bg-green-100 text-green-800">✅ {t("Proceso en control", "Process in control")}</span>
+              <span className="badge bg-green-100 text-green-800">{t("Proceso en control", "Process in control")}</span>
             ))}
         </div>
         <p className="mb-3 text-xs text-navy-400">
@@ -174,7 +174,7 @@ export default function SpcCard({ inspeccionId }: { inspeccionId: string }) {
         className="card flex flex-col"
       >
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="font-display font-semibold text-navy-900">⏱️ {t("Fecha estimada", "Estimated finish")}</h2>
+          <h2 className="font-display font-semibold text-navy-900">{t("Fecha estimada", "Estimated finish")}</h2>
           <PronosticoBadge p={p} />
         </div>
         {p.estado === "sin_meta" ? (
@@ -182,7 +182,7 @@ export default function SpcCard({ inspeccionId }: { inspeccionId: string }) {
             {t("Define una meta de piezas para estimar cuándo termina.", "Set a parts goal to estimate when it finishes.")}
           </p>
         ) : p.estado === "terminada" ? (
-          <p className="font-display text-2xl font-bold text-green-700">{t("Meta alcanzada", "Goal reached")} 🎉</p>
+          <p className="font-display text-2xl font-bold text-green-700">{t("Meta alcanzada", "Goal reached")}</p>
         ) : p.estado === "sin_ritmo" || !p.eta || p.horas === null ? (
           <p className="text-sm text-navy-400">{t("Aún no hay capturas para calcular el ritmo.", "No entries yet to compute the pace.")}</p>
         ) : (

@@ -100,12 +100,12 @@ export default function TurnosClient({ rol, miId }: { rol: Rol; miId: string }) 
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-yellow">Turno en curso</p>
             <h1 className="mt-1 font-display text-3xl font-extrabold">
-              {turno.emoji} {turno.etiqueta}
+              {turno.etiqueta}
             </h1>
             <p className="mt-1 text-sm text-white/70">
               {horaLocal(datos.turnoActual.inicio)} – {horaLocal(datos.turnoActual.fin)} · Faltan{" "}
               {duracion(fin - ahora)}
-              {datos.planta ? ` · 🏭 ${datos.planta}` : ""}
+              {datos.planta ? ` · ${datos.planta}` : ""}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -130,7 +130,7 @@ export default function TurnosClient({ rol, miId }: { rol: Rol; miId: string }) 
               className="btn-accent"
               onClick={() => setEntregando(true)}
             >
-              📝 Entregar turno
+              Entregar turno
             </motion.button>
           </div>
         </div>
@@ -160,7 +160,7 @@ export default function TurnosClient({ rol, miId }: { rol: Rol; miId: string }) 
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="card">
-          <h2 className="mb-3 font-display font-semibold text-navy-900">👷 Por inspector</h2>
+          <h2 className="mb-3 font-display font-semibold text-navy-900">Por inspector</h2>
           {resumen.porInspector.length === 0 ? (
             <p className="text-sm text-navy-400">Nadie ha capturado en este turno todavía.</p>
           ) : (
@@ -197,7 +197,7 @@ export default function TurnosClient({ rol, miId }: { rol: Rol; miId: string }) 
         </div>
 
         <div className="card">
-          <h2 className="mb-3 font-display font-semibold text-navy-900">⚠️ Defectos del turno</h2>
+          <h2 className="mb-3 font-display font-semibold text-navy-900">Defectos del turno</h2>
           {resumen.topDefectos.length === 0 ? (
             <p className="text-sm text-navy-400">Sin defectos reportados en este turno.</p>
           ) : (
@@ -238,7 +238,7 @@ export default function TurnosClient({ rol, miId }: { rol: Rol; miId: string }) 
       </div>
 
       <div className="card">
-        <h2 className="mb-4 font-display font-semibold text-navy-900">📒 Bitácora de relevos</h2>
+        <h2 className="mb-4 font-display font-semibold text-navy-900">Bitácora de relevos</h2>
         {datos.relevos.length === 0 ? (
           <p className="text-sm text-navy-400">
             Todavía no hay relevos. Al terminar tu turno, usa &ldquo;Entregar turno&rdquo;.
@@ -271,7 +271,7 @@ export default function TurnosClient({ rol, miId }: { rol: Rol; miId: string }) 
                           day: "2-digit",
                           month: "short",
                         })}
-                        {r.planta ? ` · 🏭 ${r.planta}` : ""}
+                        {r.planta ? ` · ${r.planta}` : ""}
                       </span>
                     </p>
                     <span className="text-xs text-navy-400">
@@ -279,9 +279,9 @@ export default function TurnosClient({ rol, miId }: { rol: Rol; miId: string }) 
                     </span>
                   </div>
                   <div className="mt-1 flex flex-wrap gap-2 text-xs">
-                    <span className="badge bg-navy-50 text-navy-700">📦 {t} piezas</span>
+                    <span className="badge bg-navy-50 text-navy-700">{t} piezas</span>
                     <span className="badge bg-red-50 text-red-700">
-                      ❌ {r.piezasMalas} NG ({t > 0 ? ((r.piezasMalas / t) * 100).toFixed(1) : "0.0"}%)
+                      {r.piezasMalas} NG ({t > 0 ? ((r.piezasMalas / t) * 100).toFixed(1) : "0.0"}%)
                     </span>
                   </div>
                   <p className="mt-2 whitespace-pre-wrap text-sm text-navy-700">{r.novedades}</p>
@@ -302,7 +302,7 @@ export default function TurnosClient({ rol, miId }: { rol: Rol; miId: string }) 
                         ✓ Recibir turno
                       </button>
                     ) : (
-                      <span className="text-xs font-semibold text-amber-700">⏳ Esperando a quien recibe</span>
+                      <span className="text-xs font-semibold text-amber-700">Esperando a quien recibe</span>
                     )}
                   </div>
                 </motion.li>
@@ -316,7 +316,7 @@ export default function TurnosClient({ rol, miId }: { rol: Rol; miId: string }) 
         <EntregarTurnoForm
           rol={rol}
           plantaInicial={datos.planta ?? ""}
-          etiqueta={`${turno.emoji} ${turno.etiqueta}`}
+          etiqueta={`$${turno.etiqueta}`}
           total={total}
           malas={resumen.malas}
           onCerrar={() => setEntregando(false)}

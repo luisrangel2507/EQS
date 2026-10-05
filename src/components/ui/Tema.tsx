@@ -34,7 +34,7 @@ export function BotonTema() {
       onClick={alternarTema}
       className="block w-full px-4 py-2 text-left text-sm font-semibold text-navy-700 hover:bg-navy-50"
     >
-      {oscuro ? `☀️ ${t("Modo claro", "Light mode")}` : `🌙 ${t("Modo oscuro", "Dark mode")}`}
+      {oscuro ? `${t("Modo claro", "Light mode")}` : `${t("Modo oscuro", "Dark mode")}`}
     </button>
   );
 }

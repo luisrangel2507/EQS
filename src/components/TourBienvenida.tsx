@@ -15,7 +15,7 @@ const MARGEN = 8;
 function pasosPara(rol: Rol, nombre: string, t: Traductor): Paso[] {
   const primero = nombre.split(" ")[0];
   const bienvenida: Paso = {
-    titulo: t(`¡Hola, ${primero}! 👋`, `Hi, ${primero}! 👋`),
+    titulo: t(`¡Hola, ${primero}!`, `Hi, ${primero}!`),
     texto: t(
       `Te damos un recorrido de 30 segundos por ${NOMBRE_APP}. Puedes saltarlo y verlo después desde la búsqueda (Ctrl K).`,
       `Here's a 30-second tour of ${NOMBRE_APP}. You can skip it and replay it later from search (Ctrl K).`
@@ -51,7 +51,7 @@ function pasosPara(rol: Rol, nombre: string, t: Traductor): Paso[] {
     texto: t("Habla con liderazgo y compañeros sin salir de la app.", "Talk to leadership and teammates without leaving the app."),
   };
   const final: Paso = {
-    titulo: t("¡Listo! 🚀", "All set! 🚀"),
+    titulo: t("¡Listo!", "All set!"),
     texto: t(
       "Eso es todo. Si algo no queda claro, vuelve a abrir este recorrido desde la búsqueda.",
       "That's it. If anything is unclear, reopen this tour from search."

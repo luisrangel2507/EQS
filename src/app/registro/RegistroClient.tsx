@@ -58,7 +58,6 @@ export default function RegistroClient({ abierto }: { abierto: boolean }) {
         </Link>
         {!abierto ? (
           <div className="card space-y-3 text-center">
-            <p className="text-4xl">🔒</p>
             <h1 className="font-display text-xl font-bold text-navy-900">{t("Registro por invitación", "Sign-up by invitation")}</h1>
             <p className="text-sm text-navy-500">
               {t(

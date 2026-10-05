@@ -9,6 +9,7 @@ import { vibrar } from "@/lib/feedback";
 import Modal from "@/components/ui/Modal";
 import { SkeletonPagina } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
+import Icono from "@/components/ui/Icono";
 
 type Pregunta = { texto: string; opciones: string[]; correcta?: number };
 type Criterio = {
@@ -65,7 +66,7 @@ function VistaInspector({ datos, recargar }: { datos: Datos; recargar: () => voi
       <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-navy-800 to-navy-950 p-6 text-white shadow-xl">
         <p className="text-xs font-semibold uppercase tracking-widest text-yellow">Mis certificaciones</p>
         <p className="mt-1 font-display text-3xl font-extrabold">
-          🎓 {vigentes} de {datos.criterios.length}
+          {vigentes} de {datos.criterios.length}
         </p>
         <p className="text-sm text-white/70">Piezas en las que puedes ser asignado. Estudia el criterio y presenta el examen.</p>
       </div>
@@ -149,7 +150,7 @@ function Examen({ criterio, onCerrar }: { criterio: Criterio; onCerrar: () => vo
   return (
     <div className="overflow-hidden rounded-2xl bg-white shadow-2xl">
       <div className="flex items-center justify-between border-b border-navy-100 px-5 py-3">
-        <p className="font-display font-bold text-navy-900">🎓 {criterio.numeroParte}</p>
+        <p className="font-display font-bold text-navy-900">{criterio.numeroParte}</p>
         <button onClick={onCerrar} className="rounded-md p-1 text-navy-400 hover:bg-navy-50" aria-label="Cerrar">
           ✕
         </button>
@@ -163,14 +164,16 @@ function Examen({ criterio, onCerrar }: { criterio: Criterio; onCerrar: () => vo
         <AnimatePresence mode="wait">
           {resultado ? (
             <motion.div key="resultado" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-4 text-center">
-              <motion.p
-                className="text-6xl"
-                initial={{ scale: 0, rotate: -20 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 12 }}
+              <motion.div
+                className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${
+                  resultado.aprobado ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+                }`}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 18 }}
               >
-                {resultado.aprobado ? "🎓" : "📚"}
-              </motion.p>
+                <Icono nombre={resultado.aprobado ? "check" : "alerta"} className="h-8 w-8" />
+              </motion.div>
               <p className="font-display text-2xl font-extrabold text-navy-900">
                 {resultado.aprobado ? "¡Certificado!" : "Casi, vuelve a intentarlo"}
               </p>
@@ -216,8 +219,8 @@ function Examen({ criterio, onCerrar }: { criterio: Criterio; onCerrar: () => vo
               {(criterio.fotoOkUrl || criterio.fotoNgUrl) && (
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { url: criterio.fotoOkUrl, texto: "✅ Pieza OK", clase: "ring-emerald-400" },
-                    { url: criterio.fotoNgUrl, texto: "❌ Pieza NG", clase: "ring-red-400" },
+                    { url: criterio.fotoOkUrl, texto: "Pieza OK", clase: "ring-emerald-400" },
+                    { url: criterio.fotoNgUrl, texto: "Pieza NG", clase: "ring-red-400" },
                   ].map((f) =>
                     f.url ? (
                       <figure key={f.texto} className="text-center">
@@ -298,7 +301,7 @@ function VistaLiderazgo({ datos, recargar, puedeEditar }: { datos: Datos; recarg
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-navy-900">🎓 Certificaciones</h1>
+          <h1 className="font-display text-2xl font-bold text-navy-900">Certificaciones</h1>
           <p className="text-sm text-navy-500">
             Si una pieza tiene criterio, solo se asignan inspectores certificados en ella (IATF 16949 § 7.2).
           </p>
@@ -326,7 +329,6 @@ function VistaLiderazgo({ datos, recargar, puedeEditar }: { datos: Datos; recarg
 
       {datos.criterios.length === 0 ? (
         <div className="card flex flex-col items-center gap-3 py-12 text-center">
-          <span className="text-5xl">🎓</span>
           <p className="max-w-md text-sm text-navy-500">
             Crea el criterio de un número de parte (qué es OK y qué es NG, con fotos) y un examen corto. Los inspectores se
             certifican desde su celular.
@@ -460,7 +462,7 @@ function SubirFoto({ etiqueta, url, onUrl }: { etiqueta: string; url: string | n
           // eslint-disable-next-line @next/next/no-img-element
           <img src={url} alt={etiqueta} className="h-full w-full object-cover" />
         ) : (
-          "📷 Agregar foto"
+          "Agregar foto"
         )}
       </div>
       <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && subir(e.target.files[0])} />
@@ -528,8 +530,8 @@ function EditorCriterio({ criterio, onCerrar, onGuardado }: { criterio: Criterio
         <textarea className="input" rows={3} required minLength={5} value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <SubirFoto etiqueta="✅ Foto de pieza OK" url={fotoOkUrl} onUrl={setFotoOk} />
-        <SubirFoto etiqueta="❌ Foto de pieza NG" url={fotoNgUrl} onUrl={setFotoNg} />
+        <SubirFoto etiqueta="Foto de pieza OK" url={fotoOkUrl} onUrl={setFotoOk} />
+        <SubirFoto etiqueta="Foto de pieza NG" url={fotoNgUrl} onUrl={setFotoNg} />
       </div>
 
       <div className="space-y-3">

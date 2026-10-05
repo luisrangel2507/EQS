@@ -53,7 +53,6 @@ export default function SelectorInspectores({
                     : "border-navy-200 text-navy-600 hover:bg-navy-50"
               }`}
             >
-              {requiere && i.certificado ? "🎓 " : ""}
               {i.nombre}
             </button>
           );
@@ -61,7 +60,7 @@ export default function SelectorInspectores({
       </div>
       {requiere && (
         <p className="text-xs text-navy-400">
-          🎓 {numeroParte} requiere certificación: solo se puede asignar a inspectores certificados.
+          {numeroParte} requiere certificación: solo se puede asignar a inspectores certificados.
         </p>
       )}
     </div>

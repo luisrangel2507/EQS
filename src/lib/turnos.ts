@@ -2,9 +2,9 @@
 export const ZONA_HORARIA = process.env.NEXT_PUBLIC_ZONA_HORARIA || "America/Monterrey";
 
 export const TURNOS = [
-  { valor: "primero", etiqueta: "1er turno", emoji: "🌅", inicio: 6, fin: 14 },
-  { valor: "segundo", etiqueta: "2do turno", emoji: "🌇", inicio: 14, fin: 22 },
-  { valor: "tercero", etiqueta: "3er turno", emoji: "🌙", inicio: 22, fin: 6 },
+  { valor: "primero", etiqueta: "1er turno", inicio: 6, fin: 14 },
+  { valor: "segundo", etiqueta: "2do turno", inicio: 14, fin: 22 },
+  { valor: "tercero", etiqueta: "3er turno", inicio: 22, fin: 6 },
 ] as const;
 
 export type TurnoValor = (typeof TURNOS)[number]["valor"];
@@ -45,7 +45,7 @@ export function turnoEn(fecha = new Date()) {
 
 export function etiquetaTurno(valor: string) {
   const t = TURNOS.find((x) => x.valor === valor);
-  return t ? `${t.emoji} ${t.etiqueta}` : valor;
+  return t ? `$${t.etiqueta}` : valor;
 }
 
 export function horaLocal(fecha: Date | string) {

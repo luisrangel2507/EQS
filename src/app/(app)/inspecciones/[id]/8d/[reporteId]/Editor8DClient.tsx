@@ -96,7 +96,7 @@ export default function Editor8DClient({ inspeccionId, reporteId }: { inspeccion
     setReporte((r) => (r ? { ...r, estado, cerradoEn: d.cerradoEn } : r));
     if (estado === "cerrado") {
       vibrar("exito");
-      toast.exito("🏆 8D cerrado. ¡Buen trabajo, equipo!");
+      toast.exito("8D cerrado. ¡Buen trabajo, equipo!");
     } else {
       toast.info("8D reabierto");
     }
@@ -124,7 +124,7 @@ export default function Editor8DClient({ inspeccionId, reporteId }: { inspeccion
     guardado: { texto: "✓ Guardado", clase: "text-emerald-600" },
     pendiente: { texto: "Editando…", clase: "text-navy-400" },
     guardando: { texto: "Guardando…", clase: "text-navy-500" },
-    error: { texto: "⚠️ Sin guardar, reintentando al editar", clase: "text-red-600" },
+    error: { texto: "Sin guardar, reintentando al editar", clase: "text-red-600" },
   }[guardado];
 
   return (
@@ -145,7 +145,7 @@ export default function Editor8DClient({ inspeccionId, reporteId }: { inspeccion
         <div className="flex flex-wrap items-center gap-2">
           {editable && <span className={`text-xs font-semibold ${indicador.clase}`}>{indicador.texto}</span>}
           <a href={`/api/8d/${reporteId}/pdf`} target="_blank" rel="noreferrer" className="btn-secondary">
-            📄 PDF
+            PDF
           </a>
           {reporte.puedeEditar &&
             (cerrado ? (
@@ -160,7 +160,7 @@ export default function Editor8DClient({ inspeccionId, reporteId }: { inspeccion
                 title={completas < DISCIPLINAS.length ? "Completa las 8 disciplinas" : undefined}
                 onClick={() => cambiarEstado("cerrado")}
               >
-                ✅ Cerrar 8D
+                Cerrar 8D
               </motion.button>
             ))}
         </div>
@@ -174,7 +174,7 @@ export default function Editor8DClient({ inspeccionId, reporteId }: { inspeccion
             exit={{ opacity: 0 }}
             className="rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-4 text-white shadow-lg"
           >
-            <p className="font-display text-lg font-bold">🏆 {t("8D cerrado", "8D closed")}</p>
+            <p className="font-display text-lg font-bold">{t("8D cerrado", "8D closed")}</p>
             <p className="text-sm text-white/85">
               {reporte.cerradoEn ? `${t("El", "On")} ${new Date(reporte.cerradoEn).toLocaleDateString(locale)}. ` : ""}
               {t("Queda en solo lectura; reábrelo si hay que ajustar algo.", "It is now read-only; reopen it to make changes.")}

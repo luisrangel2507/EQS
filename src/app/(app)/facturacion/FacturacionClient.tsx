@@ -72,7 +72,7 @@ export default function FacturacionClient() {
     <div className="carga-suave space-y-6" aria-busy={actualizando}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-navy-900">💰 Facturación</h1>
+          <h1 className="font-display text-2xl font-bold text-navy-900">Facturación</h1>
           <p className="text-sm text-navy-500">Piezas inspeccionadas en el mes × precio por pieza de cada inspección.</p>
         </div>
         <div className="flex items-center gap-2">
@@ -91,7 +91,7 @@ export default function FacturacionClient() {
             →
           </button>
           <a className="btn-secondary" href={`/api/facturacion/csv?mes=${mes}`}>
-            ⬇️ CSV
+            CSV
           </a>
         </div>
       </div>
@@ -114,7 +114,7 @@ export default function FacturacionClient() {
           animate={{ opacity: 1, y: 0 }}
           className="rounded-xl border-l-4 border-amber-400 bg-amber-50 px-4 py-3 text-sm text-amber-900"
         >
-          <p className="font-semibold">⚠️ {datos.sinPrecio.length} inspección(es) con piezas pero sin precio por pieza:</p>
+          <p className="font-semibold">{datos.sinPrecio.length} inspección(es) con piezas pero sin precio por pieza:</p>
           <div className="mt-1 flex flex-wrap gap-2">
             {datos.sinPrecio.map((l) => (
               <Link key={l.id} href={`/inspecciones/${l.id}`} className="underline">
@@ -178,7 +178,7 @@ export default function FacturacionClient() {
                   onClick={() => setAbierto(abiertoAqui ? null : c.cliente)}
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="font-display text-lg font-semibold text-navy-900">🏢 {c.cliente}</p>
+                    <p className="font-display text-lg font-semibold text-navy-900">{c.cliente}</p>
                     <p className="text-xs text-navy-500">
                       {c.lineas.length} {c.lineas.length === 1 ? "inspección" : "inspecciones"} ·{" "}
                       {c.piezas.toLocaleString("es-MX")} piezas · {pct.toFixed(0)}% del mes
@@ -248,7 +248,7 @@ export default function FacturacionClient() {
                           target="_blank"
                           rel="noreferrer"
                         >
-                          📄 Estado de cuenta PDF
+                          Estado de cuenta PDF
                         </a>
                       </div>
                     </motion.div>

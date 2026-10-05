@@ -81,7 +81,7 @@ export default function LiberacionClient({ id, puedeAnular }: { id: string; pued
             ← {inspeccion.numeroParte ?? inspeccion.nombre}
           </Link>
           <h1 className="font-display text-2xl font-bold text-navy-900">
-            ✅ {datos.puedeImprimir ? t("Liberar material", "Release material") : t("Material liberado", "Released material")}
+            {datos.puedeImprimir ? t("Liberar material", "Release material") : t("Material liberado", "Released material")}
           </h1>
           <p className="text-sm text-navy-500">
             {datos.puedeImprimir
@@ -193,7 +193,6 @@ function FormularioLiberacion({
   if (disponibles === 0) {
     return (
       <div className="card flex items-center gap-3 text-sm text-navy-500">
-        <span className="text-2xl">📦</span>
         {t(
           "Todas las piezas buenas ya tienen etiqueta. Cuando se capturen más, podrás liberarlas aquí.",
           "All good parts are already labeled. When more are logged, you can release them here."
@@ -280,7 +279,7 @@ function FormularioLiberacion({
           )}
         </p>
         <button className="btn-primary" disabled={enviando || !total || p > disponibles}>
-          {enviando ? t("Generando…", "Generating…") : `🏷️ ${t("Generar e imprimir", "Generate & print")}`}
+          {enviando ? t("Generando…", "Generating…") : `${t("Generar e imprimir", "Generate & print")}`}
         </button>
       </div>
     </form>
@@ -324,7 +323,7 @@ function Tanda({
               )}
             </span>
             <span className="text-xs text-navy-400">
-              {fechaCorta(primera.creadoEn, locale)} · {primera.creadaPor.nombre} · 👁 {escaneos} {t("escaneo", "scan")}
+              {fechaCorta(primera.creadoEn, locale)} · {primera.creadaPor.nombre} · {escaneos} {t("escaneo", "scan")}
               {escaneos === 1 ? "" : "s"}
               {vigentes.length < etiquetas.length && (
                 <span className="ml-1 font-semibold text-red-600">
@@ -336,7 +335,7 @@ function Tanda({
         </button>
         {vigentes.length > 0 && (
           <button className="btn-secondary text-sm" onClick={onImprimir}>
-            🖨️ {t("Reimprimir", "Reprint")}
+            {t("Reimprimir", "Reprint")}
           </button>
         )}
       </div>
@@ -359,7 +358,7 @@ function Tanda({
                       {miles(e.cantidad)} {t("pzs", "pcs")}
                     </td>
                     <td className="px-3 py-2 text-xs text-navy-400">
-                      {e.escaneos ? `👁 ${e.escaneos} · ${fechaCorta(e.ultimoEscaneo!, locale)}` : t("Sin escanear", "Not scanned")}
+                      {e.escaneos ? `${e.escaneos} · ${fechaCorta(e.ultimoEscaneo!, locale)}` : t("Sin escanear", "Not scanned")}
                     </td>
                     <td className="px-5 py-2 text-right">
                       {e.anulada ? (
@@ -487,7 +486,7 @@ function HojaEtiquetas({
             Cerrar
           </button>
           <button className="btn-accent" onClick={() => window.print()} disabled={!listos}>
-            🖨️ Imprimir
+            Imprimir
           </button>
         </div>
       </div>

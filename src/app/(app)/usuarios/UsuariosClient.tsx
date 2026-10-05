@@ -164,8 +164,8 @@ function SelloRol({
     <div
       className={`inline-flex items-center gap-1.5 rounded-full py-1 pl-1 pr-2.5 shadow-sm ring-1 ring-black/10 ${sello?.clase ?? "bg-navy-100"} ${disabled ? "opacity-70" : ""}`}
     >
-      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/25 text-sm">
-        {sello?.icono}
+      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/25 text-xs font-bold text-white">
+        {rol.slice(0, 1)}
       </span>
       <select
         className="cursor-pointer border-none bg-transparent text-xs font-bold text-white outline-none disabled:cursor-not-allowed"

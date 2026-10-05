@@ -101,7 +101,7 @@ export default function AuditoriasClient({ rol }: { rol: Rol }) {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-navy-900">📋 {t("Auditorías", "Audits")}</h1>
+          <h1 className="font-display text-2xl font-bold text-navy-900">{t("Auditorías", "Audits")}</h1>
           <p className="text-sm text-navy-500">
             {rol === "CLIENTE"
               ? t("Auditorías realizadas a tus procesos de sorteo.", "Audits performed on your sorting processes.")
@@ -142,7 +142,6 @@ export default function AuditoriasClient({ rol }: { rol: Rol }) {
           <SkeletonTarjetas cantidad={3} alto="h-10" />
         ) : !auditorias?.length ? (
           <div className="card flex flex-col items-center gap-3 py-12 text-center">
-            <span className="text-5xl">📋</span>
             <p className="text-sm text-navy-500">{t("Todavía no hay auditorías.", "No audits yet.")}</p>
             {puedeAuditar && (
               <button className="btn-primary" onClick={() => setNueva(true)}>
@@ -161,7 +160,7 @@ export default function AuditoriasClient({ rol }: { rol: Rol }) {
                   <AnilloPuntaje puntaje={a.estado === "completada" ? a.puntaje : null} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold text-navy-900">
-                      {TIPOS_AUDITORIA[a.tipo]?.icono} {a.nombrePlantilla}
+                      {a.nombrePlantilla}
                     </p>
                     <p className="truncate text-xs text-navy-500">
                       A-{String(a.folio).padStart(4, "0")} · {new Date(a.creadoEn).toLocaleDateString(locale, { day: "2-digit", month: "short" })} ·{" "}
@@ -197,7 +196,7 @@ export default function AuditoriasClient({ rol }: { rol: Rol }) {
           {plantillas?.map((p) => (
             <div key={p.id} className={`card flex flex-col gap-2 ${p.activa ? "" : "opacity-60"}`}>
               <p className="font-semibold text-navy-900">
-                {TIPOS_AUDITORIA[p.tipo]?.icono} {p.nombre}
+                {p.nombre}
               </p>
               <p className="line-clamp-2 text-sm text-navy-500">{p.descripcion}</p>
               <p className="text-xs text-navy-400">
@@ -260,7 +259,7 @@ function EjemplosBoton({ onHecho }: { onHecho: () => void }) {
         } else toast.error("No se pudieron crear");
       }}
     >
-      {cargando ? "Creando…" : "✨ Usar plantillas de ejemplo"}
+      {cargando ? "Creando…" : "Usar plantillas de ejemplo"}
     </button>
   );
 }
@@ -326,7 +325,6 @@ function NuevaAuditoria({
                   plantillaId === p.id ? "border-navy bg-navy text-white" : "border-navy-200 hover:bg-navy-50"
                 }`}
               >
-                <span className="text-xl">{TIPOS_AUDITORIA[p.tipo]?.icono}</span>
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-semibold">{p.nombre}</span>
                   <span className={`text-xs ${plantillaId === p.id ? "text-white/70" : "text-navy-400"}`}>{p.items.length} puntos</span>
@@ -422,7 +420,7 @@ function EditorPlantilla({ plantilla, onCerrar, onGuardado }: { plantilla: Plant
           <select className="input" value={tipo} onChange={(e) => setTipo(e.target.value)}>
             {Object.entries(TIPOS_AUDITORIA).map(([v, t]) => (
               <option key={v} value={v}>
-                {t.icono} {t.etiqueta}
+                {t.etiqueta}
               </option>
             ))}
           </select>
@@ -449,7 +447,7 @@ function EditorPlantilla({ plantilla, onCerrar, onGuardado }: { plantilla: Plant
                 checked={it.requiereFoto}
                 onChange={(e) => setItems((l) => l.map((x, k) => (k === i ? { ...x, requiereFoto: e.target.checked } : x)))}
               />
-              📷
+              Foto
             </label>
             <button type="button" className="text-navy-300 hover:text-navy-700" onClick={() => mover(i, -1)} aria-label="Subir">
               ↑
@@ -467,7 +465,7 @@ function EditorPlantilla({ plantilla, onCerrar, onGuardado }: { plantilla: Plant
         <button type="button" className="text-sm font-semibold text-navy hover:underline" onClick={() => setItems((l) => [...l, { texto: "", requiereFoto: false }])}>
           + Agregar punto
         </button>
-        <p className="text-xs text-navy-400">📷 = exige foto de evidencia cuando el punto no cumple.</p>
+        <p className="text-xs text-navy-400">= exige foto de evidencia cuando el punto no cumple.</p>
       </div>
       {plantilla && (
         <label className="flex items-center gap-2 text-sm text-navy-700">

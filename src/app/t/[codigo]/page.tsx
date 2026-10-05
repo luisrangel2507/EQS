@@ -11,6 +11,7 @@ import { ZONA_HORARIA } from "@/lib/turnos";
 import { traductorServidor } from "@/lib/i18nServidor";
 import { nombreDefecto } from "@/lib/i18n";
 import { BotonIdioma } from "@/components/ui/Idioma";
+import Icono from "@/components/ui/Icono";
 
 export const dynamic = "force-dynamic";
 
@@ -78,7 +79,7 @@ export default async function VerificacionPage({ params }: { params: { codigo: s
     return (
       <main className="flex min-h-screen items-center justify-center bg-navy-950 p-6 text-center text-white">
         <div className="max-w-sm">
-          <p className="text-6xl">❓</p>
+          <Icono nombre="alerta" className="mx-auto h-14 w-14 text-yellow" />
           <h1 className="mt-3 font-display text-2xl font-bold">{t("Etiqueta no encontrada", "Label not found")}</h1>
           <p className="mt-2 text-white/70">
             {t("El código", "Code")} <span className="font-mono font-bold">{codigo}</span>{" "}
@@ -119,11 +120,11 @@ export default async function VerificacionPage({ params }: { params: { codigo: s
       <div className="mx-auto -mt-12 max-w-lg space-y-4 px-4">
         <section className="animate-[aparecer_0.5s_ease-out] rounded-3xl bg-white p-6 text-center shadow-xl">
           <div
-            className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full text-4xl ${
-              ok ? "bg-emerald-100" : "bg-red-100"
+            className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full ${
+              ok ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
             }`}
           >
-            {ok ? "✅" : "⛔"}
+            <Icono nombre={ok ? "check" : "alerta"} className="h-10 w-10" />
           </div>
           <h1 className={`mt-3 font-display text-2xl font-extrabold ${ok ? "text-emerald-700" : "text-red-700"}`}>
             {ok ? t("Material liberado", "Material released") : t("Etiqueta anulada", "Label voided")}

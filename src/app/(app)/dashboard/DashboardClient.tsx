@@ -105,7 +105,7 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
                 </p>
               </div>
               <span className="rounded-xl bg-navy px-4 py-2 font-semibold text-white transition group-hover:scale-105">
-                📥 {t("Solicitar servicio", "Request service")}
+                {t("Solicitar servicio", "Request service")}
               </span>
             </Link>
           )}

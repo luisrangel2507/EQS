@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { usePolling } from "@/lib/usePolling";
 import { Skeleton } from "@/components/ui/Skeleton";
+import Icono from "@/components/ui/Icono";
 
 type Datos = {
   ok: boolean;
@@ -28,7 +29,7 @@ export default function SaludClient() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-navy-900">🩺 Estado del sistema</h1>
+          <h1 className="font-display text-2xl font-bold text-navy-900">Estado del sistema</h1>
           <p className="text-sm text-navy-500">Versión {datos.version} · fotos en {datos.rutaFotos}</p>
         </div>
         <button className="btn-secondary" onClick={recargar}>
@@ -41,7 +42,7 @@ export default function SaludClient() {
           datos.ok ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
         }`}
       >
-        {datos.ok ? "✅ Todo en orden" : "⚠️ Hay algo que revisar"}
+        {datos.ok ? "Todo en orden" : "Hay algo que revisar"}
       </div>
 
       <ul className="space-y-2">
@@ -53,7 +54,7 @@ export default function SaludClient() {
             transition={{ delay: i * 0.05 }}
             className="card flex items-start gap-3 p-4"
           >
-            <span className="text-xl">{c.ok ? "✅" : "❌"}</span>
+            <Icono nombre={c.ok ? "check" : "alerta"} className={`mt-0.5 h-5 w-5 shrink-0 ${c.ok ? "text-emerald-600" : "text-red-600"}`} />
             <div className="min-w-0">
               <p className="font-semibold text-navy-900">{NOMBRES[clave] ?? clave}</p>
               <p className="break-words text-sm text-navy-600">{c.detalle}</p>

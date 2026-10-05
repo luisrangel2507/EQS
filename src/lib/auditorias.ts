@@ -1,12 +1,12 @@
 export type ItemChecklist = { texto: string; requiereFoto: boolean };
 export type Respuesta = { resultado: "ok" | "no" | "na" | null; comentario: string | null; fotoUrl: string | null };
 
-export const TIPOS_AUDITORIA: Record<string, { etiqueta: string; en: string; icono: string }> = {
-  capas: { etiqueta: "Auditoría de capas (LPA)", en: "Layered process audit (LPA)", icono: "🧱" },
-  "5s": { etiqueta: "5S", en: "5S", icono: "🧹" },
-  recibo: { etiqueta: "Inspección de recibo", en: "Receiving inspection", icono: "📦" },
-  producto: { etiqueta: "Auditoría de producto", en: "Product audit", icono: "🔍" },
-  otro: { etiqueta: "Otro checklist", en: "Other checklist", icono: "📋" },
+export const TIPOS_AUDITORIA: Record<string, { etiqueta: string; en: string }> = {
+  capas: { etiqueta: "Auditoría de capas (LPA)", en: "Layered process audit (LPA)" },
+  "5s": { etiqueta: "5S", en: "5S" },
+  recibo: { etiqueta: "Inspección de recibo", en: "Receiving inspection" },
+  producto: { etiqueta: "Auditoría de producto", en: "Product audit" },
+  otro: { etiqueta: "Otro checklist", en: "Other checklist" },
 };
 
 export const itemsDe = (v: unknown): ItemChecklist[] => (Array.isArray(v) ? (v as ItemChecklist[]) : []);

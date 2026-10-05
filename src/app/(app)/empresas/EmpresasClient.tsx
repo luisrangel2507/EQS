@@ -75,7 +75,7 @@ export default function EmpresasClient() {
           </p>
         </div>
         <button className="btn-accent" onClick={() => setAsistente(true)}>
-          🤝 Alta de cliente completa
+          Alta de cliente completa
         </button>
       </div>
 

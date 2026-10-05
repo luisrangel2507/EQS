@@ -88,7 +88,7 @@ export default function Reportes8DCard({
   return (
     <div className="card">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <h2 className="font-display font-semibold text-navy-900">🛠️ {t("Reportes 8D", "8D reports")}</h2>
+        <h2 className="font-display font-semibold text-navy-900">{t("Reportes 8D", "8D reports")}</h2>
         {puedeCrear && (
           <button className="btn-primary px-3 py-1.5 text-sm" onClick={() => setEligiendo(true)}>
             + {t("Nuevo 8D", "New 8D")}

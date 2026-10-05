@@ -62,7 +62,7 @@ export default function PlataformaClient() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-navy-900">🌐 {t("Plataforma", "Platform")}</h1>
+          <h1 className="font-display text-2xl font-bold text-navy-900">{t("Plataforma", "Platform")}</h1>
           <p className="text-sm text-navy-500">
             {t(
               "Cada organización ve solo sus usuarios, inspecciones y clientes. Aquí das de alta nuevas empresas de sorteo.",
@@ -253,7 +253,6 @@ function Entrega({ c, onCerrar }: { c: Credenciales; onCerrar: () => void }) {
   );
   return (
     <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="space-y-3 rounded-2xl bg-white p-5 shadow-2xl">
-      <p className="text-4xl">🎉</p>
       <h2 className="font-display text-lg font-bold text-navy-900">{t("Organización creada", "Organization created")}</h2>
       <p className="text-sm text-navy-500">
         {t("Entrega estos datos a su Administrador. La contraseña no se vuelve a mostrar.", "Hand these to its Administrator. The password won’t be shown again.")}
@@ -269,7 +268,7 @@ function Entrega({ c, onCerrar }: { c: Credenciales; onCerrar: () => void }) {
               .catch(() => toast.error(t("No se pudo copiar", "Could not copy")))
           }
         >
-          📋 {t("Copiar", "Copy")}
+          {t("Copiar", "Copy")}
         </button>
         <button className="btn-primary" onClick={onCerrar}>
           {t("Listo", "Done")}

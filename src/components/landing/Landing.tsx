@@ -19,9 +19,8 @@ const urlDemo = (t: Traductor) =>
 
 type Texto = [es: string, en: string];
 
-const MODULOS: { icono: string; titulo: Texto; texto: Texto }[] = [
+const MODULOS: { titulo: Texto; texto: Texto }[] = [
   {
-    icono: "📱",
     titulo: ["Captura en piso", "Shop-floor capture"],
     texto: [
       "Botones grandes, vibración y deshacer. Hecha para usarse con guantes y prisa.",
@@ -29,7 +28,6 @@ const MODULOS: { icono: string; titulo: Texto; texto: Texto }[] = [
     ],
   },
   {
-    icono: "📡",
     titulo: ["Funciona sin señal", "Works offline"],
     texto: [
       "Las capturas y fotos se guardan en el equipo y se sincronizan solas al volver la red.",
@@ -37,7 +35,6 @@ const MODULOS: { icono: string; titulo: Texto; texto: Texto }[] = [
     ],
   },
   {
-    icono: "✅",
     titulo: ["Material liberado con QR", "Released-material QR labels"],
     texto: [
       "Etiqueta por contenedor con QR público: cualquiera en la cadena verifica qué se inspeccionó.",
@@ -45,7 +42,6 @@ const MODULOS: { icono: string; titulo: Texto; texto: Texto }[] = [
     ],
   },
   {
-    icono: "📺",
     titulo: ["Modo TV Andon", "Andon TV mode"],
     texto: [
       "Pantalla de piso con semáforo por sorteo, llamados de apoyo y alertas en vivo.",
@@ -53,7 +49,6 @@ const MODULOS: { icono: string; titulo: Texto; texto: Texto }[] = [
     ],
   },
   {
-    icono: "📉",
     titulo: ["Control estadístico", "Statistical control"],
     texto: [
       "Gráfica p por hora con límites de control y fecha estimada de término.",
@@ -61,7 +56,6 @@ const MODULOS: { icono: string; titulo: Texto; texto: Texto }[] = [
     ],
   },
   {
-    icono: "🔗",
     titulo: ["Portal del cliente", "Customer portal"],
     texto: [
       "Avance en vivo, Pareto, fotos, solicitudes de servicio y auditorías. En español o inglés.",
@@ -69,7 +63,6 @@ const MODULOS: { icono: string; titulo: Texto; texto: Texto }[] = [
     ],
   },
   {
-    icono: "🛠️",
     titulo: ["Reportes 8D", "8D reports"],
     texto: [
       "Se llenan solos con los datos del sorteo y salen en PDF listo para el cliente.",
@@ -77,7 +70,6 @@ const MODULOS: { icono: string; titulo: Texto; texto: Texto }[] = [
     ],
   },
   {
-    icono: "📋",
     titulo: ["Auditorías y checklists", "Audits & checklists"],
     texto: [
       "LPA, 5S y recibo con fotos de hallazgos, % de cumplimiento y PDF.",
@@ -85,7 +77,6 @@ const MODULOS: { icono: string; titulo: Texto; texto: Texto }[] = [
     ],
   },
   {
-    icono: "🎓",
     titulo: ["Inspectores certificados", "Certified inspectors"],
     texto: [
       "Examen por número de parte: solo quien aprobó puede ser asignado a ese sorteo.",
@@ -93,7 +84,6 @@ const MODULOS: { icono: string; titulo: Texto; texto: Texto }[] = [
     ],
   },
   {
-    icono: "💰",
     titulo: ["Facturación por pieza u hora", "Billing per piece or hour"],
     texto: [
       "Estado de cuenta mensual por cliente, con asistencia de inspectores integrada.",
@@ -101,7 +91,6 @@ const MODULOS: { icono: string; titulo: Texto; texto: Texto }[] = [
     ],
   },
   {
-    icono: "🕐",
     titulo: ["Turnos y relevos", "Shifts & handovers"],
     texto: [
       "Bitácora de entrega de turno con los números del turno guardados solos.",
@@ -109,7 +98,6 @@ const MODULOS: { icono: string; titulo: Texto; texto: Texto }[] = [
     ],
   },
   {
-    icono: "🏆",
     titulo: ["Ranking de inspectores", "Inspector leaderboard"],
     texto: [
       "Metas, rachas e insignias que premian productividad y detección.",
@@ -218,16 +206,16 @@ function MaquetaApp() {
                 <motion.p key={buenas} initial={{ scale: 1.25, color: "#FDE68A" }} animate={{ scale: 1, color: "#4ADE80" }} className="font-display text-2xl font-extrabold">
                   {buenas.toLocaleString(locale)}
                 </motion.p>
-                <p className="text-[8px] uppercase text-white/60">✅ {t("Buenas", "Good")}</p>
+                <p className="text-[8px] uppercase text-white/60">{t("Buenas", "Good")}</p>
               </div>
               <div className="rounded-lg bg-white/10 py-2">
                 <p className="font-display text-2xl font-extrabold text-red-400">38</p>
-                <p className="text-[8px] uppercase text-white/60">❌ {t("Malas", "Rejects")}</p>
+                <p className="text-[8px] uppercase text-white/60">{t("Malas", "Rejects")}</p>
               </div>
             </div>
           </div>
           <div className="rounded-xl bg-emerald-50 p-2.5">
-            <p className="text-center text-[10px] font-semibold text-emerald-800">📦 {t("Cantidad inspeccionada", "Inspected quantity")}</p>
+            <p className="text-center text-[10px] font-semibold text-emerald-800">{t("Cantidad inspeccionada", "Inspected quantity")}</p>
             <div className="mt-1.5 flex justify-center gap-1">
               {["-1", "+1", "+10", "+100"].map((b) => (
                 <span key={b} className="rounded-md border border-navy-200 bg-white px-1.5 py-1 text-[10px] font-bold text-navy-700">
@@ -243,8 +231,8 @@ function MaquetaApp() {
               {t("Registrar 10 piezas", "Log 10 parts")}
             </motion.div>
           </div>
-          <div className="rounded-xl bg-red-600 py-2 text-center text-[10px] font-bold text-white">⚠️ {t("Reportar defecto", "Report defect")}</div>
-          <div className="rounded-xl bg-orange-500 py-2 text-center text-[10px] font-bold text-white">🔔 {t("Llamar líder", "Call team lead")}</div>
+          <div className="rounded-xl bg-red-600 py-2 text-center text-[10px] font-bold text-white">{t("Reportar defecto", "Report defect")}</div>
+          <div className="rounded-xl bg-orange-500 py-2 text-center text-[10px] font-bold text-white">{t("Llamar líder", "Call team lead")}</div>
         </div>
         <AnimatePresence>
           <motion.div
@@ -254,7 +242,7 @@ function MaquetaApp() {
             exit={{ opacity: 0 }}
             className="absolute inset-x-3 bottom-4 flex items-center gap-2 rounded-lg bg-white px-2.5 py-2 text-[10px] font-semibold text-navy-900 shadow-lg"
           >
-            ✅ {t("+10 piezas registradas", "+10 parts logged")}{" "}
+            {t("+10 piezas registradas", "+10 parts logged")}{" "}
             <span className="ml-auto rounded bg-navy px-1.5 py-0.5 text-[9px] text-white">{t("Deshacer", "Undo")}</span>
           </motion.div>
         </AnimatePresence>
@@ -275,7 +263,7 @@ function MaquetaApp() {
           </span>
         </div>
         <p className="mt-1 font-display text-2xl font-black text-red-300">11.9%</p>
-        <p className="text-[10px] font-semibold text-red-200">🔔 {t("Piden apoyo · Estación 3", "Help requested · Station 3")}</p>
+        <p className="text-[10px] font-semibold text-red-200">{t("Piden apoyo · Estación 3", "Help requested · Station 3")}</p>
       </motion.div>
 
       <motion.div
@@ -299,7 +287,7 @@ function MaquetaApp() {
           />
           <motion.circle cx={6 * 22 + 4} cy={60 - 44} r="4" fill="#DC2626" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 2.6 }} />
         </svg>
-        <p className="text-[10px] font-semibold text-red-700">⚠️ {t("1 hora fuera de control", "1 hour out of control")}</p>
+        <p className="text-[10px] font-semibold text-red-700">{t("1 hora fuera de control", "1 hour out of control")}</p>
       </motion.div>
     </div>
   );
@@ -405,14 +393,12 @@ export default function Landing({ registro = false }: { registro?: boolean }) {
         </Aparecer>
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {MODULOS.map((m, i) => (
-            <Aparecer key={m.icono} retraso={(i % 3) * 0.08}>
+            <Aparecer key={m.titulo[0]} retraso={(i % 3) * 0.08}>
               <motion.div
                 whileHover={{ y: -4 }}
                 className="group h-full rounded-2xl border border-navy-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-xl"
               >
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-navy-700 to-navy-900 text-2xl shadow-md transition-transform group-hover:scale-110 group-hover:rotate-3">
-                  {m.icono}
-                </span>
+                <span className="block h-0.5 w-8 bg-yellow" aria-hidden />
                 <h3 className="mt-4 font-display text-lg font-bold">{t(...m.titulo)}</h3>
                 <p className="mt-1 text-sm text-navy-500">{t(...m.texto)}</p>
               </motion.div>
@@ -438,7 +424,6 @@ export default function Landing({ registro = false }: { registro?: boolean }) {
             {[
               {
                 n: 1,
-                icono: "📷",
                 titulo: t("Escanea", "Scan"),
                 texto: t(
                   "El inspector escanea la etiqueta QR del contenedor y ve el criterio de aceptación.",
@@ -447,7 +432,6 @@ export default function Landing({ registro = false }: { registro?: boolean }) {
               },
               {
                 n: 2,
-                icono: "👆",
                 titulo: t("Captura", "Log"),
                 texto: t(
                   "Piezas buenas y defectos con foto, aunque no haya señal. El Pareto se arma solo.",
@@ -456,7 +440,6 @@ export default function Landing({ registro = false }: { registro?: boolean }) {
               },
               {
                 n: 3,
-                icono: "📊",
                 titulo: t("Todos lo ven", "Everyone sees it"),
                 texto: t(
                   "Liderazgo en el semáforo del piso, tu cliente en su enlace en vivo y la factura al cierre.",
@@ -465,11 +448,8 @@ export default function Landing({ registro = false }: { registro?: boolean }) {
               },
             ].map((p, i) => (
               <Aparecer key={p.n} retraso={0.2 + i * 0.25} className="relative text-center">
-                <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-navy-900 text-3xl shadow-lg ring-8 ring-white">
-                  {p.icono}
-                  <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-yellow text-xs font-black text-navy-900">
-                    {p.n}
-                  </span>
+                <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-navy-900 font-display text-2xl font-bold text-yellow ring-8 ring-white">
+                  {p.n}
                 </div>
                 <h3 className="mt-5 font-display text-xl font-bold">{p.titulo}</h3>
                 <p className="mx-auto mt-2 max-w-xs text-sm text-navy-500">{p.texto}</p>

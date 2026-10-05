@@ -140,23 +140,22 @@ export default function ResidentesClient() {
                 >
                   <div>
                     <p className="font-display font-semibold text-navy-900">
-                      {alerta && "🚨 "}
                       {r.nombre}
                     </p>
                     <p className="text-xs text-navy-500">
                       {ROL_ETIQUETAS[r.rol] ?? r.rol}
-                      {r.plantaResidente ? ` · 🏭 ${r.plantaResidente}` : ""}
+                      {r.plantaResidente ? ` · ${r.plantaResidente}` : ""}
                       {r.estado && ` · hace ${minutosDesde(r.estado.desde)} min`}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     {info ? (
-                      <span className={`badge ${info.color}`}>{info.etiqueta}</span>
+                      <span className={`badge ${info.color}`}>{info.texto}</span>
                     ) : (
                       <span className="badge bg-navy-50 text-navy-400">Sin estado reportado</span>
                     )}
                     <span className="badge bg-navy-50 text-navy-600">
-                      📝 {r._count.notasResidente}
+                      {r._count.notasResidente}
                     </span>
                     <span className="text-navy-400">{abierto ? "▲" : "▼"}</span>
                   </div>

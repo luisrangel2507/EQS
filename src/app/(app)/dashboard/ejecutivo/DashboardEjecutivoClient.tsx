@@ -20,9 +20,9 @@ export default function DashboardEjecutivoClient({ rol }: { rol: Rol }) {
           ← Dashboard
         </Link>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="font-display text-2xl font-bold text-navy-900">📊 Dashboard Ejecutivo</h1>
+          <h1 className="font-display text-2xl font-bold text-navy-900">Dashboard Ejecutivo</h1>
           <Link href="/tv" className="btn-primary">
-            📺 Abrir modo TV
+            Abrir modo TV
           </Link>
         </div>
       </div>
@@ -96,7 +96,7 @@ export default function DashboardEjecutivoClient({ rol }: { rol: Rol }) {
                 >
                   <span className="font-medium text-orange-900">{e.nombre}</span>
                   <span className="text-orange-700">
-                    {estadoInfo(e.estado).etiqueta} · {e.minutos} min
+                    {estadoInfo(e.estado).texto} · {e.minutos} min
                   </span>
                 </li>
               ))}
@@ -116,7 +116,7 @@ export default function DashboardEjecutivoClient({ rol }: { rol: Rol }) {
                 const info = estadoInfo(e.estado);
                 return (
                   <span key={e.usuarioId} className={`badge ${info.color}`}>
-                    {e.nombre} · {info.etiqueta}
+                    {e.nombre} · {info.texto}
                   </span>
                 );
               })}

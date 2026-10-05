@@ -62,10 +62,10 @@ export async function POST(req: NextRequest) {
     });
 
     const destinatarios = (await idsPorRol("ADMIN", "SUPERVISOR", "GERENTE", "LIDER")).filter((id) => id !== user.id);
-    const urgencia = datos.urgencia === "critica" ? "🚨 CRÍTICA · " : datos.urgencia === "urgente" ? "⚡ Urgente · " : "";
+    const urgencia = datos.urgencia === "critica" ? "CRÍTICA · " : datos.urgencia === "urgente" ? "Urgente · " : "";
     await notificar(destinatarios, {
       tipo: "solicitud_nueva",
-      titulo: "📥 Nueva solicitud de servicio",
+      titulo: "Nueva solicitud de servicio",
       mensaje: `${urgencia}${cliente} pide ${datos.tipo.replace("_", " ")} de ${datos.numeroParte}${
         datos.cantidad ? ` (${datos.cantidad.toLocaleString("es-MX")} pzas)` : ""
       }`,

@@ -20,12 +20,14 @@ export const ESTACIONES = [
   "Estación 6",
 ] as const;
 
+// El emoji solo se usa donde el inspector (o residente) elige su estado; en las vistas de
+// supervisión se muestra `texto`, sin emoji.
 export const ESTADOS_INSPECTOR = [
-  { valor: "activo", emoji: "🔍", etiqueta: "🔍 Inspeccionando", color: "bg-green-100 text-green-800" },
-  { valor: "material", emoji: "🚩", etiqueta: "🚩 Sin material", color: "bg-orange-100 text-orange-800" },
-  { valor: "comida", emoji: "🍽️", etiqueta: "🍽️ Comiendo", color: "bg-amber-100 text-amber-800" },
-  { valor: "bano", emoji: "🚻", etiqueta: "🚻 Baño", color: "bg-blue-100 text-blue-800" },
-  { valor: "descanso", emoji: "☕", etiqueta: "☕ Descanso", color: "bg-purple-100 text-purple-800" },
+  { valor: "activo", emoji: "🔍", texto: "Inspeccionando", etiqueta: "🔍 Inspeccionando", color: "bg-green-100 text-green-800" },
+  { valor: "material", emoji: "🚩", texto: "Sin material", etiqueta: "🚩 Sin material", color: "bg-orange-100 text-orange-800" },
+  { valor: "comida", emoji: "🍽️", texto: "Comiendo", etiqueta: "🍽️ Comiendo", color: "bg-amber-100 text-amber-800" },
+  { valor: "bano", emoji: "🚻", texto: "Baño", etiqueta: "🚻 Baño", color: "bg-blue-100 text-blue-800" },
+  { valor: "descanso", emoji: "☕", texto: "Descanso", etiqueta: "☕ Descanso", color: "bg-purple-100 text-purple-800" },
 ] as const;
 
 export type EstadoValor = (typeof ESTADOS_INSPECTOR)[number]["valor"];
@@ -133,27 +135,27 @@ export const ROL_ETIQUETAS_EN: Record<string, string> = {
 
 // "sello" visual por posición: icono + degradado, usado donde se muestra el
 // rol como badge (p. ej. la tabla de Usuarios)
-export const ROL_SELLO: Record<string, { icono: string; clase: string }> = {
-  ADMIN: { icono: "🛡️", clase: "bg-gradient-to-br from-navy-700 to-navy-900 text-white" },
-  SUPERVISOR: { icono: "🧭", clase: "bg-gradient-to-br from-blue-500 to-indigo-600 text-white" },
-  GERENTE: { icono: "💼", clase: "bg-gradient-to-br from-rose-500 to-pink-600 text-white" },
-  LIDER: { icono: "⭐", clase: "bg-gradient-to-br from-purple-500 to-fuchsia-600 text-white" },
-  INSPECTOR: { icono: "🔎", clase: "bg-gradient-to-br from-emerald-500 to-teal-600 text-white" },
-  RESIDENTE: { icono: "🏭", clase: "bg-gradient-to-br from-orange-500 to-amber-600 text-white" },
-  CLIENTE: { icono: "🤝", clase: "bg-gradient-to-br from-slate-500 to-slate-700 text-white" },
+export const ROL_SELLO: Record<string, { clase: string }> = {
+  ADMIN: { clase: "bg-gradient-to-br from-navy-700 to-navy-900 text-white" },
+  SUPERVISOR: { clase: "bg-gradient-to-br from-blue-500 to-indigo-600 text-white" },
+  GERENTE: { clase: "bg-gradient-to-br from-rose-500 to-pink-600 text-white" },
+  LIDER: { clase: "bg-gradient-to-br from-purple-500 to-fuchsia-600 text-white" },
+  INSPECTOR: { clase: "bg-gradient-to-br from-emerald-500 to-teal-600 text-white" },
+  RESIDENTE: { clase: "bg-gradient-to-br from-orange-500 to-amber-600 text-white" },
+  CLIENTE: { clase: "bg-gradient-to-br from-slate-500 to-slate-700 text-white" },
 };
 
 export const TIPOS_SOLICITUD = ["sorteo", "retrabajo", "inspeccion_recibo", "otro"] as const;
 
-export const TIPO_SOLICITUD_INFO: Record<string, { etiqueta: string; en: string; icono: string }> = {
-  sorteo: { etiqueta: "Sorteo", en: "Sorting", icono: "🔍" },
-  retrabajo: { etiqueta: "Retrabajo", en: "Rework", icono: "🔧" },
-  inspeccion_recibo: { etiqueta: "Inspección de recibo", en: "Receiving inspection", icono: "📦" },
-  otro: { etiqueta: "Otro servicio", en: "Other service", icono: "📝" },
+export const TIPO_SOLICITUD_INFO: Record<string, { etiqueta: string; en: string }> = {
+  sorteo: { etiqueta: "Sorteo", en: "Sorting" },
+  retrabajo: { etiqueta: "Retrabajo", en: "Rework" },
+  inspeccion_recibo: { etiqueta: "Inspección de recibo", en: "Receiving inspection" },
+  otro: { etiqueta: "Otro servicio", en: "Other service" },
 };
 
 export const URGENCIAS = [
   { valor: "normal", etiqueta: "Normal", en: "Normal", clase: "bg-navy-100 text-navy-700" },
-  { valor: "urgente", etiqueta: "⚡ Urgente", en: "⚡ Urgent", clase: "bg-amber-100 text-amber-800" },
-  { valor: "critica", etiqueta: "🚨 Crítica", en: "🚨 Critical", clase: "bg-red-100 text-red-800" },
+  { valor: "urgente", etiqueta: "Urgente", en: "Urgent", clase: "bg-amber-100 text-amber-800" },
+  { valor: "critica", etiqueta: "Crítica", en: "Critical", clase: "bg-red-100 text-red-800" },
 ] as const;

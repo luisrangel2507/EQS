@@ -81,7 +81,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       const destinatarios = (await idsPorRol("ADMIN", "SUPERVISOR")).filter((id) => id !== user.id);
       await notificar(destinatarios, {
         tipo: "auditoria_hallazgos",
-        titulo: "📋 Auditoría con hallazgos",
+        titulo: "Auditoría con hallazgos",
         mensaje: `${auditoria.nombrePlantilla}${auditoria.planta ? ` (${auditoria.planta})` : ""}: ${hallazgos} hallazgo(s), ${puntaje.toFixed(0)}% de cumplimiento`,
         url: `/auditorias/${auditoria.id}`,
       }).catch((e) => console.error("No se pudo notificar la auditoría", e));

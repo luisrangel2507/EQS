@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import Icono, { type NombreIcono } from "@/components/ui/Icono";
 
 type TipoToast = "exito" | "error" | "info";
 
@@ -27,10 +28,10 @@ export function useToast() {
   return useContext(ToastContext);
 }
 
-const ESTILOS: Record<TipoToast, { icono: string; clase: string; barra: string }> = {
-  exito: { icono: "✅", clase: "border-emerald-200 bg-white", barra: "bg-emerald-500" },
-  error: { icono: "⚠️", clase: "border-red-200 bg-white", barra: "bg-red-500" },
-  info: { icono: "ℹ️", clase: "border-navy-200 bg-white", barra: "bg-navy-500" },
+const ESTILOS: Record<TipoToast, { icono: NombreIcono; colorIcono: string; clase: string; barra: string }> = {
+  exito: { icono: "check", colorIcono: "text-emerald-600", clase: "border-emerald-200 bg-white", barra: "bg-emerald-500" },
+  error: { icono: "alerta", colorIcono: "text-red-600", clase: "border-red-200 bg-white", barra: "bg-red-500" },
+  info: { icono: "info", colorIcono: "text-navy-500", clase: "border-navy-200 bg-white", barra: "bg-navy-500" },
 };
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
@@ -76,7 +77,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 role="status"
               >
                 <div className="flex items-center gap-3 px-4 py-3">
-                  <span className="text-lg">{estilo.icono}</span>
+                  <Icono nombre={estilo.icono} className={`h-5 w-5 shrink-0 ${estilo.colorIcono}`} />
                   <p className="flex-1 text-sm font-medium text-navy-900">{t.mensaje}</p>
                   {t.accion && (
                     <button

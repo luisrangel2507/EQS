@@ -8,11 +8,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import { alternarTema } from "@/components/ui/Tema";
 import { EVENTO_ESCANER } from "@/lib/eventos";
 import { useIdioma } from "@/components/ui/Idioma";
+import Icono from "@/components/ui/Icono";
 
 type Comando = {
   id: string;
   grupo: "Ir a" | "Acciones" | "Inspecciones";
-  icono: string;
   titulo: string;
   detalle?: string;
   claves?: string;
@@ -87,41 +87,39 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
   const comandos = useMemo<Comando[]>(() => {
     const ir = (href: string) => () => router.push(href);
     const lista: (Comando | false)[] = [
-      rol === "INSPECTOR" && { id: "estacion", grupo: "Ir a", icono: "🧰", titulo: t("Mis inspecciones", "My inspections"), ejecutar: ir("/estacion") },
-      rol !== "INSPECTOR" && { id: "dashboard", grupo: "Ir a", icono: "🏠", titulo: t("Dashboard", "Dashboard"), ejecutar: ir("/dashboard") },
-      LIDERAZGO.includes(rol) && { id: "ejecutivo", grupo: "Ir a", icono: "📊", titulo: t("Dashboard Ejecutivo", "Executive dashboard"), ejecutar: ir("/dashboard/ejecutivo") },
-      { id: "inspecciones", grupo: "Ir a", icono: "📋", titulo: rol === "INSPECTOR" ? t("Historial", "History") : t("Inspecciones", "Inspections"), ejecutar: ir("/inspecciones") },
-      LIDERAZGO.includes(rol) && { id: "residentes", grupo: "Ir a", icono: "🏭", titulo: t("Residentes", "Residents"), ejecutar: ir("/residentes") },
-      (LIDERAZGO.includes(rol) || rol === "CLIENTE") && { id: "solicitudes", grupo: "Ir a", icono: "📥", titulo: t("Solicitudes de servicio", "Service requests"), ejecutar: ir("/solicitudes") },
-      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "turnos", grupo: "Ir a", icono: "🕐", titulo: t("Turnos", "Shifts"), ejecutar: ir("/turnos") },
-      (LIDERAZGO.includes(rol) || rol === "INSPECTOR") && { id: "ranking", grupo: "Ir a", icono: "🏆", titulo: t("Ranking", "Ranking"), ejecutar: ir("/ranking") },
-      (LIDERAZGO.includes(rol) || rol === "INSPECTOR") && { id: "certificaciones", grupo: "Ir a", icono: "🎓", titulo: rol === "INSPECTOR" ? t("Mis certificaciones", "My certifications") : t("Certificaciones y matriz de habilidades", "Certifications & skills matrix"), ejecutar: ir("/certificaciones") },
-      rol !== "INSPECTOR" && { id: "auditorias", grupo: "Ir a", icono: "📋", titulo: t("Auditorías y checklists", "Audits & checklists"), ejecutar: ir("/auditorias") },
-      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "nueva-auditoria", grupo: "Acciones", icono: "✅", titulo: t("Nueva auditoría", "New audit"), ejecutar: ir("/auditorias?nueva=1") },
-      LIDERAZGO.includes(rol) && { id: "asistencia", grupo: "Ir a", icono: "🕒", titulo: t("Asistencia y horas", "Attendance & hours"), ejecutar: ir("/asistencia") },
-      (rol === "ADMIN" || rol === "GERENTE") && { id: "facturacion", grupo: "Ir a", icono: "💰", titulo: t("Facturación", "Billing"), ejecutar: ir("/facturacion") },
-      rol === "ADMIN" && { id: "usuarios", grupo: "Ir a", icono: "👤", titulo: t("Usuarios", "Users"), ejecutar: ir("/usuarios") },
-      rol === "ADMIN" && { id: "empresas", grupo: "Ir a", icono: "🏢", titulo: t("Empresas cliente", "Customer companies"), ejecutar: ir("/empresas") },
-      rol === "ADMIN" && { id: "salud", grupo: "Ir a", icono: "🩺", titulo: t("Estado del sistema", "System status"), detalle: t("Base de datos y almacenamiento de fotos", "Database and photo storage"), ejecutar: ir("/salud") },
-      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "tv", grupo: "Ir a", icono: "📺", titulo: t("Modo TV (piso)", "TV mode (floor)"), ejecutar: ir("/tv") },
+      rol === "INSPECTOR" && { id: "estacion", grupo: "Ir a", titulo: t("Mis inspecciones", "My inspections"), ejecutar: ir("/estacion") },
+      rol !== "INSPECTOR" && { id: "dashboard", grupo: "Ir a", titulo: t("Dashboard", "Dashboard"), ejecutar: ir("/dashboard") },
+      LIDERAZGO.includes(rol) && { id: "ejecutivo", grupo: "Ir a", titulo: t("Dashboard Ejecutivo", "Executive dashboard"), ejecutar: ir("/dashboard/ejecutivo") },
+      { id: "inspecciones", grupo: "Ir a", titulo: rol === "INSPECTOR" ? t("Historial", "History") : t("Inspecciones", "Inspections"), ejecutar: ir("/inspecciones") },
+      LIDERAZGO.includes(rol) && { id: "residentes", grupo: "Ir a", titulo: t("Residentes", "Residents"), ejecutar: ir("/residentes") },
+      (LIDERAZGO.includes(rol) || rol === "CLIENTE") && { id: "solicitudes", grupo: "Ir a", titulo: t("Solicitudes de servicio", "Service requests"), ejecutar: ir("/solicitudes") },
+      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "turnos", grupo: "Ir a", titulo: t("Turnos", "Shifts"), ejecutar: ir("/turnos") },
+      (LIDERAZGO.includes(rol) || rol === "INSPECTOR") && { id: "ranking", grupo: "Ir a", titulo: t("Ranking", "Ranking"), ejecutar: ir("/ranking") },
+      (LIDERAZGO.includes(rol) || rol === "INSPECTOR") && { id: "certificaciones", grupo: "Ir a", titulo: rol === "INSPECTOR" ? t("Mis certificaciones", "My certifications") : t("Certificaciones y matriz de habilidades", "Certifications & skills matrix"), ejecutar: ir("/certificaciones") },
+      rol !== "INSPECTOR" && { id: "auditorias", grupo: "Ir a", titulo: t("Auditorías y checklists", "Audits & checklists"), ejecutar: ir("/auditorias") },
+      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "nueva-auditoria", grupo: "Acciones", titulo: t("Nueva auditoría", "New audit"), ejecutar: ir("/auditorias?nueva=1") },
+      LIDERAZGO.includes(rol) && { id: "asistencia", grupo: "Ir a", titulo: t("Asistencia y horas", "Attendance & hours"), ejecutar: ir("/asistencia") },
+      (rol === "ADMIN" || rol === "GERENTE") && { id: "facturacion", grupo: "Ir a", titulo: t("Facturación", "Billing"), ejecutar: ir("/facturacion") },
+      rol === "ADMIN" && { id: "usuarios", grupo: "Ir a", titulo: t("Usuarios", "Users"), ejecutar: ir("/usuarios") },
+      rol === "ADMIN" && { id: "empresas", grupo: "Ir a", titulo: t("Empresas cliente", "Customer companies"), ejecutar: ir("/empresas") },
+      rol === "ADMIN" && { id: "salud", grupo: "Ir a", titulo: t("Estado del sistema", "System status"), detalle: t("Base de datos y almacenamiento de fotos", "Database and photo storage"), ejecutar: ir("/salud") },
+      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "tv", grupo: "Ir a", titulo: t("Modo TV (piso)", "TV mode (floor)"), ejecutar: ir("/tv") },
       rol !== "CLIENTE" && {
         id: "escanear",
         grupo: "Acciones",
-        icono: "📷",
         titulo: t("Escanear código", "Scan code"),
         detalle: t("QR de etiqueta, número de parte o lote", "Label QR, part number or lot"),
         ejecutar: () => window.dispatchEvent(new Event(EVENTO_ESCANER)),
       },
-      (rol === "ADMIN" || rol === "SUPERVISOR") && { id: "nueva", grupo: "Acciones", icono: "➕", titulo: t("Nueva inspección", "New inspection"), ejecutar: ir("/inspecciones?nueva=1") },
-      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "entregar", grupo: "Acciones", icono: "📝", titulo: t("Entregar turno", "Hand over shift"), ejecutar: ir("/turnos?entregar=1") },
-      rol === "ADMIN" && { id: "alta-cliente", grupo: "Acciones", icono: "🤝", titulo: t("Dar de alta un cliente", "Onboard a customer"), ejecutar: ir("/empresas?alta=1") },
-      (LIDERAZGO.includes(rol) || rol === "CLIENTE") && { id: "nueva-solicitud", grupo: "Acciones", icono: "📨", titulo: t("Nueva solicitud de servicio", "New service request"), ejecutar: ir("/solicitudes?nueva=1") },
-      { id: "tema", grupo: "Acciones", icono: "🌗", titulo: t("Cambiar modo claro / oscuro", "Toggle light / dark mode"), ejecutar: alternarTema },
-      { id: "tour", grupo: "Acciones", icono: "🎓", titulo: t("Ver el recorrido de bienvenida", "Replay the welcome tour"), ejecutar: () => window.dispatchEvent(new Event("eqs-iniciar-tour")) },
+      (rol === "ADMIN" || rol === "SUPERVISOR") && { id: "nueva", grupo: "Acciones", titulo: t("Nueva inspección", "New inspection"), ejecutar: ir("/inspecciones?nueva=1") },
+      (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "entregar", grupo: "Acciones", titulo: t("Entregar turno", "Hand over shift"), ejecutar: ir("/turnos?entregar=1") },
+      rol === "ADMIN" && { id: "alta-cliente", grupo: "Acciones", titulo: t("Dar de alta un cliente", "Onboard a customer"), ejecutar: ir("/empresas?alta=1") },
+      (LIDERAZGO.includes(rol) || rol === "CLIENTE") && { id: "nueva-solicitud", grupo: "Acciones", titulo: t("Nueva solicitud de servicio", "New service request"), ejecutar: ir("/solicitudes?nueva=1") },
+      { id: "tema", grupo: "Acciones", titulo: t("Cambiar modo claro / oscuro", "Toggle light / dark mode"), ejecutar: alternarTema },
+      { id: "tour", grupo: "Acciones", titulo: t("Ver el recorrido de bienvenida", "Replay the welcome tour"), ejecutar: () => window.dispatchEvent(new Event("eqs-iniciar-tour")) },
       {
         id: "salir",
         grupo: "Acciones",
-        icono: "🚪",
         titulo: t("Cerrar sesión", "Sign out"),
         ejecutar: () => signOut({ callbackUrl: `${window.location.origin}/login` }),
       },
@@ -139,7 +137,6 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
           .map((i) => ({
             id: `insp-${i.id}`,
             grupo: "Inspecciones" as const,
-            icono: i.cerrado ? "📁" : "🟢",
             titulo: i.numeroParte ?? i.nombre,
             detalle: [i.numeroParte ? i.nombre : null, i.cliente, i.cerrado ? t("Cerrada", "Closed") : t("Activa", "Active")].filter(Boolean).join(" · "),
             ejecutar: () => router.push(`/inspecciones/${i.id}`),
@@ -200,7 +197,7 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-3 border-b border-navy-100 px-4">
-              <span className="text-lg text-navy-400">🔍</span>
+              <Icono nombre="buscar" className="h-5 w-5 text-navy-400" />
               <input
                 ref={inputRef}
                 autoFocus
@@ -243,7 +240,6 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
                           transition={{ type: "spring", stiffness: 600, damping: 40 }}
                         />
                       )}
-                      <span className="relative text-lg">{c.icono}</span>
                       <span className="relative min-w-0 flex-1">
                         <span className="block truncate text-sm font-semibold">{c.titulo}</span>
                         {c.detalle && <span className="block truncate text-xs text-navy-400">{c.detalle}</span>}

@@ -86,7 +86,6 @@ export default function PortalPublicoClient({ token, inicial }: { token: string;
     return (
       <main className="flex min-h-screen items-center justify-center bg-navy-950 p-6 text-center text-white">
         <div>
-          <p className="text-5xl">🔒</p>
           <h1 className="mt-3 font-display text-2xl font-bold">{t("Este enlace fue revocado", "This link was revoked")}</h1>
         </div>
       </main>
@@ -166,7 +165,7 @@ export default function PortalPublicoClient({ token, inicial }: { token: string;
             ...(datos.piezasRetrabajadas > 0
               ? [
                   {
-                    etiqueta: `🔧 ${t("Recuperadas", "Reworked OK")}`,
+                    etiqueta: `${t("Recuperadas", "Reworked OK")}`,
                     valor: datos.piezasRetrabajadas,
                     color: "text-amber-600",
                   },
@@ -192,7 +191,7 @@ export default function PortalPublicoClient({ token, inicial }: { token: string;
           <div className="card md:col-span-2">
             <h2 className="mb-4 font-display font-semibold text-navy-900">{t("Pareto de defectos", "Defect Pareto")}</h2>
             {datos.defectos.length === 0 ? (
-              <p className="text-sm text-navy-400">{t("Sin defectos detectados.", "No defects found.")} 🎉</p>
+              <p className="text-sm text-navy-400">{t("Sin defectos detectados.", "No defects found.")}</p>
             ) : (
               <ul className="space-y-3">
                 {datos.defectos.slice(0, 8).map((d, i) => (
@@ -222,7 +221,7 @@ export default function PortalPublicoClient({ token, inicial }: { token: string;
           </div>
 
           <div className="card">
-            <h2 className="mb-3 font-display font-semibold text-navy-900">🧼 {t("Punto Limpio", "Clean Point")}</h2>
+            <h2 className="mb-3 font-display font-semibold text-navy-900">{t("Punto Limpio", "Clean Point")}</h2>
             <p className="font-display text-xl font-bold text-navy-900">
               {datos.puntoLimpio ?? t("Sin identificar", "Not identified")}
             </p>
@@ -232,9 +231,9 @@ export default function PortalPublicoClient({ token, inicial }: { token: string;
               }`}
             >
               {datos.puntoLimpioOk
-                ? `✅ ${t("Verificado", "Verified")}`
+                ? `${t("Verificado", "Verified")}`
                 : datos.puntoLimpioFoto
-                  ? `🟡 ${t("Evidencia enviada", "Evidence sent")}`
+                  ? `${t("Evidencia enviada", "Evidence sent")}`
                   : `— ${t("Pendiente", "Pending")}`}
             </p>
             {datos.puntoLimpioFoto && (
@@ -249,7 +248,7 @@ export default function PortalPublicoClient({ token, inicial }: { token: string;
         </div>
 
         <div className="card">
-          <h2 className="mb-3 font-display font-semibold text-navy-900">📸 {t("Evidencia de defectos", "Defect evidence")}</h2>
+          <h2 className="mb-3 font-display font-semibold text-navy-900">{t("Evidencia de defectos", "Defect evidence")}</h2>
           <GaleriaDefectos fotos={datos.fotos} vacio={t("No hay fotos de defectos registradas.", "No defect photos recorded.")} />
         </div>
 

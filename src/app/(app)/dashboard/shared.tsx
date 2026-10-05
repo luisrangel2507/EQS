@@ -136,7 +136,7 @@ export function SorteosAbiertosCard({
   async function recordarLider(sol: SolicitudApoyo) {
     const minutos = Math.max(0, Math.floor((Date.now() - new Date(sol.creadoEn).getTime()) / 60000));
     const lugar = sol.inspeccion?.numeroParte ?? sol.inspeccion?.nombre ?? sol.estacion ?? "piso";
-    const contenido = `⏰ Recordatorio: la solicitud de apoyo de ${sol.usuario.nombre} en ${lugar} sigue sin atenderse (hace ${minutos} min). ¿Algún líder puede ir?`;
+    const contenido = `Recordatorio: la solicitud de apoyo de ${sol.usuario.nombre} en ${lugar} sigue sin atenderse (hace ${minutos} min). ¿Algún líder puede ir?`;
     setRecordados((prev) => new Set(prev).add(sol.id));
     await fetch("/api/chat", {
       method: "POST",
@@ -182,18 +182,18 @@ export function SorteosAbiertosCard({
                 </p>
                 <p className="truncate text-xs text-navy-400">{s.nombre}</p>
                 <div className="mt-2 flex items-center gap-3 text-sm">
-                  <span className="font-semibold text-green-700">✅ {s.piezasBuenas} buenas</span>
-                  <span className="font-semibold text-red-700">❌ {s.piezasMalas} malas</span>
+                  <span className="font-semibold text-green-700">{s.piezasBuenas} buenas</span>
+                  <span className="font-semibold text-red-700">{s.piezasMalas} malas</span>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  {s.cliente && <Pill tono="navy">🏢 {s.cliente}</Pill>}
+                  {s.cliente && <Pill tono="navy">{s.cliente}</Pill>}
                   <Pill tono="azul">{s.numeroParte ?? "—"}</Pill>
-                  <Pill tono="verde">👥 {s.inspectoresRevisando} revisando</Pill>
-                  {s.topDefecto && <Pill tono="rojo">⚠️ {s.topDefecto}</Pill>}
-                  {rechazo >= 8 && <Pill tono="rojo">🔥 {rechazo.toFixed(0)}% rechazo</Pill>}
+                  <Pill tono="verde">{s.inspectoresRevisando} revisando</Pill>
+                  {s.topDefecto && <Pill tono="rojo">{s.topDefecto}</Pill>}
+                  {rechazo >= 8 && <Pill tono="rojo">{rechazo.toFixed(0)}% rechazo</Pill>}
                   {apoyoAqui.length > 0 && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 py-1 pl-2.5 pr-1 text-[11px] font-semibold text-white shadow-sm ring-1 ring-black/5">
-                      🔔 {apoyoAqui.length > 1
+                      {apoyoAqui.length > 1
                         ? `${apoyoAqui.length} piden apoyo`
                         : `${apoyoAqui[0].usuario.nombre} pide apoyo`}
                       <button
@@ -254,16 +254,16 @@ export function ResidentesResumenCard({ residentes }: { residentes: Residente[] 
               >
                 <p className="truncate font-display font-semibold text-navy-900">{r.nombre}</p>
                 <p className="truncate text-xs text-navy-400">
-                  {r.plantaResidente ? `🏭 ${r.plantaResidente}` : "Sin planta asignada"}
+                  {r.plantaResidente ? `${r.plantaResidente}` : "Sin planta asignada"}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  <Pill tono="verde">🟢 Activo</Pill>
+                  <Pill tono="verde">Activo</Pill>
                   {hallazgos > 0 ? (
                     <Pill tono="rojo">
-                      ⚠️ {hallazgos} {hallazgos === 1 ? "hallazgo" : "hallazgos"}
+                      {hallazgos} {hallazgos === 1 ? "hallazgo" : "hallazgos"}
                     </Pill>
                   ) : (
-                    <Pill tono="verde">✅ Todo en orden</Pill>
+                    <Pill tono="verde">Todo en orden</Pill>
                   )}
                 </div>
               </Link>

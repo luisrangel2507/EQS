@@ -40,7 +40,7 @@ export default function EtiquetaClient({
           <Link href={`/inspecciones/${id}`} className="text-xs font-semibold text-navy-400 hover:text-navy-700">
             ← {nombre}
           </Link>
-          <h1 className="font-display text-2xl font-bold text-navy-900">🏷️ Etiqueta QR</h1>
+          <h1 className="font-display text-2xl font-bold text-navy-900">Etiqueta QR</h1>
           <p className="text-sm text-navy-500">
             Pégala en el contenedor o la estación: el inspector la escanea y entra directo a capturar.
           </p>
@@ -56,7 +56,7 @@ export default function EtiquetaClient({
             className="input w-20"
           />
           <button className="btn-accent" onClick={() => window.print()} disabled={!qr}>
-            🖨️ Imprimir
+            Imprimir
           </button>
         </div>
       </div>

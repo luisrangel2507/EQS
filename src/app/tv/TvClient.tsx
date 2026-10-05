@@ -152,7 +152,7 @@ function Destacado({ s }: { s: SorteoTv }) {
         <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm font-semibold ${luz.borde} ${luz.texto}`}>
           <span className={`h-2.5 w-2.5 rounded-full ${luz.punto}`} /> {luz.etiqueta}
         </span>
-        {s.cliente && <span className="rounded-full bg-white/10 px-3 py-1 text-sm">🏢 {s.cliente}</span>}
+        {s.cliente && <span className="rounded-full bg-white/10 px-3 py-1 text-sm">{s.cliente}</span>}
       </div>
 
       <div className="mt-5 grid grid-cols-3 gap-3 text-center">
@@ -166,17 +166,17 @@ function Destacado({ s }: { s: SorteoTv }) {
         </div>
         <div className="rounded-xl bg-white/5 py-3">
           <p className="flex min-h-[2.25rem] items-center justify-center font-display text-xl font-extrabold text-yellow xl:text-2xl">
-            {p.eta ? horaEta(p.eta) : p.estado === "terminada" ? "🏁" : "—"}
+            {p.eta ? horaEta(p.eta) : p.estado === "terminada" ? "" : "—"}
           </p>
           <p className="text-[11px] uppercase tracking-wide text-white/50">
-            {p.estado === "en_riesgo" ? "⚠️ Termina (tarde)" : "Termina aprox."}
+            {p.estado === "en_riesgo" ? "Termina (tarde)" : "Termina aprox."}
           </p>
         </div>
       </div>
 
       <p className="mt-5 text-xs font-semibold uppercase tracking-widest text-white/50">Principales defectos</p>
       {s.topDefectos.length === 0 ? (
-        <p className="mt-2 text-white/50">Sin defectos. 🎉</p>
+        <p className="mt-2 text-white/50">Sin defectos.</p>
       ) : (
         <ul className="mt-2 space-y-2.5">
           {s.topDefectos.map((d, i) => (
@@ -198,7 +198,7 @@ function Destacado({ s }: { s: SorteoTv }) {
         </ul>
       )}
       {s.inspectores.length > 0 && (
-        <p className="mt-auto pt-4 text-sm text-white/50">👷 {s.inspectores.join(", ")}</p>
+        <p className="mt-auto pt-4 text-sm text-white/50">{s.inspectores.join(", ")}</p>
       )}
     </motion.div>
   );
@@ -287,7 +287,7 @@ export default function TvClient({ plantaInicial, puedeElegirPlanta }: { plantaI
   const avanceTurno = Math.min(100, Math.max(0, ((Date.now() - inicio) / (fin - inicio)) * 100));
   const destacado = datos.sorteos.length ? datos.sorteos[foco % datos.sorteos.length] : null;
   const apoyoUrgente = datos.alertas.find((a) => a.id.startsWith("apoyo-"));
-  const cinta = datos.alertas.length ? datos.alertas : [{ id: "ok", nivel: "aviso" as const, texto: "✅ Sin alertas en piso", desde: datos.ahora }];
+  const cinta = datos.alertas.length ? datos.alertas : [{ id: "ok", nivel: "aviso" as const, texto: "Sin alertas en piso", desde: datos.ahora }];
 
   return (
     <main className="flex min-h-screen flex-col gap-4 overflow-hidden bg-[radial-gradient(ellipse_at_top,_#142B6B_0%,_#060E28_60%)] p-5 text-white xl:p-7">
@@ -296,7 +296,7 @@ export default function TvClient({ plantaInicial, puedeElegirPlanta }: { plantaI
           <Image src="/logo-header.png" alt={NOMBRE_APP} width={800} height={266} className="h-12 w-auto" priority />
           <div>
             <p className="font-display text-2xl font-bold">
-              {turno.emoji} {turno.etiqueta}
+              {turno.etiqueta}
               {datos.planta ? <span className="text-white/60"> · {datos.planta}</span> : null}
             </p>
             <div className="mt-1 flex items-center gap-2">
@@ -310,7 +310,7 @@ export default function TvClient({ plantaInicial, puedeElegirPlanta }: { plantaI
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {error && <span className="rounded-full bg-amber-500/20 px-3 py-1 text-xs font-semibold text-amber-200">📡 Sin conexión · último dato</span>}
+          {error && <span className="rounded-full bg-amber-500/20 px-3 py-1 text-xs font-semibold text-amber-200">Sin conexión · último dato</span>}
           <div className="flex items-center gap-1 opacity-60 transition hover:opacity-100">
             {puedeElegirPlanta && (
               <select
@@ -325,11 +325,11 @@ export default function TvClient({ plantaInicial, puedeElegirPlanta }: { plantaI
                 ))}
               </select>
             )}
-            <button onClick={alternarSonido} className="rounded-lg px-2.5 py-1.5 text-xl hover:bg-white/10" title="Alarma sonora">
-              {sonido ? "🔔" : "🔕"}
+            <button onClick={alternarSonido} className="rounded-lg px-2.5 py-1.5 text-sm font-semibold hover:bg-white/10" title="Alarma sonora">
+              {sonido ? "Sonido: sí" : "Sonido: no"}
             </button>
-            <button onClick={alternarPantallaCompleta} className="rounded-lg px-2.5 py-1.5 text-xl hover:bg-white/10" title="Pantalla completa">
-              {pantallaCompleta ? "🗗" : "⛶"}
+            <button onClick={alternarPantallaCompleta} className="rounded-lg px-2.5 py-1.5 text-sm font-semibold hover:bg-white/10" title="Pantalla completa">
+              {pantallaCompleta ? "Salir de pantalla completa" : "Pantalla completa"}
             </button>
             <Link href="/dashboard" className="rounded-lg px-2.5 py-1.5 text-xl hover:bg-white/10" title="Salir del modo TV">
               ✕

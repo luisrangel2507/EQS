@@ -96,7 +96,7 @@ function ContenidoEscaner({ onCerrar }: { onCerrar: () => void }) {
   return (
     <div className="overflow-hidden rounded-2xl bg-white shadow-2xl">
       <div className="flex items-center justify-between border-b border-navy-100 px-4 py-3">
-        <h2 className="font-display font-semibold text-navy-900">📷 Escanear pieza</h2>
+        <h2 className="font-display font-semibold text-navy-900">Escanear pieza</h2>
         <button onClick={onCerrar} className="rounded-md p-1 text-navy-400 hover:bg-navy-50" aria-label="Cerrar">
           ✕
         </button>

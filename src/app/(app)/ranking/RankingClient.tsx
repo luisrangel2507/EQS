@@ -32,8 +32,8 @@ const PERIODOS = [
 ];
 
 const METRICAS = [
-  { valor: "piezas", etiqueta: "📦 Volumen", unidad: "pzas" },
-  { valor: "ritmo", etiqueta: "⚡ Ritmo", unidad: "pzas/h" },
+  { valor: "piezas", etiqueta: "Volumen", unidad: "pzas" },
+  { valor: "ritmo", etiqueta: "Ritmo", unidad: "pzas/h" },
 ] as const;
 
 type Metrica = (typeof METRICAS)[number]["valor"];
@@ -107,7 +107,7 @@ export default function RankingClient() {
     <div className="carga-suave space-y-6" aria-busy={actualizando}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-navy-900">🏆 Ranking</h1>
+          <h1 className="font-display text-2xl font-bold text-navy-900">Ranking</h1>
           <p className="text-sm text-navy-500">
             Volumen inspeccionado y ritmo por hora trabajada. {yo >= 0 && <strong>Vas en el lugar #{yo + 1}.</strong>}
           </p>
@@ -120,7 +120,6 @@ export default function RankingClient() {
 
       {orden.length === 0 ? (
         <div className="card flex flex-col items-center gap-2 py-12 text-center">
-          <span className="text-5xl">🏁</span>
           <p className="text-sm text-navy-500">
             {metrica === "ritmo"
               ? "Nadie lleva todavía una hora de trabajo en este periodo."
@@ -135,7 +134,7 @@ export default function RankingClient() {
               const i = podio[pos];
               if (!i) return <div key={pos} className="w-1/3 max-w-[180px]" />;
               const alturas = ["h-40", "h-28", "h-20"];
-              const medallas = ["🥇", "🥈", "🥉"];
+              const medallas = ["1", "2", "3"];
               const colores = [
                 "from-yellow to-amber-500 text-navy-900",
                 "from-slate-200 to-slate-400 text-navy-900",
@@ -216,12 +215,12 @@ export default function RankingClient() {
                         {i.esYo && <span className="badge bg-yellow text-navy-900">Tú</span>}
                         {i.racha >= 3 && (
                           <span className="badge bg-orange-100 text-orange-800" title="Días seguidos capturando">
-                            🔥 {i.racha} días
+                            {i.racha} días
                           </span>
                         )}
                         {i.evidencia !== null && i.evidencia >= 0.9 && (
                           <span className="badge bg-blue-100 text-blue-800" title="Defectos reportados con foto">
-                            📸 Evidencia
+                            Evidencia
                           </span>
                         )}
                       </div>
@@ -264,7 +263,7 @@ export default function RankingClient() {
                 <li key={t.turno}>
                   <div className="mb-1 flex justify-between text-sm">
                     <span className="font-medium text-navy-800">
-                      {info.emoji} {info.etiqueta}
+                      {info.etiqueta}
                     </span>
                     <span className="font-semibold tabular-nums text-navy-900">
                       {t.piezas.toLocaleString("es-MX")} pzas
@@ -284,8 +283,8 @@ export default function RankingClient() {
           </ul>
           <div className="mt-5 space-y-1.5 rounded-xl bg-navy-50 p-3 text-xs text-navy-600">
             <p className="font-semibold text-navy-800">Insignias</p>
-            <p>🔥 3 o más días seguidos capturando</p>
-            <p>📸 Al menos 90% de los defectos reportados con foto</p>
+            <p>3 o más días seguidos capturando</p>
+            <p>Al menos 90% de los defectos reportados con foto</p>
           </div>
         </div>
       </div>

@@ -126,20 +126,6 @@ function Asistente({ onCerrar, onCreado }: { onCerrar: () => void; onCreado: () 
     return (
       <div className="overflow-hidden rounded-2xl bg-white shadow-2xl">
         <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 px-6 py-6 text-white">
-          {Array.from({ length: 14 }).map((_, i) => (
-            <motion.span
-              key={i}
-              className="absolute text-lg"
-              style={{ left: `${(i * 37) % 100}%`, top: -20 }}
-              animate={{ y: [0, 140], rotate: [0, 180 + i * 20], opacity: [1, 0] }}
-              transition={{ duration: 1.6 + (i % 4) * 0.3, delay: i * 0.05, ease: "easeOut" }}
-            >
-              {["🎉", "✨", "🎊"][i % 3]}
-            </motion.span>
-          ))}
-          <motion.p initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-4xl">
-            🤝
-          </motion.p>
           <h2 className="mt-2 font-display text-2xl font-extrabold">{resultado.empresa} ya está dentro</h2>
           <p className="text-sm text-white/85">Comparte estos accesos. Las contraseñas solo se muestran esta vez.</p>
         </div>
@@ -197,7 +183,7 @@ function Asistente({ onCerrar, onCreado }: { onCerrar: () => void; onCreado: () 
     <div className="overflow-hidden rounded-2xl bg-white shadow-2xl">
       <div className="border-b border-navy-100 px-5 pb-4 pt-5">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-lg font-bold text-navy-900">🤝 Alta de cliente</h2>
+          <h2 className="font-display text-lg font-bold text-navy-900">Alta de cliente</h2>
           <button onClick={onCerrar} className="rounded-md p-1 text-navy-400 hover:bg-navy-50" aria-label="Cerrar">
             ✕
           </button>
@@ -388,7 +374,7 @@ function Asistente({ onCerrar, onCreado }: { onCerrar: () => void; onCreado: () 
           </button>
         ) : (
           <button className="btn-accent" disabled={!puedeAvanzar || enviando} onClick={crear}>
-            {enviando ? "Creando…" : "🚀 Dar de alta"}
+            {enviando ? "Creando…" : "Dar de alta"}
           </button>
         )}
       </div>
