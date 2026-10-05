@@ -394,13 +394,3 @@ summary {
 .carga-suave[aria-busy="true"] > :not(:first-child) {
   opacity: 0.5;
 }
-
-/* grises neutros (landing) en modo oscuro */
-.dark .text-slate-600,
-.dark .text-slate-500 {
-  color: #aab4d4;
-}
-.dark .border-slate-200,
-.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
-  border-color: #26314f;
-}
