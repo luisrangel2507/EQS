@@ -170,18 +170,16 @@ function BotonDemo({ grande = false }: { grande?: boolean }) {
   const url = urlDemo(t);
   if (!url) return null;
   return (
-    <motion.a
+    <a
       href={url}
       target="_blank"
       rel="noreferrer"
-      whileHover={{ scale: 1.03 }}
-      whileTap={{ scale: 0.97 }}
-      className={`inline-flex items-center justify-center gap-2 rounded-xl bg-yellow font-bold text-navy-900 shadow-[0_10px_30px_-10px_rgba(244,217,53,0.7)] ${
-        grande ? "px-7 py-4 text-lg" : "px-5 py-3"
+      className={`inline-flex items-center justify-center rounded-md bg-yellow text-navy-900 transition hover:bg-yellow-400 active:scale-[0.98] ${
+        grande ? "px-6 py-3" : "px-5 py-3"
       }`}
     >
-      {t("Solicitar demo", "Request a demo")} →
-    </motion.a>
+      {t("Solicitar demo", "Request a demo")}
+    </a>
   );
 }
 
@@ -345,81 +343,48 @@ export default function Landing({ registro = false }: { registro?: boolean }) {
       </header>
 
       <section className="relative overflow-hidden bg-[radial-gradient(ellipse_at_top_left,_#233581_0%,_#0A163C_45%,_#060E28_100%)] pb-24 pt-28 text-white">
-        <motion.div
-          className="pointer-events-none absolute -right-32 top-10 h-[28rem] w-[28rem] rounded-full bg-yellow/20 blur-3xl"
-          animate={{ scale: [1, 1.15, 1], opacity: [0.6, 0.9, 0.6] }}
-          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="pointer-events-none absolute -left-40 bottom-0 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl"
-          animate={{ scale: [1.1, 1, 1.1] }}
-          transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
-        />
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 lg:grid-cols-2">
           <div>
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold text-yellow"
-            >
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> {t("Sorteo e inspección automotriz", "Automotive sorting & inspection")}
-            </motion.p>
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="mt-5 font-display text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-6xl"
-            >
-              {t("Tu piso de inspección,", "Your inspection floor,")}{" "}
-              <span className="bg-gradient-to-r from-yellow via-amber-300 to-orange-400 bg-clip-text text-transparent">
-                {t("en tiempo real", "in real time")}
-              </span>
-              .
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-              className="mt-5 max-w-xl text-lg text-white/75"
-            >
+            <p className="flex items-center gap-3 font-titular text-sm font-semibold uppercase tracking-[0.14em] text-yellow">
+              <span className="h-0.5 w-8 bg-yellow" aria-hidden />
+              {t("Sorteo e inspección automotriz", "Automotive sorting & inspection")}
+            </p>
+            <h1 className="mt-5 font-titular text-[2.6rem] font-semibold leading-[0.98] tracking-[-0.01em] sm:text-6xl lg:text-[4.25rem]">
+              {t("Tu piso de inspección, en tiempo real.", "Your inspection floor, in real time.")}
+            </h1>
+            <p className="mt-6 max-w-lg font-plex text-base leading-relaxed text-white/80 sm:text-lg">
               {t(
                 `${NOMBRE_CORTO} reemplaza las hojas de captura, los grupos de WhatsApp y el Excel de fin de turno. Inspectores capturan en segundos, liderazgo ve el semáforo del piso y tu cliente ve su avance en vivo.`,
                 `${NOMBRE_CORTO} replaces paper tally sheets, WhatsApp groups and the end-of-shift spreadsheet. Inspectors log in seconds, leadership sees the floor at a glance and your customer follows progress live.`
               )}
-            </motion.p>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-              className="mt-8 flex flex-wrap gap-3"
-            >
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3 font-titular text-base font-semibold uppercase tracking-[0.06em]">
               <BotonDemo grande />
               {registro && (
                 <Link
                   href="/registro"
-                  className="inline-flex items-center justify-center rounded-xl bg-white px-7 py-4 text-lg font-bold text-navy-900 transition hover:bg-white/90"
+                  className="inline-flex items-center justify-center rounded-md bg-white px-6 py-3 text-navy-900 transition hover:bg-white/90"
                 >
-                  {t("Crear cuenta gratis", "Create free account")}
+                  {t("Crear cuenta", "Create account")}
                 </Link>
               )}
               <Link
                 href="/login"
-                className="inline-flex items-center justify-center rounded-xl border border-white/25 px-7 py-4 text-lg font-semibold text-white transition hover:bg-white/10"
+                className="inline-flex items-center justify-center rounded-md border border-white/30 px-6 py-3 text-white transition hover:bg-white/10"
               >
                 {t("Ya tengo cuenta", "I have an account")}
               </Link>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/60"
-            >
-              <span>✓ {t("Celular, tablet o TV", "Phone, tablet or TV")}</span>
-              <span>✓ {t("Funciona sin señal", "Works offline")}</span>
-              <span>✓ {t("Se instala como app", "Installs as an app")}</span>
-              <span>✓ {t("Español e inglés", "English & Spanish")}</span>
-            </motion.div>
+            </div>
+            <ul className="mt-10 grid max-w-md grid-cols-2 gap-x-6 gap-y-2 border-t border-white/15 pt-5 font-plex text-sm text-white/65">
+              {[
+                t("Celular, tablet o TV", "Phone, tablet or TV"),
+                t("Funciona sin señal", "Works offline"),
+                t("Se instala como app", "Installs as an app"),
+                t("Español e inglés", "English & Spanish"),
+              ].map((texto) => (
+                <li key={texto}>{texto}</li>
+              ))}
+            </ul>
           </div>
           <MaquetaApp />
         </div>
@@ -573,9 +538,9 @@ export default function Landing({ registro = false }: { registro?: boolean }) {
                 `We'll walk you through ${NOMBRE_CORTO} with a real sort in 20 minutes and set up your first plant.`
               )}
             </p>
-            <div className="relative mt-8 flex flex-wrap justify-center gap-3">
+            <div className="relative mt-8 flex flex-wrap justify-center gap-3 font-titular text-base font-semibold uppercase tracking-[0.06em]">
               <BotonDemo grande />
-              <Link href="/login" className="inline-flex items-center rounded-xl border border-white/25 px-7 py-4 text-lg font-semibold hover:bg-white/10">
+              <Link href="/login" className="inline-flex items-center rounded-md border border-white/30 px-6 py-3 transition hover:bg-white/10">
                 {t("Iniciar sesión", "Sign in")}
               </Link>
             </div>
