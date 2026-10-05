@@ -13,10 +13,8 @@ import { BotonTema } from "@/components/ui/Tema";
 import { BotonIdioma, useIdioma } from "@/components/ui/Idioma";
 import ChatPanel from "./ChatPanel";
 import PushToggle from "./PushToggle";
-import EscanerCodigo from "./EscanerCodigo";
 import PaletaComandos from "./PaletaComandos";
 import TourBienvenida from "./TourBienvenida";
-import { EVENTO_ESCANER } from "@/lib/eventos";
 import { OrganizacionProvider } from "@/components/Organizacion";
 import type { EmpresaEmisora } from "@/lib/branding";
 import Icono from "@/components/ui/Icono";
@@ -175,7 +173,6 @@ export default function AppShell({ id, nombre, rol, organizacion, superadmin, ch
                       <span className="hidden xl:inline">{t("Buscar", "Search")}</span>
                       <kbd className="hidden rounded bg-white/10 px-1.5 text-[10px] font-semibold xl:inline">Ctrl K</kbd>
                     </button>
-                    {rol !== "CLIENTE" && <BotonEscanear />}
                     <NotificacionesBell rol={rol} />
                     <PerfilMenu nombre={nombre} rol={rol} organizacion={organizacion.nombreCorto} superadmin={superadmin} />
                   </div>
@@ -253,31 +250,6 @@ function MenuMas({ enlaces, pathname }: { enlaces: { href: string; label: string
         </>
       )}
     </div>
-  );
-}
-
-function BotonEscanear() {
-  const [abierto, setAbierto] = useState(false);
-  const { t } = useIdioma();
-  useEffect(() => {
-    const abrir = () => setAbierto(true);
-    window.addEventListener(EVENTO_ESCANER, abrir);
-    return () => window.removeEventListener(EVENTO_ESCANER, abrir);
-  }, []);
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setAbierto(true)}
-        className="flex h-9 w-9 items-center justify-center rounded-full text-lg transition hover:bg-white/10"
-        aria-label={t("Escanear código", "Scan code")}
-        data-tour="escanear"
-        title={t("Escanear QR o código de barras", "Scan QR or barcode")}
-      >
-        <Icono nombre="escanear" />
-      </button>
-      <EscanerCodigo abierto={abierto} onCerrar={() => setAbierto(false)} />
-    </>
   );
 }
 

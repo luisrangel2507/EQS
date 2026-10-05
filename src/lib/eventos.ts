@@ -1,4 +1,3 @@
-export const EVENTO_ESCANER = "eqs-abrir-escaner";
 
 /** Lee un parámetro de un solo uso (?nueva=1) y lo quita de la URL para que recargar no lo repita. */
 export function consumirParametro(nombre: string) {

@@ -29,14 +29,6 @@ function pasosPara(rol: Rol, nombre: string, t: Traductor): Paso[] {
       "Type a part number, customer or action and jump right there. On a computer it also opens with Ctrl K."
     ),
   };
-  const escanear: Paso = {
-    objetivo: "escanear",
-    titulo: t("Escanea la etiqueta", "Scan the label"),
-    texto: t(
-      "Apunta la cámara al QR del contenedor o al código de barras y se abre la inspección correcta.",
-      "Point the camera at the container's QR or barcode and the right inspection opens."
-    ),
-  };
   const perfil: Paso = {
     objetivo: "perfil",
     titulo: t("Tu perfil", "Your profile"),
@@ -69,7 +61,6 @@ function pasosPara(rol: Rol, nombre: string, t: Traductor): Paso[] {
           "My inspections has your assignments; Ranking shows how your shift is going."
         ),
       },
-      escanear,
       {
         titulo: t("Capturar es rápido", "Logging is fast"),
         texto: t(
@@ -126,7 +117,6 @@ function pasosPara(rol: Rol, nombre: string, t: Traductor): Paso[] {
         ]
       : []),
     buscar,
-    escanear,
     chat,
     perfil,
     final,

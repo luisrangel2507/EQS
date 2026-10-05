@@ -32,9 +32,6 @@ Todas las reglas se validan en el servidor (API routes), no solo en la UI:
 - **Captura en piso**: vibración y flash al registrar, botón *Deshacer* (2 min) y
   **modo sin señal**: las capturas se guardan en el equipo (fotos incluidas) y se
   envían solas al volver la conexión, sin duplicarse.
-- **Escaneo QR / código de barras** (📷 en el encabezado): abre la inspección por
-  etiqueta QR, número de parte o lote de Punto Limpio. Cada inspección tiene su
-  etiqueta imprimible en *🏷️ Etiqueta QR*.
 - **Turnos** (`/turnos`): números del turno en curso y bitácora de entrega/recepción de turno.
 - **Portal del cliente**: *🔗 Compartir* genera un enlace en vivo de solo lectura
   (avance, Pareto y fotos, sin precios) con vigencia y revocable.

@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import EscanerCodigo from "@/components/EscanerCodigo";
 import JornadaBarra from "@/components/JornadaBarra";
-import Icono from "@/components/ui/Icono";
 
 type InspeccionResumen = {
   id: string;
@@ -33,22 +30,7 @@ export default function EstacionClient({
   const router = useRouter();
   const [detalle, setDetalle] = useState<InspeccionDetalle | null>(detalleInicial);
   const [cargandoDetalle, setCargandoDetalle] = useState(false);
-  const [escaneando, setEscaneando] = useState(false);
 
-  const botonEscanear = (
-    <>
-      <JornadaBarra />
-      <motion.button
-        type="button"
-        whileTap={{ scale: 0.97 }}
-        onClick={() => setEscaneando(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-navy-700 to-navy-900 py-4 font-display text-base font-bold text-white shadow-lg"
-      >
-        <Icono nombre="escanear" className="h-6 w-6" /> Escanear etiqueta de la pieza
-      </motion.button>
-      <EscanerCodigo abierto={escaneando} onCerrar={() => setEscaneando(false)} />
-    </>
-  );
 
   async function elegir(id: string) {
     setCargandoDetalle(true);
@@ -71,7 +53,7 @@ export default function EstacionClient({
   if (detalle) {
     return (
       <div className="mx-auto max-w-lg space-y-4">
-        {botonEscanear}
+        <JornadaBarra />
         <div className="card space-y-4">
           <div>
             <h1 className="font-display text-xl font-bold text-navy-900">
@@ -146,7 +128,7 @@ export default function EstacionClient({
   if (inspecciones.length === 0) {
     return (
       <div className="mx-auto max-w-lg space-y-4">
-        {botonEscanear}
+        <JornadaBarra />
         <div className="card space-y-2 text-center">
           <p className="font-display text-lg font-bold text-navy-900">
             Hola {nombre.split(" ")[0]}
@@ -162,7 +144,7 @@ export default function EstacionClient({
 
   return (
     <div className="mx-auto max-w-lg space-y-4">
-      {botonEscanear}
+      <JornadaBarra />
       <div className="card space-y-3">
         <h1 className="font-display text-xl font-bold text-navy-900">
           Hola {nombre.split(" ")[0]}, elige tu inspección

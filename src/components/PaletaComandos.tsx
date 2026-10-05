@@ -6,7 +6,6 @@ import { signOut } from "next-auth/react";
 import type { Rol } from "@prisma/client";
 import { AnimatePresence, motion } from "framer-motion";
 import { alternarTema } from "@/components/ui/Tema";
-import { EVENTO_ESCANER } from "@/lib/eventos";
 import { useIdioma } from "@/components/ui/Idioma";
 import Icono from "@/components/ui/Icono";
 
@@ -104,13 +103,6 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
       rol === "ADMIN" && { id: "empresas", grupo: "Ir a", titulo: t("Empresas cliente", "Customer companies"), ejecutar: ir("/empresas") },
       rol === "ADMIN" && { id: "salud", grupo: "Ir a", titulo: t("Estado del sistema", "System status"), detalle: t("Base de datos y almacenamiento de fotos", "Database and photo storage"), ejecutar: ir("/salud") },
       (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "tv", grupo: "Ir a", titulo: t("Modo TV (piso)", "TV mode (floor)"), ejecutar: ir("/tv") },
-      rol !== "CLIENTE" && {
-        id: "escanear",
-        grupo: "Acciones",
-        titulo: t("Escanear código", "Scan code"),
-        detalle: t("QR de etiqueta, número de parte o lote", "Label QR, part number or lot"),
-        ejecutar: () => window.dispatchEvent(new Event(EVENTO_ESCANER)),
-      },
       (rol === "ADMIN" || rol === "SUPERVISOR") && { id: "nueva", grupo: "Acciones", titulo: t("Nueva inspección", "New inspection"), ejecutar: ir("/inspecciones?nueva=1") },
       (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "entregar", grupo: "Acciones", titulo: t("Entregar turno", "Hand over shift"), ejecutar: ir("/turnos?entregar=1") },
       rol === "ADMIN" && { id: "alta-cliente", grupo: "Acciones", titulo: t("Dar de alta un cliente", "Onboard a customer"), ejecutar: ir("/empresas?alta=1") },

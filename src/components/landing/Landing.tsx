@@ -111,7 +111,7 @@ const ROLES: { clave: string; titulo: Texto; puntos: Texto[] }[] = [
     clave: "inspector",
     titulo: ["Inspector", "Inspector"],
     puntos: [
-      ["Escanea la etiqueta y empieza", "Scans the label and starts"],
+      ["Ve sus sorteos asignados al entrar", "Sees their assigned sorts on sign-in"],
       ["Registra piezas en dos toques", "Logs parts in two taps"],
       ["Pide apoyo con un botón", "Calls for help with one button"],
       ["Ve su ritmo y su lugar en el ranking", "Sees their pace and leaderboard spot"],
@@ -424,10 +424,10 @@ export default function Landing({ registro = false }: { registro?: boolean }) {
             {[
               {
                 n: 1,
-                titulo: t("Escanea", "Scan"),
+                titulo: t("Abre su sorteo", "Opens the sort"),
                 texto: t(
-                  "El inspector escanea la etiqueta QR del contenedor y ve el criterio de aceptación.",
-                  "The inspector scans the container's QR label and sees the acceptance criteria."
+                  "El inspector entra al sorteo que tiene asignado y ve el criterio de aceptación.",
+                  "The inspector opens their assigned sort and sees the acceptance criteria."
                 ),
               },
               {

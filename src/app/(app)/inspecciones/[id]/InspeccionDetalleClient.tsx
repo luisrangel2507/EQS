@@ -164,11 +164,6 @@ export default function InspeccionDetalleClient({
           <a href={`/inspecciones/${id}/liberacion`} className="btn-secondary">
             {sesion.rol === "CLIENTE" ? t("Material liberado", "Released material") : t("Liberar material", "Release material")}
           </a>
-          {puedeGestionar && (
-            <a href={`/inspecciones/${id}/etiqueta`} className="btn-secondary">
-              {t("Etiqueta QR", "QR label")}
-            </a>
-          )}
           {sesion.rol !== "RESIDENTE" && (
             <CompartirInspeccion inspeccionId={id} nombre={inspeccion.numeroParte ?? inspeccion.nombre} />
           )}
