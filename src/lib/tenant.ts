@@ -14,7 +14,7 @@ import { Prisma } from "@prisma/client";
  *  - fuera de una petición (scripts) → sin filtro.
  */
 
-const RAIZ = new Set(["Usuario", "Inspeccion", "Empresa", "CriterioParte"]);
+const RAIZ = new Set(["Usuario", "Inspeccion", "Empresa", "CriterioParte", "BitacoraCambio"]);
 
 // modelo → relación que lleva a una tabla raíz
 const RUTA: Record<string, string> = {
@@ -37,6 +37,15 @@ const RUTA: Record<string, string> = {
   Auditoria: "auditor",
   EtiquetaLiberacion: "inspeccion",
 };
+
+/*
+ * Registros de calidad que no se borran: se anulan con motivo (anuladoEn). Las
+ * consultas normales los ignoran solas; para verlos hay que mencionar
+ * `anuladoEn` en el where. Los hijos de una inspección anulada también se ocultan.
+ */
+const ANULABLES = new Set(["Inspeccion", "Captura", "Auditoria", "Reporte8D", "RegistroAsistencia"]);
+const LECTURAS = new Set(["findUnique", "findUniqueOrThrow", "findFirst", "findFirstOrThrow", "findMany", "count", "aggregate", "groupBy"]);
+const EDICIONES = new Set(["update", "updateMany", "updateManyAndReturn"]);
 
 const SIN_SESION = "__sin_sesion__";
 
@@ -82,7 +91,9 @@ export async function organizacionActual(): Promise<string | null> {
 function filtroDe(modelo: string, org: string): Record<string, unknown> | null {
   if (RAIZ.has(modelo)) return { organizacionId: org };
   const rel = RUTA[modelo];
-  return rel ? { [rel]: { organizacionId: org } } : null;
+  if (!rel) return null;
+  // lo que cuelga de una inspección anulada deja de verse junto con ella
+  return { [rel]: rel === "inspeccion" ? { organizacionId: org, anuladoEn: null } : { organizacionId: org } };
 }
 
 const conFiltro = (where: Record<string, unknown> | undefined, filtro: Record<string, unknown>) => {
@@ -113,12 +124,17 @@ export const aislamiento = Prisma.defineExtension({
   query: {
     $allModels: {
       async $allOperations({ model, operation, args, query }) {
-        const org = await organizacionActual();
-        if (org === null) return query(args);
-        const filtro = filtroDe(model, org);
-        if (!filtro) return query(args);
-
         const a = { ...(args as Record<string, unknown>) };
+        if (ANULABLES.has(model) && (LECTURAS.has(operation) || EDICIONES.has(operation))) {
+          const w = a.where as Record<string, unknown> | undefined;
+          if (!w || !("anuladoEn" in w)) a.where = conFiltro(w, { anuladoEn: null });
+        }
+
+        const org = await organizacionActual();
+        if (org === null) return query(a as typeof args);
+        const filtro = filtroDe(model, org);
+        if (!filtro) return query(a as typeof args);
+
         if (CON_WHERE.has(operation)) a.where = conFiltro(a.where as Record<string, unknown> | undefined, filtro);
 
         // las tablas raíz nacen en la organización de quien las crea

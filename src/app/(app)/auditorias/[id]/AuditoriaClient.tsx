@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { SkeletonPagina } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
+import AnularModal from "@/components/AnularModal";
 import { comprimirImagen } from "@/lib/imagen";
 import { vibrar } from "@/lib/feedback";
 import { TIPOS_AUDITORIA, type ItemChecklist, type Respuesta } from "@/lib/auditorias";
@@ -48,6 +49,7 @@ export default function AuditoriaClient({ id }: { id: string }) {
   const [auditoria, setAuditoria] = useState<Auditoria | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [finalizando, setFinalizando] = useState(false);
+  const [anulando, setAnulando] = useState(false);
 
   useEffect(() => {
     fetch(`/api/auditorias/${id}`)
@@ -125,18 +127,6 @@ export default function AuditoriaClient({ id }: { id: string }) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  async function borrar() {
-    if (!confirm(t("¿Borrar esta auditoría? No se puede deshacer.", "Delete this audit? This cannot be undone."))) return;
-    const res = await fetch(`/api/auditorias/${id}`, { method: "DELETE" });
-    if (!res.ok) {
-      const d = await res.json().catch(() => ({}));
-      toast.error(d.error ?? t("No se pudo borrar", "Could not delete"));
-      return;
-    }
-    toast.info(t("Auditoría borrada", "Audit deleted"));
-    router.push("/auditorias");
-  }
-
   return (
     <div className="mx-auto max-w-3xl space-y-5">
       <Link href="/auditorias" className="text-sm font-semibold text-navy-500 hover:text-navy-900">
@@ -172,8 +162,8 @@ export default function AuditoriaClient({ id }: { id: string }) {
             </a>
           )}
           {editable && (
-            <button className="btn-secondary text-red-600" onClick={borrar}>
-              {t("Borrar", "Delete")}
+            <button className="btn-secondary text-red-600" onClick={() => setAnulando(true)}>
+              {t("Anular", "Void")}
             </button>
           )}
         </div>
@@ -237,6 +227,16 @@ export default function AuditoriaClient({ id }: { id: string }) {
           </button>
         </div>
       )}
+      <AnularModal
+        abierto={anulando}
+        titulo={t("Anular esta auditoría", "Void this audit")}
+        url={`/api/auditorias/${id}`}
+        onCerrar={() => setAnulando(false)}
+        onAnulado={() => {
+          toast.info(t("Auditoría anulada", "Audit voided"));
+          router.push("/auditorias");
+        }}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requerirRol, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
+import { registrar } from "@/lib/bitacora";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ const cerrarSchema = z.object({
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    await requerirRol("ADMIN", "SUPERVISOR");
+    const user = await requerirRol("ADMIN", "SUPERVISOR");
 
     const inspeccion = await prisma.inspeccion.findUnique({ where: { id: params.id } });
     if (!inspeccion) throw new ErrorPermiso("Inspección no encontrada", 404);
@@ -23,6 +24,14 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const actualizada = await prisma.inspeccion.update({
       where: { id: params.id },
       data: { cerrado: true, cerradoPor, cerradoEn: new Date() },
+    });
+
+    await registrar(user, {
+      accion: "CERRAR",
+      entidad: "Inspeccion",
+      entidadId: params.id,
+      resumen: `Cerró la inspección «${inspeccion.nombre}» (firma: ${cerradoPor})`,
+      despues: { cerradoPor, piezasBuenas: actualizada.piezasBuenas, piezasMalas: actualizada.piezasMalas },
     });
 
     return Response.json(actualizada);

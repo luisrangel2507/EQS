@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requerirRol, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { ROLES } from "@/lib/constants";
+import { filaBitacora, leerMotivo, registrar } from "@/lib/bitacora";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +71,26 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       },
     });
 
+    const antes: Record<string, unknown> = {};
+    const despues: Record<string, unknown> = {};
+    for (const campo of ["nombre", "rol", "activo", "clienteNombre", "plantaResidente"] as const) {
+      if (campo in data && existente[campo] !== usuario[campo]) {
+        antes[campo] = existente[campo];
+        despues[campo] = usuario[campo];
+      }
+    }
+    if (datos.password) despues.contrasenaRestablecida = true; // nunca se guarda la contraseña
+    if (Object.keys(despues).length) {
+      await registrar(admin, {
+        accion: datos.activo === false && existente.activo ? "DESACTIVAR" : datos.activo === true && !existente.activo ? "ACTIVAR" : "EDITAR",
+        entidad: "Usuario",
+        entidadId: params.id,
+        resumen: `Modificó al usuario ${existente.usuario}`,
+        antes,
+        despues,
+      });
+    }
+
     return Response.json(usuario);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -79,21 +100,29 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+// los usuarios no se borran (sus capturas y firmas deben conservar el autor): se desactivan
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const admin = await requerirRol("ADMIN");
     if (params.id === admin.id) {
-      throw new ErrorPermiso("No puedes eliminar tu propia cuenta", 400);
+      throw new ErrorPermiso("No puedes desactivar tu propia cuenta", 400);
     }
-
-    try {
-      await prisma.usuario.delete({ where: { id: params.id } });
-      return Response.json({ ok: true });
-    } catch {
-      // Tiene registros relacionados (capturas, asignaciones): se desactiva en vez de borrar
-      await prisma.usuario.update({ where: { id: params.id }, data: { activo: false } });
-      return Response.json({ ok: true, desactivado: true });
-    }
+    const motivo = await leerMotivo(req);
+    const existente = await prisma.usuario.findUnique({ where: { id: params.id } });
+    if (!existente) throw new ErrorPermiso("Usuario no encontrado", 404);
+    await prisma.$transaction([
+      prisma.usuario.update({ where: { id: params.id }, data: { activo: false } }),
+      filaBitacora(admin, {
+        accion: "DESACTIVAR",
+        entidad: "Usuario",
+        entidadId: params.id,
+        resumen: `Desactivó al usuario ${existente.usuario}`,
+        antes: { activo: existente.activo },
+        despues: { activo: false },
+        motivo,
+      }),
+    ]);
+    return Response.json({ ok: true, desactivado: true });
   } catch (error) {
     return manejarErrorApi(error);
   }

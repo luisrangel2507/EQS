@@ -98,6 +98,7 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
       rol !== "INSPECTOR" && { id: "auditorias", grupo: "Ir a", titulo: t("Auditorías y checklists", "Audits & checklists"), ejecutar: ir("/auditorias") },
       (LIDERAZGO.includes(rol) || rol === "RESIDENTE") && { id: "nueva-auditoria", grupo: "Acciones", titulo: t("Nueva auditoría", "New audit"), ejecutar: ir("/auditorias?nueva=1") },
       LIDERAZGO.includes(rol) && { id: "asistencia", grupo: "Ir a", titulo: t("Asistencia y horas", "Attendance & hours"), ejecutar: ir("/asistencia") },
+      (rol === "ADMIN" || rol === "SUPERVISOR" || rol === "GERENTE") && { id: "bitacora", grupo: "Ir a", titulo: t("Bitácora de cambios", "Change log"), ejecutar: ir("/bitacora") },
       (rol === "ADMIN" || rol === "GERENTE") && { id: "facturacion", grupo: "Ir a", titulo: t("Facturación", "Billing"), ejecutar: ir("/facturacion") },
       rol === "ADMIN" && { id: "usuarios", grupo: "Ir a", titulo: t("Usuarios", "Users"), ejecutar: ir("/usuarios") },
       rol === "ADMIN" && { id: "empresas", grupo: "Ir a", titulo: t("Empresas cliente", "Customer companies"), ejecutar: ir("/empresas") },

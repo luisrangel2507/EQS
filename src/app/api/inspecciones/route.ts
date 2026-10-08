@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { registrar } from "@/lib/bitacora";
 import { requerirRol, requerirSesion, manejarErrorApi } from "@/lib/permissions";
 import { whereInspeccionesVisibles } from "@/lib/inspecciones";
 import { validarAsignacion } from "@/lib/certificaciones";
@@ -68,6 +69,14 @@ export async function POST(req: NextRequest) {
       include: {
         inspectores: { include: { usuario: { select: { id: true, nombre: true } } } },
       },
+    });
+
+    await registrar(user, {
+      accion: "CREAR",
+      entidad: "Inspeccion",
+      entidadId: inspeccion.id,
+      resumen: `Creó la inspección «${inspeccion.nombre}»`,
+      despues: { nombre: inspeccion.nombre, numeroParte: inspeccion.numeroParte, cliente: inspeccion.cliente, planta: inspeccion.planta, meta: inspeccion.meta },
     });
 
     return Response.json(inspeccion, { status: 201 });

@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requerirSesion, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
+import { datosAnulacion, filaBitacora } from "@/lib/bitacora";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,18 @@ export async function DELETE(
     }
 
     await prisma.$transaction([
-      prisma.captura.delete({ where: { id: captura.id } }),
+      prisma.captura.update({
+        where: { id: captura.id },
+        data: datosAnulacion(user, "Deshecha por el inspector dentro de la ventana de 2 minutos"),
+      }),
+      filaBitacora(user, {
+        accion: "ANULAR",
+        entidad: "Captura",
+        entidadId: captura.id,
+        resumen: "Deshizo una captura",
+        antes: { inspeccionId: params.id, buenas: captura.buenas, malas: captura.malas, retrabajadas: captura.retrabajadas, defecto: captura.defecto },
+        motivo: "Deshecha por el inspector dentro de la ventana de 2 minutos",
+      }),
       prisma.inspeccion.update({
         where: { id: params.id },
         data: {

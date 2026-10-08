@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requerirRol, manejarErrorApi } from "@/lib/permissions";
+import { registrar } from "@/lib/bitacora";
 
 export const dynamic = "force-dynamic";
 
@@ -30,10 +31,21 @@ export async function POST(req: NextRequest) {
     const user = await requerirRol("ADMIN", "SUPERVISOR");
     const d = criterioSchema.parse(await req.json());
     const datos = { ...d, fotoOkUrl: d.fotoOkUrl || null, fotoNgUrl: d.fotoNgUrl || null };
+    const previo = await prisma.criterioParte.findUnique({
+      where: { organizacionId_numeroParte: { organizacionId: user.organizacionId, numeroParte: d.numeroParte } },
+    });
     const criterio = await prisma.criterioParte.upsert({
       where: { organizacionId_numeroParte: { organizacionId: user.organizacionId, numeroParte: d.numeroParte } },
       create: { ...datos, organizacionId: user.organizacionId },
       update: datos,
+    });
+    await registrar(user, {
+      accion: previo ? "EDITAR" : "CREAR",
+      entidad: "Criterio",
+      entidadId: criterio.id,
+      resumen: `${previo ? "Editó" : "Creó"} el criterio de la parte ${criterio.numeroParte}`,
+      antes: previo,
+      despues: criterio,
     });
     return Response.json(criterio, { status: 201 });
   } catch (error) {

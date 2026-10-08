@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requerirRol, requerirSesion, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { obtenerInspeccionVisible } from "@/lib/inspecciones";
 import { validarAsignacion } from "@/lib/certificaciones";
+import { datosAnulacion, filaBitacora, leerMotivo, registrar } from "@/lib/bitacora";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    await requerirRol("ADMIN", "SUPERVISOR");
+    const user = await requerirRol("ADMIN", "SUPERVISOR");
     const existente = await prisma.inspeccion.findUnique({ where: { id: params.id } });
     if (!existente) throw new ErrorPermiso("Inspección no encontrada", 404);
     if (existente.cerrado) throw new ErrorPermiso("La inspección está cerrada y no se puede editar", 400);
@@ -89,6 +90,28 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       },
     });
 
+    const antes: Record<string, unknown> = {};
+    const despues: Record<string, unknown> = {};
+    for (const campo of Object.keys(data)) {
+      const a = (existente as Record<string, unknown>)[campo];
+      const d = (inspeccion as Record<string, unknown>)[campo];
+      if (JSON.stringify(a) !== JSON.stringify(d)) {
+        antes[campo] = a;
+        despues[campo] = d;
+      }
+    }
+    if (datos.inspectorIds !== undefined) despues.inspectores = datos.inspectorIds;
+    if (Object.keys(despues).length) {
+      await registrar(user, {
+        accion: "EDITAR",
+        entidad: "Inspeccion",
+        entidadId: params.id,
+        resumen: `Editó la inspección «${inspeccion.nombre}»`,
+        antes,
+        despues,
+      });
+    }
+
     return Response.json(inspeccion);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -98,10 +121,32 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+// las inspecciones no se borran: se anulan con motivo y quedan en la bitácora
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    await requerirRol("ADMIN", "SUPERVISOR");
-    await prisma.inspeccion.delete({ where: { id: params.id } });
+    const user = await requerirRol("ADMIN", "SUPERVISOR");
+    const motivo = await leerMotivo(req);
+    const existente = await prisma.inspeccion.findUnique({ where: { id: params.id } });
+    if (!existente) throw new ErrorPermiso("Inspección no encontrada", 404);
+    await prisma.$transaction([
+      prisma.inspeccion.update({ where: { id: params.id }, data: datosAnulacion(user, motivo) }),
+      filaBitacora(user, {
+        accion: "ANULAR",
+        entidad: "Inspeccion",
+        entidadId: params.id,
+        resumen: `Anuló la inspección «${existente.nombre}»`,
+        antes: {
+          nombre: existente.nombre,
+          numeroParte: existente.numeroParte,
+          cliente: existente.cliente,
+          planta: existente.planta,
+          piezasBuenas: existente.piezasBuenas,
+          piezasMalas: existente.piezasMalas,
+          cerrado: existente.cerrado,
+        },
+        motivo,
+      }),
+    ]);
     return Response.json({ ok: true });
   } catch (error) {
     return manejarErrorApi(error);

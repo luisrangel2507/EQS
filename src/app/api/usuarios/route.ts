@@ -5,6 +5,7 @@ import { prisma, prismaGlobal } from "@/lib/prisma";
 import { organizacionPrincipal } from "@/lib/organizaciones";
 import { requerirRol, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { ROLES } from "@/lib/constants";
+import { registrar } from "@/lib/bitacora";
 
 export const dynamic = "force-dynamic";
 
@@ -54,13 +55,15 @@ export async function POST(req: NextRequest) {
 
     let rolFinal = datos.rol ?? "INSPECTOR";
     let organizacionId: string;
+    let admin: Awaited<ReturnType<typeof requerirRol>> | null = null;
 
     if (esBootstrap) {
       rolFinal = "ADMIN";
       organizacionId = (await organizacionPrincipal()).id;
     } else {
       // Requiere sesión de administrador para dar de alta a cualquier otro usuario
-      organizacionId = (await requerirRol("ADMIN")).organizacionId;
+      admin = await requerirRol("ADMIN");
+      organizacionId = admin.organizacionId;
       if (!datos.rol) {
         throw new ErrorPermiso("El rol es requerido", 400);
       }
@@ -106,6 +109,16 @@ export async function POST(req: NextRequest) {
         creadoEn: true,
       },
     });
+
+    if (admin) {
+      await registrar(admin, {
+        accion: "CREAR",
+        entidad: "Usuario",
+        entidadId: usuario.id,
+        resumen: `Creó al usuario ${usuario.usuario} (${usuario.rol})`,
+        despues: { nombre: usuario.nombre, usuario: usuario.usuario, rol: usuario.rol },
+      });
+    }
 
     return Response.json(usuario, { status: 201 });
   } catch (error) {

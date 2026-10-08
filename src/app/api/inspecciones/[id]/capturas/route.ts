@@ -39,7 +39,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const body = await req.json();
     const datos = capturaSchema.parse(body);
     if (datos.idCliente) {
-      const repetida = await prisma.captura.findUnique({ where: { idCliente: datos.idCliente } });
+      const repetida = await prisma.captura.findFirst({ where: { idCliente: datos.idCliente, anuladoEn: undefined } });
       if (repetida) return Response.json(repetida, { status: 200 });
     }
 

@@ -79,6 +79,7 @@ const ENLACES: { href: string; label: string; en: string; roles: Rol[]; principa
   { href: "/certificaciones", label: "Certificaciones", en: "Certifications", roles: LIDERAZGO },
   { href: "/asistencia", label: "Asistencia y horas", en: "Attendance & hours", roles: LIDERAZGO },
   { href: "/facturacion", label: "Facturación", en: "Billing", roles: ["ADMIN", "GERENTE"] },
+  { href: "/bitacora", label: "Bitácora de cambios", en: "Change log", roles: ["ADMIN", "SUPERVISOR", "GERENTE"] },
 ];
 
 export default function AppShell({ id, nombre, rol, organizacion, superadmin, children }: Props) {

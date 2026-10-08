@@ -5,6 +5,7 @@ import { requerirSesion, manejarErrorApi, ErrorPermiso, esLiderazgo } from "@/li
 import { calcularPuntaje, itemsDe, respuestasDe } from "@/lib/auditorias";
 import { whereAuditoriasVisibles } from "@/lib/auditoriasServidor";
 import { idsPorRol, notificar } from "@/lib/notificar";
+import { datosAnulacion, filaBitacora, leerMotivo, registrar } from "@/lib/bitacora";
 
 export const dynamic = "force-dynamic";
 
@@ -77,6 +78,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       data: { estado: "completada", completadaEn: new Date(), puntaje, hallazgos },
     });
 
+    await registrar(user, {
+      accion: "COMPLETAR",
+      entidad: "Auditoria",
+      entidadId: auditoria.id,
+      resumen: `Completó la auditoría #${auditoria.folio} (${auditoria.nombrePlantilla})`,
+      despues: { puntaje, hallazgos },
+    });
+
     if (hallazgos > 0) {
       const destinatarios = (await idsPorRol("ADMIN", "SUPERVISOR")).filter((id) => id !== user.id);
       await notificar(destinatarios, {
@@ -93,12 +102,23 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { user, auditoria } = await visible(params.id);
+    const motivo = await leerMotivo(req);
     if (auditoria.estado !== "borrador" && user.rol !== "ADMIN") throw new ErrorPermiso("Solo Admin puede borrar auditorías completadas");
     if (auditoria.auditorId !== user.id && !esLiderazgo(user.rol)) throw new ErrorPermiso("Sin permiso");
-    await prisma.auditoria.delete({ where: { id: auditoria.id } });
+    await prisma.$transaction([
+      prisma.auditoria.update({ where: { id: auditoria.id }, data: datosAnulacion(user, motivo) }),
+      filaBitacora(user, {
+        accion: "ANULAR",
+        entidad: "Auditoria",
+        entidadId: auditoria.id,
+        resumen: `Anuló la auditoría #${auditoria.folio} (${auditoria.nombrePlantilla})`,
+        antes: { estado: auditoria.estado, puntaje: auditoria.puntaje, hallazgos: auditoria.hallazgos, planta: auditoria.planta },
+        motivo,
+      }),
+    ]);
     return Response.json({ ok: true });
   } catch (error) {
     return manejarErrorApi(error);

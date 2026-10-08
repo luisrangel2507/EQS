@@ -31,6 +31,7 @@ model Organizacion {
   inspecciones Inspeccion[]
   empresas     Empresa[]
   criterios    CriterioParte[]
+  bitacora     BitacoraCambio[]
 }
 
 // empresas cliente dadas de alta por un Admin; los usuarios con rol CLIENTE
@@ -135,6 +136,10 @@ model Inspeccion {
   puntoLimpioOkPor        String?
   puntoLimpioOkEn         DateTime?
 
+  // anulación con motivo (los registros de calidad no se borran)
+  anuladoEn         DateTime?
+  anuladoPorId      String?
+  motivoAnulacion   String?
   capturas          Captura[]
   defectos          DefectoResumen[]
   inspectores       InspeccionInspector[]
@@ -177,6 +182,11 @@ model Captura {
   // id generado en el dispositivo: evita duplicados al reintentar capturas hechas sin señal
   idCliente    String?    @unique
   creadoEn     DateTime   @default(now())
+
+  // anulación con motivo (los registros de calidad no se borran)
+  anuladoEn       DateTime?
+  anuladoPorId    String?
+  motivoAnulacion String?
 
   @@index([inspeccionId, creadoEn])
   @@index([usuarioId])
@@ -326,6 +336,11 @@ model Reporte8D {
   creadoEn         DateTime   @default(now())
   actualizadoEn    DateTime   @updatedAt
 
+  // anulación con motivo (los registros de calidad no se borran)
+  anuladoEn       DateTime?
+  anuladoPorId    String?
+  motivoAnulacion String?
+
   @@index([inspeccionId])
 }
 
@@ -371,6 +386,11 @@ model RegistroAsistencia {
   automatica   Boolean     @default(false)
   nota         String?
   creadoEn     DateTime    @default(now())
+
+  // anulación con motivo (los registros de calidad no se borran)
+  anuladoEn       DateTime?
+  anuladoPorId    String?
+  motivoAnulacion String?
 
   @@index([usuarioId, entrada])
   @@index([inspeccionId, entrada])
@@ -449,6 +469,11 @@ model Auditoria {
   creadoEn        DateTime           @default(now())
   completadaEn    DateTime?
 
+  // anulación con motivo (los registros de calidad no se borran)
+  anuladoEn       DateTime?
+  anuladoPorId    String?
+  motivoAnulacion String?
+
   @@index([creadoEn])
   @@index([cliente])
 }
@@ -478,4 +503,27 @@ model EtiquetaLiberacion {
 
   @@index([inspeccionId])
   @@index([tanda])
+}
+
+// Bitácora de cambios: quién hizo qué y cuándo. Solo se inserta, nunca se edita ni se borra.
+model BitacoraCambio {
+  id             String       @id @default(cuid())
+  organizacion   Organizacion @relation(fields: [organizacionId], references: [id], onDelete: Cascade)
+  organizacionId String
+  usuarioId      String?
+  usuarioNombre  String // copia: se conserva aunque el usuario cambie de nombre
+  usuarioRol     String?
+  accion         String // CREAR | EDITAR | ANULAR | ELIMINAR | CERRAR | REABRIR | DESACTIVAR | ACTIVAR
+  entidad        String // Inspeccion | Captura | Auditoria | Reporte8D | Asistencia | Usuario | Criterio | Enlace
+  entidadId      String
+  resumen        String
+  antes          Json?
+  despues        Json?
+  motivo         String?
+  ip             String?
+  creadoEn       DateTime     @default(now())
+
+  @@index([organizacionId, creadoEn])
+  @@index([entidad, entidadId])
+  @@index([usuarioId])
 }

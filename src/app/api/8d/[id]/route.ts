@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { DISCIPLINAS, avance8D } from "@/lib/ochoD";
 import { exigirEdicion, obtener8DVisible } from "@/lib/ochoDServidor";
+import { datosAnulacion, filaBitacora, leerMotivo, registrar } from "@/lib/bitacora";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,24 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         ...(cambios.estado === "abierto" ? { cerradoEn: null } : {}),
       },
     });
+    const antes: Record<string, unknown> = {};
+    const despues: Record<string, unknown> = {};
+    for (const campo of Object.keys(cambios) as (keyof typeof cambios)[]) {
+      if ((reporte[campo] ?? null) !== (cambios[campo] ?? null)) {
+        antes[campo] = reporte[campo];
+        despues[campo] = cambios[campo];
+      }
+    }
+    if (Object.keys(despues).length) {
+      await registrar(user, {
+        accion: cambios.estado === "cerrado" ? "CERRAR" : cambios.estado === "abierto" ? "REABRIR" : "EDITAR",
+        entidad: "Reporte8D",
+        entidadId: params.id,
+        resumen: `${cambios.estado === "cerrado" ? "Cerró" : cambios.estado === "abierto" ? "Reabrió" : "Editó"} el 8D #${reporte.folio}`,
+        antes,
+        despues,
+      });
+    }
     return Response.json(actualizado);
   } catch (error) {
     if (error instanceof z.ZodError) return Response.json({ error: "Datos inválidos" }, { status: 400 });
@@ -57,11 +76,22 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { user } = await obtener8DVisible(params.id);
+    const { user, reporte } = await obtener8DVisible(params.id);
     if (user.rol !== "ADMIN" && user.rol !== "SUPERVISOR") throw new ErrorPermiso("Solo Admin o Supervisor");
-    await prisma.reporte8D.delete({ where: { id: params.id } });
+    const motivo = await leerMotivo(req);
+    await prisma.$transaction([
+      prisma.reporte8D.update({ where: { id: params.id }, data: datosAnulacion(user, motivo) }),
+      filaBitacora(user, {
+        accion: "ANULAR",
+        entidad: "Reporte8D",
+        entidadId: params.id,
+        resumen: `Anuló el 8D #${reporte.folio}`,
+        antes: { estado: reporte.estado, defecto: reporte.defecto, d2Problema: reporte.d2Problema },
+        motivo,
+      }),
+    ]);
     return Response.json({ ok: true });
   } catch (error) {
     return manejarErrorApi(error);

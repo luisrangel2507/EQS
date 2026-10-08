@@ -30,6 +30,7 @@ import Modal from "@/components/ui/Modal";
 import NumeroAnimado from "@/components/ui/NumeroAnimado";
 import { Skeleton, SkeletonKpis } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
+import AnularModal from "@/components/AnularModal";
 import { vibrar, flashPantalla } from "@/lib/feedback";
 import { comprimirImagen } from "@/lib/imagen";
 import {
@@ -84,6 +85,7 @@ export default function InspeccionDetalleClient({
   sesion: SesionUsuario;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const { t, idioma, locale } = useIdioma();
   const { datos: inspeccion, cargando, recargar } = usePolling<Inspeccion>(
     `/api/inspecciones/${id}`,
@@ -91,6 +93,7 @@ export default function InspeccionDetalleClient({
   );
   const [mostrarCierre, setMostrarCierre] = useState(false);
   const [mostrarEditar, setMostrarEditar] = useState(false);
+  const [anulando, setAnulando] = useState(false);
 
   const asignado = inspeccion?.inspectores.some((a) => a.usuario.id === sesion.id) ?? false;
   // Solo el rol Inspector captura piezas; los demás roles ven la inspección en modo lectura.
@@ -175,6 +178,11 @@ export default function InspeccionDetalleClient({
           {puedeGestionar && !inspeccion.cerrado && (
             <button className="btn-accent" onClick={() => setMostrarCierre(true)}>
               {t("Cerrar inspección", "Close inspection")}
+            </button>
+          )}
+          {puedeGestionar && (
+            <button className="btn-secondary text-red-600" onClick={() => setAnulando(true)}>
+              {t("Anular", "Void")}
             </button>
           )}
         </div>
@@ -278,6 +286,17 @@ export default function InspeccionDetalleClient({
           </p>
         </div>
       )}
+
+      <AnularModal
+        abierto={anulando}
+        titulo={t("Anular esta inspección", "Void this inspection")}
+        url={`/api/inspecciones/${id}`}
+        onCerrar={() => setAnulando(false)}
+        onAnulado={() => {
+          toast.info(t("Inspección anulada", "Inspection voided"));
+          router.push("/inspecciones");
+        }}
+      />
 
       <Modal abierto={mostrarCierre} onCerrar={() => setMostrarCierre(false)} ancho="max-w-sm">
         <CierreModal
