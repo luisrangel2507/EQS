@@ -98,7 +98,7 @@ export default function PortalPublicoClient({ token, inicial }: { token: string;
         <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-yellow/20 blur-3xl" />
         <div className="relative mx-auto max-w-5xl px-5 pb-10 pt-6">
           <div className="flex items-center justify-between">
-            <Image src="/logo-header.png" alt={NOMBRE_EMPRESA} width={800} height={266} className="h-10 w-auto" priority />
+            <Image src="/logo-header.png" alt={NOMBRE_EMPRESA} width={1200} height={304} className="h-10 w-auto" priority />
             <div className="flex items-center gap-3">
               <BotonIdioma oscuro />
               <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-300">

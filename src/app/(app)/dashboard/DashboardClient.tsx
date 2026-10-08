@@ -45,16 +45,15 @@ export default function DashboardClient({ rol, nombre }: { rol: Rol; nombre: str
   return (
     <div className="space-y-6">
       <div className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden">
-        <div className="relative h-72 w-full sm:h-96">
+        <div className="relative h-56 w-full bg-[radial-gradient(ellipse_at_top_right,_#233581_0%,_#0A163C_55%,_#060E28_100%)] sm:h-72">
           <Image
-            src="/dashboard-hero.png"
+            src="/logo-header.png"
             alt=""
-            fill
+            width={1200}
+            height={304}
             priority
-            sizes="100vw"
-            className="animate-ken-burns object-cover"
+            className="absolute right-4 top-6 h-auto w-44 opacity-25 sm:right-10 sm:top-8 sm:w-80"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-navy-900/90 via-navy-900/40 to-navy-900/5" />
         </div>
         <motion.div
           className="absolute inset-0 flex flex-col justify-end p-5 sm:p-8"

@@ -109,7 +109,7 @@ export default async function VerificacionPage({ params }: { params: { codigo: s
     <main className="min-h-screen bg-navy-50 pb-10">
       <header className={`${ok ? "bg-navy-950" : "bg-red-700"} px-4 pb-16 pt-5 text-white`}>
         <div className="mx-auto flex max-w-lg items-center justify-between">
-          <Image src="/logo-header.png" alt={NOMBRE_EMPRESA} width={800} height={266} className="h-9 w-auto" priority />
+          <Image src="/logo-header.png" alt={NOMBRE_EMPRESA} width={1200} height={304} className="h-9 w-auto" priority />
           <div className="flex items-center gap-3">
             <span className="font-mono text-xs text-white/60">L-{String(etiqueta.folio).padStart(6, "0")}</span>
             <BotonIdioma oscuro />

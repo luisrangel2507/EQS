@@ -3,7 +3,7 @@ import { requerirSesion, manejarErrorApi, esLiderazgo, ErrorPermiso } from "@/li
 
 export const dynamic = "force-dynamic";
 
-// Personal de EQS asignado de forma fija a la planta de un cliente (Residentes),
+// Personal de la empresa asignado de forma fija a la planta de un cliente (Residentes),
 // con su estado en vivo, para que liderazgo les dé seguimiento.
 export async function GET() {
   try {

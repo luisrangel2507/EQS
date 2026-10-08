@@ -23,7 +23,7 @@ enum Rol {
 model Organizacion {
   id          String   @id @default(cuid())
   nombre      String // razón social: sale en reportes, PDF y páginas públicas
-  nombreCorto String // marca corta (ej. EQS)
+  nombreCorto String // marca corta (ej. SDB)
   activa      Boolean  @default(true)
   creadoEn    DateTime @default(now())
 

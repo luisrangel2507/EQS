@@ -6,6 +6,7 @@ import Link from "next/link";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { BotonIdioma, guardarIdioma, useIdioma } from "@/components/ui/Idioma";
+import { NOMBRE_APP } from "@/lib/branding";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -70,30 +71,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-[100dvh] items-end justify-center overflow-hidden px-4 pb-16 pt-8 sm:pb-24">
-      <Image
-        src="/login-bg-mobile.png"
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover object-center sm:hidden"
-      />
-      <Image
-        src="/login-bg.png"
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="hidden object-cover object-center sm:block"
-      />
-
-      <BotonIdioma oscuro className="absolute right-4 top-4 z-10 backdrop-blur" />
+    <div className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_top,_#233581_0%,_#0A163C_55%,_#060E28_100%)] px-4 py-10">
+      <BotonIdioma oscuro className="absolute right-4 top-4 z-10" />
       <div className="relative z-10 w-full max-w-sm">
+        <Image src="/logo-header.png" alt={NOMBRE_APP} width={1200} height={304} priority className="mx-auto mb-8 h-auto w-72 max-w-full" />
         {cargando ? (
-          <p className="text-center text-white/90 drop-shadow">{t("Cargando…", "Loading…")}</p>
+          <p className="text-center text-white/80">{t("Cargando…", "Loading…")}</p>
         ) : (
-          <form onSubmit={manejarEnvio} className="card space-y-4 bg-white/95 backdrop-blur">
+          <form onSubmit={manejarEnvio} className="card space-y-4">
             {requiereBootstrap && (
               <div className="rounded-lg bg-yellow-50 px-3 py-2 text-sm text-navy-800">
                 {t("No hay usuarios registrados todavía. Crea la cuenta del primer", "There are no users yet. Create the first")}{" "}

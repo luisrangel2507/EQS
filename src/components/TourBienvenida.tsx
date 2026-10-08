@@ -139,7 +139,7 @@ export default function TourBienvenida({ rol, nombre, usuarioId }: { rol: Rol; n
   const [vista, setVista] = useState({ ancho: 0, alto: 0 });
   const { t } = useIdioma();
   const pasos = useMemo(() => pasosPara(rol, nombre, t), [rol, nombre, t]);
-  const clave = `eqs_tour_${VERSION_TOUR}_${usuarioId}`;
+  const clave = `ia_tour_${VERSION_TOUR}_${usuarioId}`;
   const inicio = useRef(0);
 
   const terminar = useCallback(() => {
@@ -156,7 +156,7 @@ export default function TourBienvenida({ rol, nombre, usuarioId }: { rol: Rol; n
       inicio.current = performance.now();
       setPaso(0);
     };
-    window.addEventListener("eqs-iniciar-tour", iniciar);
+    window.addEventListener("ia-iniciar-tour", iniciar);
     let visto = true;
     try {
       visto = localStorage.getItem(clave) === "visto";
@@ -165,7 +165,7 @@ export default function TourBienvenida({ rol, nombre, usuarioId }: { rol: Rol; n
     }
     const t = visto ? null : setTimeout(iniciar, 1200);
     return () => {
-      window.removeEventListener("eqs-iniciar-tour", iniciar);
+      window.removeEventListener("ia-iniciar-tour", iniciar);
       if (t) clearTimeout(t);
     };
   }, [clave]);

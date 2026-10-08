@@ -6,7 +6,7 @@ import { DEFECTOS_EN } from "@/lib/constants";
 export type Idioma = "es" | "en";
 export type Traductor = (es: string, en: string) => string;
 
-export const COOKIE_IDIOMA = "eqs_idioma";
+export const COOKIE_IDIOMA = "ia_idioma";
 export const LOCALES: Record<Idioma, string> = { es: "es-MX", en: "en-US" };
 
 export const crearT =

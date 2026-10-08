@@ -293,7 +293,7 @@ export default function TvClient({ plantaInicial, puedeElegirPlanta }: { plantaI
     <main className="flex min-h-screen flex-col gap-4 overflow-hidden bg-[radial-gradient(ellipse_at_top,_#142B6B_0%,_#060E28_60%)] p-5 text-white xl:p-7">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-5">
-          <Image src="/logo-header.png" alt={NOMBRE_APP} width={800} height={266} className="h-12 w-auto" priority />
+          <Image src="/logo-header.png" alt={NOMBRE_APP} width={1200} height={304} className="h-12 w-auto" priority />
           <div>
             <p className="font-display text-2xl font-bold">
               {turno.etiqueta}

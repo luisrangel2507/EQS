@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useIdioma } from "@/components/ui/Idioma";
 import { CLAVE_TEMA } from "@/lib/tema";
 
-const EVENTO_TEMA = "eqs-tema";
+const EVENTO_TEMA = "ia-tema";
 
 export function alternarTema() {
   const oscuro = !document.documentElement.classList.contains("dark");

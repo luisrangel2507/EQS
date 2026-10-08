@@ -19,7 +19,7 @@ import { OrganizacionProvider } from "@/components/Organizacion";
 import type { EmpresaEmisora } from "@/lib/branding";
 import Icono from "@/components/ui/Icono";
 
-const CLAVE_ULTIMA_LECTURA_CHAT = "eqs_chat_ultima_lectura";
+const CLAVE_ULTIMA_LECTURA_CHAT = "ia_chat_ultima_lectura";
 
 // Permite que una pantalla (ej. la captura activa del inspector) le pida al
 // AppShell que se achique a solo una flecha de regreso, para ganar espacio.
@@ -113,18 +113,18 @@ export default function AppShell({ id, nombre, rol, organizacion, superadmin, ch
             ) : (
               <>
                 <div className="mx-auto flex w-full max-w-[1920px] items-center justify-between px-6 py-3">
-                  <div className="flex items-center gap-6">
+                  <div className="flex min-w-0 items-center gap-4 xl:gap-6">
                     <Link href={inicio} className="flex items-center">
                       <Image
                         src="/logo-header.png"
                         alt={NOMBRE_APP}
-                        width={800}
-                        height={266}
+                        width={1200}
+                        height={304}
                         priority
-                        className="h-[42px] w-auto sm:h-[52px]"
+                        className="h-[32px] w-auto sm:h-[38px]"
                       />
                     </Link>
-                    <nav className="hidden gap-1 lg:flex" data-tour="nav">
+                    <nav className="hidden gap-0.5 whitespace-nowrap lg:flex xl:gap-1" data-tour="nav">
                       {enlaces
                         .filter((e) => e.principal)
                         .map((enlace) => {
@@ -133,7 +133,7 @@ export default function AppShell({ id, nombre, rol, organizacion, superadmin, ch
                             <Link
                               key={enlace.href + enlace.label}
                               href={enlace.href}
-                              className={`relative rounded-md px-3 py-1.5 text-sm font-medium transition active:scale-95 ${
+                              className={`relative rounded-md px-2.5 py-1.5 text-sm font-medium transition xl:px-3 active:scale-95 ${
                                 activo ? "text-yellow" : "text-white/80 hover:bg-white/5 hover:text-white"
                               }`}
                             >
@@ -151,7 +151,7 @@ export default function AppShell({ id, nombre, rol, organizacion, superadmin, ch
                       <MenuMas enlaces={enlaces.filter((e) => !e.principal)} pathname={pathname ?? ""} />
                     </nav>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex shrink-0 items-center gap-2 xl:gap-3">
                     {esOperativo && (
                       <Link
                         href="/dashboard/ejecutivo"
@@ -164,14 +164,14 @@ export default function AppShell({ id, nombre, rol, organizacion, superadmin, ch
                     )}
                     <button
                       type="button"
-                      onClick={() => window.dispatchEvent(new Event("eqs-abrir-paleta"))}
+                      onClick={() => window.dispatchEvent(new Event("ia-abrir-paleta"))}
                       className="flex h-9 items-center gap-2 rounded-full px-2.5 text-sm text-white/80 transition hover:bg-white/10 hover:text-white xl:border xl:border-white/15 xl:px-3"
                       aria-label={t("Buscar (Ctrl K)", "Search (Ctrl K)")}
                       data-tour="buscar"
                     >
                       <Icono nombre="buscar" className="h-4 w-4" />
                       <span className="hidden xl:inline">{t("Buscar", "Search")}</span>
-                      <kbd className="hidden rounded bg-white/10 px-1.5 text-[10px] font-semibold xl:inline">Ctrl K</kbd>
+                      <kbd className="hidden whitespace-nowrap rounded bg-white/10 px-1.5 text-[10px] font-semibold xl:inline">Ctrl K</kbd>
                     </button>
                     <NotificacionesBell rol={rol} />
                     <PerfilMenu nombre={nombre} rol={rol} organizacion={organizacion.nombreCorto} superadmin={superadmin} />
@@ -218,7 +218,7 @@ function MenuMas({ enlaces, pathname }: { enlaces: { href: string; label: string
       <button
         type="button"
         onClick={() => setAbierto((a) => !a)}
-        className={`relative rounded-md px-3 py-1.5 text-sm font-medium transition active:scale-95 ${
+        className={`relative rounded-md px-2.5 py-1.5 text-sm font-medium transition xl:px-3 active:scale-95 ${
           activo ? "text-yellow" : "text-white/80 hover:bg-white/5 hover:text-white"
         }`}
       >
@@ -410,7 +410,7 @@ function PerfilMenu({
         <span className="hidden text-left sm:block">
           <span className="block text-sm font-medium leading-tight">{nombre}</span>
           <span className="block text-xs leading-tight text-white/60">
-            {rolTexto} · {organizacion}
+            {rolTexto}
           </span>
         </span>
         <span className={`text-xs text-white/50 transition ${abierto ? "rotate-180" : ""}`}>▼</span>

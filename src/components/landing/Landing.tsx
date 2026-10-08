@@ -6,7 +6,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { BotonIdioma, useIdioma } from "@/components/ui/Idioma";
 import type { Traductor } from "@/lib/i18n";
-import { CONTACTO_EMAIL, CONTACTO_WHATSAPP, NOMBRE_APP, NOMBRE_CORTO, NOMBRE_EMPRESA, NOMBRE_LEGAL } from "@/lib/branding";
+import { CONTACTO_EMAIL, CONTACTO_WHATSAPP, NOMBRE_APP, NOMBRE_CORTO } from "@/lib/branding";
 
 const urlDemo = (t: Traductor) =>
   CONTACTO_WHATSAPP
@@ -314,16 +314,16 @@ export default function Landing({ registro = false }: { registro?: boolean }) {
           conScroll ? "bg-navy-950/90 shadow-lg backdrop-blur" : "bg-transparent"
         }`}
       >
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
-          <Image src="/logo-header.png" alt={NOMBRE_APP} width={800} height={266} className="h-10 w-auto" priority />
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-5">
+          <Image src="/logo-header.png" alt={NOMBRE_APP} width={1200} height={304} className="h-7 w-auto shrink-0 sm:h-10" priority />
           <nav className="hidden items-center gap-6 text-sm font-medium text-white/80 md:flex">
             <a href="#modulos" className="hover:text-white">{t("Módulos", "Features")}</a>
             <a href="#como-funciona" className="hover:text-white">{t("Cómo funciona", "How it works")}</a>
             <a href="#roles" className="hover:text-white">{t("Para quién", "Who it’s for")}</a>
           </nav>
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <BotonIdioma oscuro />
-            <Link href="/login" className="rounded-lg border border-white/25 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10">
+            <Link href="/login" className="whitespace-nowrap rounded-lg border border-white/25 px-3 py-2 text-xs font-semibold text-white transition hover:bg-white/10 sm:px-4 sm:text-sm">
               {t("Iniciar sesión", "Sign in")}
             </Link>
           </div>
@@ -531,7 +531,7 @@ export default function Landing({ registro = false }: { registro?: boolean }) {
       <footer className="border-t border-navy-100 bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-sm text-navy-500">
           <p>
-            © {new Date().getFullYear()} {NOMBRE_LEGAL} · {NOMBRE_EMPRESA}
+            © {new Date().getFullYear()} {NOMBRE_APP}
           </p>
           <div className="flex gap-4">
             {CONTACTO_EMAIL && (

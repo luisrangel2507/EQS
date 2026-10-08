@@ -54,7 +54,7 @@ export default function RegistroClient({ abierto }: { abierto: boolean }) {
       <BotonIdioma oscuro className="absolute right-4 top-4" />
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative w-full max-w-md space-y-5">
         <Link href="/" className="flex justify-center">
-          <Image src="/logo-header.png" alt={NOMBRE_APP} width={800} height={266} className="h-12 w-auto" priority />
+          <Image src="/logo-header.png" alt={NOMBRE_APP} width={1200} height={304} className="h-12 w-auto" priority />
         </Link>
         {!abierto ? (
           <div className="card space-y-3 text-center">

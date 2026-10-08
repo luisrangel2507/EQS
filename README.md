@@ -1,15 +1,15 @@
-# EQS · Control de Inspecciones
+# InspeccionAPP
 
-App de control de inspecciones de calidad para EQS (Ethical Quality Services),
-empresa de sorteo/inspección para la cadena de suministro automotriz
-(Tier 1/2/3) con sedes en México y EE. UU.
+Plataforma de control de inspecciones y sorteos de calidad para la cadena de suministro
+automotriz (Tier 1/2/3). Varias empresas de sorteo pueden usarla a la vez, cada una aislada
+de las demás (ver "Multi-empresa").
 
 ## Stack
 
 - Next.js 14 (App Router) + TypeScript
 - PostgreSQL + Prisma
 - NextAuth (Credentials provider, JWT, contraseñas con bcrypt)
-- Tailwind CSS (paleta EQS: navy `#142B6B` + amarillo `#F4D935`, tipografías Manrope/Inter)
+- Tailwind CSS (paleta: navy `#142B6B` + amarillo `#F4D935`, tipografías Manrope/Inter)
 - Recharts (Pareto de defectos, tendencia de % de rechazo)
 - @react-pdf/renderer (reporte de cierre en PDF)
 - Despliegue en Railway (Postgres + servicio web)
@@ -138,7 +138,7 @@ servicio para que las fotos y PDFs persistan entre deploys.
 - [ ] Volume de Railway montado en `storage/uploads` para fotos de evidencia y PDFs de instrucción
 - [ ] Variables de entorno en Railway: `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY`
 - [ ] Backups automáticos de Postgres activados en Railway (retención 7-30 días)
-- [ ] Dominio propio tipo `inspecciones.eqservices.mx` con CNAME a Railway
+- [ ] Dominio propio (por ejemplo `app.tudominio.com`) con CNAME a Railway
 - [ ] Certificado SSL (Railway lo da automático al conectar el dominio)
 - [ ] Probar con 2-3 usuarios reales (un supervisor y un inspector) antes del rollout completo
 - [ ] Definir quién es el primer Admin real antes de compartir el link (así no se lo gana cualquiera)
@@ -149,9 +149,9 @@ servicio para que las fotos y PDFs persistan entre deploys.
 | --- | --- |
 | `DATABASE_URL` | Cadena de conexión de Postgres (la da Railway al conectar el plugin) |
 | `NEXTAUTH_SECRET` | Valor aleatorio largo, distinto al de desarrollo (`openssl rand -base64 32`) |
-| `NEXTAUTH_URL` | URL pública del servicio (ej. `https://inspecciones.eqservices.mx`) |
+| `NEXTAUTH_URL` | URL pública del servicio (ej. `https://app.tudominio.com`) |
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | Par de llaves para notificaciones push (Web Push). Genéralas UNA sola vez con `node -e "console.log(require('web-push').generateVAPIDKeys())"` y no las cambies después (invalidarías todas las suscripciones ya guardadas) |
-| `VAPID_SUBJECT` | `mailto:` de contacto que exige el estándar Web Push, ej. `mailto:soporte@eqservices.mx` |
+| `VAPID_SUBJECT` | `mailto:` de contacto que exige el estándar Web Push, ej. `mailto:soporte@tudominio.com` |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Mismo valor que `VAPID_PUBLIC_KEY`; debe estar disponible en **build time** (Railway la necesita antes de correr `npm run build`, no solo en runtime) |
 | `NEXT_PUBLIC_ZONA_HORARIA` | Zona horaria de planta para turnos, cortes de mes y ranking (default `America/Monterrey`). Plantas fronterizas con horario de verano de EE. UU.: `America/Matamoros`. Se lee en **build time** |
 | `TASA_IVA` | Opcional. Tasa de IVA del estado de cuenta (default `0.16`) |
@@ -179,7 +179,7 @@ app. En Android/desktop funciona directo desde el navegador.
 > `/plataforma` de la misma instalación. Una instancia separada solo hace falta si el
 > cliente exige su propio dominio, base de datos o logotipo.
 
-El código es agnóstico a la marca (EQS). Todo texto de interfaz relacionado
+El código es agnóstico a la marca. Todo texto de interfaz relacionado
 con branding vive en `src/lib/branding.ts`, permitiendo deploys separados
 por cliente sin tocar el código.
 
@@ -189,9 +189,9 @@ Edita las constantes exportadas:
 
 ```typescript
 export const NOMBRE_CORTO = "TuApp";              // Nombre corto en browser tabs
-export const NOMBRE_EMPRESA = "Tu Empresa";       // Logo y headers
+export const NOMBRE_EMPRESA = "Tu Empresa";       // Nombre en reportes
 export const NOMBRE_LEGAL = "Tu Empresa S.A.";    // Subtítulos legales
-export const NOMBRE_APP = `Tu Empresa TuApp`;     // Título completo
+export const NOMBRE_APP = NOMBRE_CORTO;           // Título completo
 export const DESCRIPCION_APP = "Tu descripción";  // Meta description y PWA
 export const PIE_PDF = "Tu pie de página";        // Footer de PDFs
 ```
@@ -200,7 +200,7 @@ export const PIE_PDF = "Tu pie de página";        // Footer de PDFs
 
 En la carpeta `public/`:
 
-- Reemplaza `logo-header.png` (usado en AppShell, recomendado 200×60px)
+- Reemplaza `logo-header.png` (PNG transparente, logo claro para fondo azul oscuro; ~1200 px de ancho)
 - Reemplaza `icon.png` (512×512px, PWA icon)
 - Reemplaza `apple-icon.png` (180×180px, acceso directo en iOS)
 

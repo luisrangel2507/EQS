@@ -1,5 +1,5 @@
-const CACHE_ESTATICO = "eqs-estatico-v1";
-const CACHE_PAGINAS = "eqs-paginas-v1";
+const CACHE_ESTATICO = "ia-estatico-v1";
+const CACHE_PAGINAS = "ia-paginas-v1";
 const CACHES_VIGENTES = [CACHE_ESTATICO, CACHE_PAGINAS];
 
 self.addEventListener("install", () => self.skipWaiting());

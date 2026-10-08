@@ -64,10 +64,10 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
     };
     const abrir = () => setAbierta(true);
     window.addEventListener("keydown", tecla);
-    window.addEventListener("eqs-abrir-paleta", abrir);
+    window.addEventListener("ia-abrir-paleta", abrir);
     return () => {
       window.removeEventListener("keydown", tecla);
-      window.removeEventListener("eqs-abrir-paleta", abrir);
+      window.removeEventListener("ia-abrir-paleta", abrir);
     };
   }, []);
 
@@ -108,7 +108,7 @@ export default function PaletaComandos({ rol }: { rol: Rol }) {
       rol === "ADMIN" && { id: "alta-cliente", grupo: "Acciones", titulo: t("Dar de alta un cliente", "Onboard a customer"), ejecutar: ir("/empresas?alta=1") },
       (LIDERAZGO.includes(rol) || rol === "CLIENTE") && { id: "nueva-solicitud", grupo: "Acciones", titulo: t("Nueva solicitud de servicio", "New service request"), ejecutar: ir("/solicitudes?nueva=1") },
       { id: "tema", grupo: "Acciones", titulo: t("Cambiar modo claro / oscuro", "Toggle light / dark mode"), ejecutar: alternarTema },
-      { id: "tour", grupo: "Acciones", titulo: t("Ver el recorrido de bienvenida", "Replay the welcome tour"), ejecutar: () => window.dispatchEvent(new Event("eqs-iniciar-tour")) },
+      { id: "tour", grupo: "Acciones", titulo: t("Ver el recorrido de bienvenida", "Replay the welcome tour"), ejecutar: () => window.dispatchEvent(new Event("ia-iniciar-tour")) },
       {
         id: "salir",
         grupo: "Acciones",

@@ -27,8 +27,10 @@ export type ResultadoEnvio =
   | { estado: "encolada"; idCliente: string }
   | { estado: "error"; mensaje: string };
 
+// Nombres históricos del almacenamiento del equipo: no renombrar, o se perderían las capturas
+// sin enviar de quien actualice con la app en uso sin señal.
 const CLAVE_COLA = "eqs_cola_capturas";
-const EVENTO_COLA = "eqs-cola-capturas";
+const EVENTO_COLA = "ia-cola-capturas";
 const DB_NOMBRE = "eqs-offline";
 const DB_STORE = "fotos";
 
