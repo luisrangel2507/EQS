@@ -71,10 +71,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_top,_#233581_0%,_#0A163C_55%,_#060E28_100%)] px-4 py-10">
-      <BotonIdioma oscuro className="absolute right-4 top-4 z-10" />
-      <div className="relative z-10 w-full max-w-sm">
-        <Image src="/logo-header.png" alt={NOMBRE_APP} width={1200} height={304} priority className="mx-auto mb-8 h-auto w-72 max-w-full" />
+    <div className="relative min-h-[100dvh] overflow-hidden bg-navy-950 lg:grid lg:grid-cols-[1.1fr_1fr]">
+      <BotonIdioma oscuro className="absolute right-4 top-4 z-20" />
+      {/* imagen: en celular se ajusta al ancho (para no cortar el logo) y se funde con el cielo;
+          en computadora ocupa la mitad izquierda */}
+      <div className="absolute inset-0 bg-[#1f4573] lg:relative lg:inset-auto lg:min-h-[100dvh] lg:bg-navy-950">
+        <div className="absolute inset-x-0 bottom-0 aspect-[941/1671] [mask-image:linear-gradient(to_bottom,transparent,black_14%)] lg:inset-0 lg:aspect-auto lg:[mask-image:none]">
+          <Image src="/login-bg.jpg" alt={NOMBRE_APP} fill priority sizes="(min-width: 1024px) 55vw, 100vw" className="object-cover" />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-navy-950/75 via-transparent to-transparent lg:hidden" />
+      </div>
+      <div className="relative z-10 flex min-h-[100dvh] items-end justify-center px-4 pb-12 pt-24 lg:items-center lg:bg-[radial-gradient(ellipse_at_top,_#233581_0%,_#0A163C_60%,_#060E28_100%)] lg:pb-0">
+        <div className="w-full max-w-sm">
         {cargando ? (
           <p className="text-center text-white/80">{t("Cargando…", "Loading…")}</p>
         ) : (
@@ -143,6 +151,7 @@ export default function LoginPage() {
             )}
           </form>
         )}
+        </div>
       </div>
     </div>
   );
