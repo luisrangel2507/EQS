@@ -74,6 +74,7 @@ const ENLACES: { href: string; label: string; en: string; roles: Rol[]; principa
     principal: true,
   },
   { href: "/auditorias", label: "Auditorías", en: "Audits", roles: ["RESIDENTE", "CLIENTE"], principal: true },
+  { href: "/documentos", label: "Documentos", en: "Documents", roles: [...LIDERAZGO, "INSPECTOR", "RESIDENTE"] },
   { href: "/residentes", label: "Residentes", en: "Residents", roles: LIDERAZGO },
   { href: "/auditorias", label: "Auditorías", en: "Audits", roles: LIDERAZGO },
   { href: "/certificaciones", label: "Certificaciones", en: "Certifications", roles: LIDERAZGO },

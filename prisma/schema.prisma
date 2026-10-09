@@ -32,6 +32,7 @@ model Organizacion {
   empresas     Empresa[]
   criterios    CriterioParte[]
   bitacora     BitacoraCambio[]
+  documentos   Documento[]
 }
 
 // empresas cliente dadas de alta por un Admin; los usuarios con rol CLIENTE
@@ -48,21 +49,21 @@ model Empresa {
 }
 
 model Usuario {
-  id              String       @id @default(cuid())
-  organizacion    Organizacion @relation(fields: [organizacionId], references: [id], onDelete: Cascade)
-  organizacionId  String
+  id               String       @id @default(cuid())
+  organizacion     Organizacion @relation(fields: [organizacionId], references: [id], onDelete: Cascade)
+  organizacionId   String
   // dueño de la plataforma: da de alta y administra organizaciones
-  superadmin      Boolean      @default(false)
-  nombre          String
-  usuario         String       @unique // login, minúsculas normalizadas
-  passwordHash    String
-  rol             Rol
-  clienteNombre   String? // para rol CLIENTE: debe coincidir con Inspeccion.cliente
-  plantaResidente String? // para rol RESIDENTE: planta donde está asignado
-  activo          Boolean      @default(true)
-  creadoEn        DateTime     @default(now())
+  superadmin       Boolean      @default(false)
+  nombre           String
+  usuario          String       @unique // login, minúsculas normalizadas
+  passwordHash     String
+  rol              Rol
+  clienteNombre    String? // para rol CLIENTE: debe coincidir con Inspeccion.cliente
+  plantaResidente  String? // para rol RESIDENTE: planta donde está asignado
+  activo           Boolean      @default(true)
+  creadoEn         DateTime     @default(now())
   // bloqueo temporal por intentos fallidos de contraseña
-  intentosFallidos Int         @default(0)
+  intentosFallidos Int          @default(0)
   bloqueadoHasta   DateTime?
 
   capturas             Captura[]
@@ -87,6 +88,10 @@ model Usuario {
   auditorias           Auditoria[]
   etiquetasLiberacion  EtiquetaLiberacion[]
   relevosRecibidos     RelevoTurno[]         @relation("RelevoReceptor")
+  documentosCreados    Documento[]
+  versionesCreadas     DocumentoVersion[]    @relation("VersionCreadaPor")
+  versionesRevisadas   DocumentoVersion[]    @relation("VersionRevisadaPor")
+  lecturasDocumentos   DocumentoLectura[]
 }
 
 // bitácora de seguimiento del personal Residente (asignado de forma fija a
@@ -529,4 +534,58 @@ model BitacoraCambio {
   @@index([organizacionId, creadoEn])
   @@index([entidad, entidadId])
   @@index([usuarioId])
+}
+
+// Control de documentos: instrucciones de trabajo, procedimientos y formatos con
+// versiones, aprobación por una segunda persona y evidencia de lectura.
+model Documento {
+  id             String       @id @default(cuid())
+  organizacion   Organizacion @relation(fields: [organizacionId], references: [id], onDelete: Cascade)
+  organizacionId String
+  codigo         String
+  titulo         String
+  tipo           String // instruccion | procedimiento | formato | plan_control | otro
+  numeroParte    String?
+  descripcion    String?
+  creadoPor      Usuario      @relation(fields: [creadoPorId], references: [id])
+  creadoPorId    String
+  creadoEn       DateTime     @default(now())
+
+  versiones DocumentoVersion[]
+
+  @@unique([organizacionId, codigo])
+}
+
+model DocumentoVersion {
+  id             String    @id @default(cuid())
+  documento      Documento @relation(fields: [documentoId], references: [id], onDelete: Cascade)
+  documentoId    String
+  version        Int
+  archivoUrl     String
+  cambios        String // qué cambió respecto a la versión anterior
+  estado         String    @default("en_revision") // en_revision | vigente | obsoleta | rechazada
+  creadoPor      Usuario   @relation("VersionCreadaPor", fields: [creadoPorId], references: [id])
+  creadoPorId    String
+  creadoEn       DateTime  @default(now())
+  revisadoPor    Usuario?  @relation("VersionRevisadaPor", fields: [revisadoPorId], references: [id])
+  revisadoPorId  String?
+  revisadoEn     DateTime?
+  motivoDecision String?
+  vigenteDesde   DateTime?
+  obsoletaEn     DateTime?
+
+  lecturas DocumentoLectura[]
+
+  @@unique([documentoId, version])
+}
+
+model DocumentoLectura {
+  id        String           @id @default(cuid())
+  version   DocumentoVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  versionId String
+  usuario   Usuario          @relation(fields: [usuarioId], references: [id])
+  usuarioId String
+  leidoEn   DateTime         @default(now())
+
+  @@unique([versionId, usuarioId])
 }

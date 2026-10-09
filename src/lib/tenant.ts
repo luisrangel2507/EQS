@@ -14,7 +14,7 @@ import { Prisma } from "@prisma/client";
  *  - fuera de una petición (scripts) → sin filtro.
  */
 
-const RAIZ = new Set(["Usuario", "Inspeccion", "Empresa", "CriterioParte", "BitacoraCambio"]);
+const RAIZ = new Set(["Usuario", "Inspeccion", "Empresa", "CriterioParte", "BitacoraCambio", "Documento"]);
 
 // modelo → relación que lleva a una tabla raíz
 const RUTA: Record<string, string> = {
@@ -36,6 +36,8 @@ const RUTA: Record<string, string> = {
   PlantillaChecklist: "creadoPor",
   Auditoria: "auditor",
   EtiquetaLiberacion: "inspeccion",
+  DocumentoVersion: "documento",
+  DocumentoLectura: "usuario",
 };
 
 /*

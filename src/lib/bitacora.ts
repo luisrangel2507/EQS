@@ -10,8 +10,8 @@ import { ErrorPermiso, type SesionUsuario } from "@/lib/permissions";
  */
 
 export type EntradaBitacora = {
-  accion: "CREAR" | "EDITAR" | "ANULAR" | "ELIMINAR" | "CERRAR" | "REABRIR" | "ACTIVAR" | "DESACTIVAR" | "BLOQUEAR" | "COMPLETAR";
-  entidad: "Inspeccion" | "Captura" | "Auditoria" | "Reporte8D" | "Asistencia" | "Usuario" | "Criterio" | "Enlace";
+  accion: "CREAR" | "EDITAR" | "ANULAR" | "ELIMINAR" | "CERRAR" | "REABRIR" | "ACTIVAR" | "DESACTIVAR" | "BLOQUEAR" | "APROBAR" | "RECHAZAR" | "RETIRAR" | "COMPLETAR";
+  entidad: "Inspeccion" | "Captura" | "Auditoria" | "Reporte8D" | "Asistencia" | "Usuario" | "Criterio" | "Enlace" | "Documento";
   entidadId: string;
   resumen: string;
   antes?: unknown;

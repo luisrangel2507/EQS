@@ -31,6 +31,7 @@ const ENTIDADES: [string, string, string][] = [
   ["Usuario", "Usuarios", "Users"],
   ["Criterio", "Criterios de certificación", "Certification criteria"],
   ["Enlace", "Enlaces compartidos", "Shared links"],
+  ["Documento", "Documentos", "Documents"],
 ];
 
 const ACCIONES: [string, string, string][] = [
@@ -43,6 +44,9 @@ const ACCIONES: [string, string, string][] = [
   ["COMPLETAR", "Completado", "Completed"],
   ["DESACTIVAR", "Desactivación", "Deactivated"],
   ["ACTIVAR", "Activación", "Activated"],
+  ["APROBAR", "Aprobación", "Approved"],
+  ["RECHAZAR", "Rechazo", "Rejected"],
+  ["RETIRAR", "Retiro", "Withdrawn"],
   ["BLOQUEAR", "Bloqueo de acceso", "Access lockout"],
 ];
 
