@@ -45,8 +45,30 @@ declare module "next-auth/jwt" {
   }
 }
 
+const MAX_INTENTOS = 5;
+const MINUTOS_BLOQUEO = 15;
+
+/** Asienta en la bitácora un evento de acceso (bloqueo) sin que un fallo tire el login. */
+async function bitacoraAcceso(u: { id: string; nombre: string; rol: Rol; organizacionId: string }, resumen: string) {
+  await prismaGlobal.bitacoraCambio
+    .create({
+      data: {
+        organizacionId: u.organizacionId,
+        usuarioId: u.id,
+        usuarioNombre: u.nombre,
+        usuarioRol: u.rol,
+        accion: "BLOQUEAR",
+        entidad: "Usuario",
+        entidadId: u.id,
+        resumen,
+      },
+    })
+    .catch((e) => console.error("No se pudo escribir en la bitácora", e));
+}
+
 export const authOptions: NextAuthOptions = {
-  session: { strategy: "jwt" },
+  // la sesión caduca sola a las 12 h (un turno); además la app cierra por inactividad
+  session: { strategy: "jwt", maxAge: 12 * 60 * 60 },
   pages: { signIn: "/login" },
   providers: [
     CredentialsProvider({
@@ -67,8 +89,26 @@ export const authOptions: NextAuthOptions = {
 
         if (!usuario || !usuario.activo || !usuario.organizacion.activa) return null;
 
+        if (usuario.bloqueadoHasta && usuario.bloqueadoHasta > new Date()) return null;
+
         const valido = await bcrypt.compare(credentials.password, usuario.passwordHash);
-        if (!valido) return null;
+        if (!valido) {
+          const intentos = usuario.intentosFallidos + 1;
+          const bloquear = intentos >= MAX_INTENTOS;
+          await prismaGlobal.usuario.update({
+            where: { id: usuario.id },
+            data: bloquear
+              ? { intentosFallidos: 0, bloqueadoHasta: new Date(Date.now() + MINUTOS_BLOQUEO * 60000) }
+              : { intentosFallidos: intentos },
+          });
+          if (bloquear) {
+            await bitacoraAcceso(usuario, `Cuenta de ${usuario.usuario} bloqueada ${MINUTOS_BLOQUEO} min por ${MAX_INTENTOS} intentos fallidos`);
+          }
+          return null;
+        }
+        if (usuario.intentosFallidos > 0 || usuario.bloqueadoHasta) {
+          await prismaGlobal.usuario.update({ where: { id: usuario.id }, data: { intentosFallidos: 0, bloqueadoHasta: null } });
+        }
 
         return {
           id: usuario.id,

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requerirRol, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { ROLES } from "@/lib/constants";
+import { contrasenaSchema, errorContrasena } from "@/lib/password";
 import { filaBitacora, leerMotivo, registrar } from "@/lib/bitacora";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,8 @@ const actualizarUsuarioSchema = z.object({
   activo: z.boolean().optional(),
   clienteNombre: z.string().trim().optional().nullable(),
   plantaResidente: z.string().trim().optional().nullable(),
-  password: z.string().min(6).optional(),
+  password: contrasenaSchema.optional(),
+  desbloquear: z.boolean().optional(),
 });
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
@@ -54,6 +56,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       if (datos.rol !== "RESIDENTE") data.plantaResidente = null;
     }
 
+    if (datos.password) {
+      const errorPw = errorContrasena(datos.password, existente.usuario);
+      if (errorPw) throw new ErrorPermiso(errorPw, 400);
+    }
+    if (datos.desbloquear || datos.password) {
+      data.intentosFallidos = 0;
+      data.bloqueadoHasta = null;
+    }
     if (datos.password) data.passwordHash = await bcrypt.hash(datos.password, 10);
 
     const usuario = await prisma.usuario.update({
@@ -79,6 +89,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         despues[campo] = usuario[campo];
       }
     }
+    if (datos.desbloquear) despues.desbloqueada = true;
     if (datos.password) despues.contrasenaRestablecida = true; // nunca se guarda la contraseña
     if (Object.keys(despues).length) {
       await registrar(admin, {

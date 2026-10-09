@@ -1,0 +1,1 @@
+ALTER TABLE "Usuario" ADD COLUMN "intentosFallidos" INTEGER NOT NULL DEFAULT 0, ADD COLUMN "bloqueadoHasta" TIMESTAMP(3);

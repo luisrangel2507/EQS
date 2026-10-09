@@ -6,6 +6,7 @@ import { organizacionPrincipal } from "@/lib/organizaciones";
 import { requerirRol, manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { ROLES } from "@/lib/constants";
 import { registrar } from "@/lib/bitacora";
+import { contrasenaSchema, errorContrasena } from "@/lib/password";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ const crearUsuarioSchema = z.object({
     .trim()
     .min(3, "El usuario debe tener al menos 3 caracteres")
     .transform((v) => v.toLowerCase()),
-  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+  password: contrasenaSchema,
   rol: z.enum(ROLES).optional(),
   clienteNombre: z.string().trim().optional().nullable(),
   plantaResidente: z.string().trim().optional().nullable(),
@@ -35,6 +36,7 @@ export async function GET() {
         clienteNombre: true,
         plantaResidente: true,
         activo: true,
+        bloqueadoHasta: true,
         creadoEn: true,
       },
     });
@@ -68,6 +70,9 @@ export async function POST(req: NextRequest) {
         throw new ErrorPermiso("El rol es requerido", 400);
       }
     }
+
+    const errorPw = errorContrasena(datos.password, datos.usuario);
+    if (errorPw) throw new ErrorPermiso(errorPw, 400);
 
     // el nombre de usuario es único en toda la plataforma
     const existente = await prismaGlobal.usuario.findUnique({ where: { usuario: datos.usuario } });

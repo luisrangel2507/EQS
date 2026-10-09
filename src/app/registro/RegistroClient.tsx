@@ -98,7 +98,7 @@ export default function RegistroClient({ abierto }: { abierto: boolean }) {
               </div>
               <div>
                 <label className="label">{t("Contraseña", "Password")}</label>
-                <input className="input" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
+                <input className="input" type="password" required minLength={10} value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
             </div>
             {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}

@@ -11,6 +11,7 @@ type Usuario = {
   clienteNombre: string | null;
   plantaResidente: string | null;
   activo: boolean;
+  bloqueadoHasta?: string | null;
   creadoEn: string;
 };
 
@@ -40,7 +41,7 @@ export default function UsuariosClient({ usuarioActualId }: { usuarioActualId: s
 
   async function actualizar(
     id: string,
-    cambios: Partial<{ rol: string; activo: boolean; plantaResidente: string | null; clienteNombre: string | null }>
+    cambios: Partial<{ rol: string; activo: boolean; desbloquear: boolean; password: string; plantaResidente: string | null; clienteNombre: string | null }>
   ) {
     setError(null);
     const res = await fetch(`/api/usuarios/${id}`, {
@@ -129,8 +130,28 @@ export default function UsuariosClient({ usuarioActualId }: { usuarioActualId: s
                     >
                       {u.activo ? "Activo" : "Inactivo"}
                     </span>
+                    {u.bloqueadoHasta && new Date(u.bloqueadoHasta) > new Date() && (
+                      <span className="badge ml-1 bg-amber-100 text-amber-800">Bloqueado</span>
+                    )}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="space-x-3 px-4 py-3 text-right">
+                    {u.bloqueadoHasta && new Date(u.bloqueadoHasta) > new Date() && (
+                      <button
+                        className="text-xs font-semibold text-amber-700 hover:text-amber-900"
+                        onClick={() => actualizar(u.id, { desbloquear: true })}
+                      >
+                        Desbloquear
+                      </button>
+                    )}
+                    <button
+                      className="text-xs font-semibold text-navy-500 hover:text-navy-900"
+                      onClick={() => {
+                        const nueva = window.prompt(`Nueva contraseña para ${u.usuario} (mínimo 10 caracteres, con mayúsculas, minúsculas y números):`);
+                        if (nueva) actualizar(u.id, { password: nueva });
+                      }}
+                    >
+                      Restablecer contraseña
+                    </button>
                     {u.id !== usuarioActualId && (
                       <button
                         className="text-xs font-semibold text-navy-500 hover:text-navy-900"
@@ -300,7 +321,8 @@ function NuevoUsuarioForm({
         </div>
         <div>
           <label className="label">Contraseña</label>
-          <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+          <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={10} />
+          <p className="mt-1 text-xs text-navy-400">Mínimo 10 caracteres, con mayúsculas, minúsculas y números.</p>
         </div>
         <div>
           <label className="label">Posición</label>

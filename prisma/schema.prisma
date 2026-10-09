@@ -61,6 +61,9 @@ model Usuario {
   plantaResidente String? // para rol RESIDENTE: planta donde está asignado
   activo          Boolean      @default(true)
   creadoEn        DateTime     @default(now())
+  // bloqueo temporal por intentos fallidos de contraseña
+  intentosFallidos Int         @default(0)
+  bloqueadoHasta   DateTime?
 
   capturas             Captura[]
   estado               EstadoInspector?

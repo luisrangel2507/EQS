@@ -21,7 +21,7 @@ export const registroAbierto = () => process.env.REGISTRO_ABIERTO === "1";
 const ALFABETO = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 export function contrasenaTemporal() {
   const bloque = () => Array.from({ length: 4 }, () => ALFABETO[randomInt(ALFABETO.length)]).join("");
-  return `${bloque()}-${bloque()}`;
+  return `${bloque()}-${bloque()}-${bloque()}`;
 }
 
 export const normalizarUsuario = (u: string) => u.trim().toLowerCase();

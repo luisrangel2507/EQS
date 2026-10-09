@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
+import { contrasenaSchema } from "@/lib/password";
 import { manejarErrorApi, ErrorPermiso } from "@/lib/permissions";
 import { crearOrganizacion, registroAbierto } from "@/lib/organizaciones";
 
@@ -10,7 +11,7 @@ const schema = z.object({
   nombreCorto: z.string().trim().min(2).max(30),
   nombre: z.string().trim().min(2).max(120),
   usuario: z.string().trim().min(3).max(40).regex(/^[a-zA-Z0-9._-]+$/, "El usuario solo admite letras, números, punto, guion y guion bajo"),
-  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres").max(100),
+  password: contrasenaSchema,
 });
 
 // Alta pública de una empresa nueva (solo si REGISTRO_ABIERTO=1).

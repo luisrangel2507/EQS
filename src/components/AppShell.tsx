@@ -91,6 +91,27 @@ export default function AppShell({ id, nombre, rol, organizacion, superadmin, ch
   const esOperativo = rol === "ADMIN" || rol === "SUPERVISOR" || rol === "GERENTE" || rol === "LIDER";
   const [inmersivo, setInmersivo] = useState(false);
 
+  // cierre por inactividad (los inspectores quedan fuera: la estación se queda abierta todo el turno)
+  useEffect(() => {
+    if (rol === "INSPECTOR") return;
+    const LIMITE = 30 * 60 * 1000;
+    let temporizador: ReturnType<typeof setTimeout>;
+    const salirPorInactividad = () => {
+      signOut({ callbackUrl: `${window.location.origin}/login?inactividad=1` });
+    };
+    const reiniciar = () => {
+      clearTimeout(temporizador);
+      temporizador = setTimeout(salirPorInactividad, LIMITE);
+    };
+    const eventos = ["pointerdown", "keydown", "scroll", "touchstart"] as const;
+    eventos.forEach((e) => window.addEventListener(e, reiniciar, { passive: true }));
+    reiniciar();
+    return () => {
+      clearTimeout(temporizador);
+      eventos.forEach((e) => window.removeEventListener(e, reiniciar));
+    };
+  }, [rol]);
+
   useEffect(() => {
     // siempre activo (no solo con push): da el caché que permite abrir pantallas sin señal
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});

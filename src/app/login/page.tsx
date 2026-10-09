@@ -29,6 +29,10 @@ export default function LoginPage() {
         setRegistroAbierto(Boolean(d.registroAbierto));
       })
       .finally(() => setCargando(false));
+    if (new URLSearchParams(window.location.search).get("inactividad")) {
+      setError(t("Tu sesión se cerró por inactividad. Vuelve a entrar.", "Your session was closed due to inactivity. Please sign in again."));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function manejarEnvio(e: React.FormEvent) {
@@ -55,7 +59,7 @@ export default function LoginPage() {
       });
 
       if (resultado?.error) {
-        throw new Error(t("Usuario o contraseña incorrectos", "Wrong username or password"));
+        throw new Error(t("Usuario o contraseña incorrectos. Tras 5 intentos fallidos la cuenta se bloquea 15 minutos.", "Wrong username or password. After 5 failed attempts the account is locked for 15 minutes."));
       }
 
       // dentro de la app se sigue en el idioma con el que se vio el login
@@ -128,7 +132,6 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
               />
             </div>
 

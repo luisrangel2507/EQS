@@ -43,12 +43,14 @@ const ACCIONES: [string, string, string][] = [
   ["COMPLETAR", "Completado", "Completed"],
   ["DESACTIVAR", "Desactivación", "Deactivated"],
   ["ACTIVAR", "Activación", "Activated"],
+  ["BLOQUEAR", "Bloqueo de acceso", "Access lockout"],
 ];
 
 const COLOR: Record<string, string> = {
   ANULAR: "bg-red-50 text-red-700",
   ELIMINAR: "bg-red-50 text-red-700",
   DESACTIVAR: "bg-amber-50 text-amber-700",
+  BLOQUEAR: "bg-amber-50 text-amber-700",
   CREAR: "bg-emerald-50 text-emerald-700",
 };
 

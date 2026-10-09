@@ -40,7 +40,7 @@ const altaSchema = z.object({
 const ALFABETO = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 function contrasena() {
   const bloque = () => Array.from({ length: 4 }, () => ALFABETO[randomInt(ALFABETO.length)]).join("");
-  return `${bloque()}-${bloque()}`;
+  return `${bloque()}-${bloque()}-${bloque()}`;
 }
 
 export async function POST(req: NextRequest) {
